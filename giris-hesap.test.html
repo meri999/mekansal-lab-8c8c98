@@ -9,6 +9,8 @@ t("GirisHesap tanimli",function(){return !!H||"yok"});
 t("bul sanliurfa",function(){var r=H.bul("sanliurfa",Y);return (r[0]&&r[0].ad==="Şanlıurfa")||JSON.stringify(r)});
 t("bul ŞANLIURFA",function(){var r=H.bul("ŞANLIURFA",Y);return (r[0]&&r[0].ad==="Şanlıurfa")||JSON.stringify(r)});
 t("bul ığdır",function(){var r=H.bul("ığdır",Y);return (r[0]&&/ğdır$/.test(r[0].ad))||JSON.stringify(r)});
+t("bul mus: Muş önce, Gümüşhane sonra",function(){var r=H.bul("mus",Y);return (r[0]&&r[0].ad==="Muş")||JSON.stringify(r.map(function(x){return x.ad}))});
+t("bul kar: baştan eşleşenler önce",function(){var r=H.bul("kar",Y),n=r.length,i=0;while(i<n&&/^kar/i.test(H.katla(r[i].ad)))i++;return (i>=3&&r.slice(i).every(function(x){return !/^kar/.test(H.katla(x.ad))}))||JSON.stringify(r.map(function(x){return x.ad}))});
 t("bul bos metin",function(){return H.bul("",Y).length===0||"bos olmali"});
 t("sirala null atlar",function(){var r=H.sirala({a:1,b:null,c:3},{a:"A",b:"B",c:"C"},2,true);return (r.length===2&&r[0].ad==="A"&&r[1].ad==="C")||JSON.stringify(r)});
 t("sirala azalan",function(){var r=H.sirala({a:1,c:3},{a:"A",c:"C"},1,false);return r[0].ad==="C"||JSON.stringify(r)});

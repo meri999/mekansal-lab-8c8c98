@@ -39,7 +39,7 @@
     '<p style="font-size:12.5px;color:var(--mut);margin-top:14px">Kaynak: TÜİK, ' + esc(gt.kaynak || "Doğum İstatistikleri") + '. Harita, ' + fgercek + ' yıllık değişimi gösterir (' + esc(String(gt.yillar[s.i - fgercek])) + '–' + esc(s.yil) + ').</p></div>' +
     '<div class="harita-kutu"><div class="arama"><label for="ilAra" style="position:absolute;left:-9999px">İl ara</label>' +
     '<input id="ilAra" type="search" autocomplete="off" placeholder="🔎 İlinizi arayın…" role="combobox" aria-expanded="false" aria-controls="ilListe"><ul id="ilListe" role="listbox" hidden></ul></div>' +
-    '<div id="ilKart" role="status"></div><svg id="harita" role="img" aria-label="İllere göre ' + esc(gt.baslik) + ' değişimi haritası"></svg>' +
+    '<div id="ilKart" role="status"></div><svg id="harita" role="group" aria-label="İllere göre ' + esc(gt.baslik) + ' değişimi haritası"></svg>' +
     '<div class="lejant">az düşüş<i></i>çok düşüş</div></div>';
 
   /* ---- harita ---- */
@@ -62,7 +62,7 @@
     var kod = f.properties.kod, d = halkalar(f.geometry).map(function (p) {
       return p.map(function (r) { return "M" + r.map(function (c) { return ((c[0] - minx) * K).toFixed(2) + "," + (maxy - c[1]).toFixed(2); }).join("L") + "Z"; }).join("");
     }).join("");
-    yol += '<path d="' + d + '" data-k="' + esc(kod) + '" fill="' + renk(fk[kod]) + '" tabindex="0" role="button" aria-label="' + esc(ADLAR[kod] || f.properties.ad || kod) + '"></path>';
+    yol += '<path d="' + d + '" data-k="' + esc(kod) + '" fill="' + renk(fk[kod]) + '" tabindex="-1" role="button" aria-label="' + esc(ADLAR[kod] || f.properties.ad || kod) + '"></path>';
   });
   svg.innerHTML = yol;
 
@@ -70,7 +70,7 @@
   var sirali = H.sirala(deg, ADLAR, 200, true);
   function sec(kod) {
     Array.prototype.forEach.call(svg.querySelectorAll("path.sec"), function (p) { p.classList.remove("sec"); });
-    var p = svg.querySelector('path[data-k="' + kod + '"]'); if (p) { p.classList.add("sec"); svg.appendChild(p); }
+    var p = svg.querySelector('path[data-k="' + kod + '"]'); if (p) { var odak = document.activeElement === p; p.classList.add("sec"); svg.appendChild(p); if (odak) p.focus({ preventScroll: true }); }
     var v = deg[kod], f = fk[kod], sira = sirali.map(function (x) { return x.kod; }).indexOf(kod) + 1;
     var kart = $("ilKart");
     kart.innerHTML = '<button type="button" aria-label="Kapat">×</button><h3>' + esc(ADLAR[kod] || kod) + '</h3>' +

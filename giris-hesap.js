@@ -36,9 +36,14 @@
   }
   function bul(metin, yerler) {
     var q = katla(metin); if (!q) return [];
-    return (yerler || []).filter(function (y) { return y.duzey === "il" && katla(y.ad_tr).indexOf(q) === 0 || (y.duzey === "il" && q.length > 2 && katla(y.ad_tr).indexOf(q) > -1); })
-      .map(function (y) { return { kod: y.kod, ad: y.ad_tr }; })
-      .sort(function (a, b) { return a.ad.localeCompare(b.ad, "tr"); });
+    var bas = [], ic = [];
+    (yerler || []).forEach(function (y) {
+      if (y.duzey !== "il") return;
+      var k = katla(y.ad_tr).indexOf(q);
+      if (k === 0) bas.push(y); else if (k > 0 && q.length > 2) ic.push(y);
+    });
+    function sirali(l) { return l.map(function (y) { return { kod: y.kod, ad: y.ad_tr }; }).sort(function (a, b) { return a.ad.localeCompare(b.ad, "tr"); }); }
+    return sirali(bas).concat(sirali(ic)); /* once bastan eslesenler */
   }
   function turkiye(g, i) {
     var v = g.veri.TR ? g.veri.TR[i] : null; return (typeof v === "number" && isFinite(v)) ? v : null;
