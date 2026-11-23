@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Enstitü Portal</title>
+<title>Veri portalı · Enstitü Sosyal Portal</title>
 <meta name="description" content="Türkiye geneli ve il, bölge düzeyinde nüfus, aile, ekonomi, fiyat, işgücü ve eğitim göstergeleri. Kaynak: TÜİK.">
 <meta name="theme-color" content="#d8232a">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -117,7 +117,7 @@ button,select{font:inherit;color:inherit}
 </head>
 <body>
 <header class="ust"><div class="ust-ic">
-  <div class="marka"><span class="kare" aria-hidden="true"><i></i><i class="b"></i></span>Enstitü Portal</div>
+  <div class="marka"><span class="kare" aria-hidden="true"><i></i><i class="b"></i></span><a href="./" style="color:inherit;text-decoration:none">Enstitü Sosyal Portal</a></div>
   <nav class="konular" id="konular" aria-label="Konu başlıkları"></nav>
   <div class="ara"><label for="yerSec" class="sr" style="position:absolute;left:-9999px">İl veya bölge seç</label><select id="yerSec"></select></div>
 </div>
@@ -148,9 +148,9 @@ button,select{font:inherit;color:inherit}
 </main>
 <footer class="alt" id="alt"></footer>
 <div class="ipucu" id="ipucu"></div>
-<script src="veri/veri.js?v=20261123190932"></script>
-<script src="veri/harita_il.js?v=20261123190932"></script>
-<script src="veri/harita_bolge.js?v=20261123190932"></script>
+<script src="veri/veri.js?v=20261123200931"></script>
+<script src="veri/harita_il.js?v=20261123200931"></script>
+<script src="veri/harita_bolge.js?v=20261123200931"></script>
 <script>
 (function(){
 var G=VERI.gostergeler, YER={}, KONULAR=[["nufus","Nüfus ve yapı"],["aile","Aile"],["ekonomi","Ekonomi"],["egitim","Eğitim"],["kalkinma","Kalkınma"],["yasam","Yaşam koşulları"],["goc","Göç"]], TRALT=[["uretim","Üretim"],["fiyat","Fiyatlar"],["isgucu","İşgücü"],["dis","Dış ticaret"],["konut","Konut ve taşıt"],["guven","Güven"]], EK={uretim:1,fiyat:1,isgucu:1,dis:1,konut:1,guven:1};
@@ -342,6 +342,8 @@ document.querySelectorAll("#aralik button").forEach(function(b){b.addEventListen
 $("vurguAc").addEventListener("change",function(){$("kutular").classList.toggle("vur",this.checked)});$("kutular").classList.add("vur");
 $("alt").innerHTML='Kaynak: <a href="https://veriportali.tuik.gov.tr" rel="noopener">TÜİK Veri Portalı</a> (SDMX API). Sınırlar: <a href="https://github.com/htastan/TRmaps" rel="noopener">TRmaps</a> (MIT). Veri üretimi: '+VERI.uretim+'. "Hesaplanmış" etiketli göstergeler TÜİK tarafından yayımlanmaz, ilgili tablolardan türetilir.';
 haritaCiz("il");if(trVar("nufus")){st.duzey="il";konuDegis("nufus");dzDegis("tr")}else konuDegis("nufus");
+/* giris sayfasindan #konu=<kod> ile gelinirse o konuyu ac */
+(function(){var m=/#konu=([a-z]+)/.exec(location.hash);if(!m)return;var b=document.querySelector('.konu[data-k="'+m[1]+'"]');if(b)b.click()})();
 })();
 </script>
 </body>
