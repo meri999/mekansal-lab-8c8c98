@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Enstitü Sosyal Portal</title>
-<meta name="description" content="Enstitü Sosyal Portal: TÜİK verileriyle illere göre nüfus, aile, göç ve kalkınma göstergeleri.">
+<title>Enstitü Portal</title>
+<meta name="description" content="Enstitü Portal: TÜİK verileriyle illere göre nüfus, aile, göç ve kalkınma göstergeleri.">
 <link rel="stylesheet" href="giris.css">
 </head><body>
-<header id="ust"><a class="logo" href="./">ENSTİTÜ <i>SOSYAL</i> · Portal</a>
-<nav aria-label="Ana menü"><a href="#araclar">Araçlar</a><a href="#konular">Konular</a><a href="#bulgular">Bulgular</a><a href="#alt">Veri ve yöntem</a></nav>
-<a class="dugme" href="veri-portali.html">Veri portalına git →</a></header>
+<header id="ust"><a class="logo" href="./"><span class="kare" aria-hidden="true"><i></i><i class="b"></i></span>Enstitü Portal</a>
+<div class="sag"><a class="dugme cizgi" href="veri-portali.html">Veri portalına git →</a>
+<div class="menu"><button type="button" class="dugme" id="girisDugme" aria-haspopup="true" aria-expanded="false" aria-controls="girisMenu">Giriş yap ▾</button>
+<div id="girisMenu" class="acilir" hidden><div class="oge" aria-disabled="true"><b>Enstitü girişi</b><small>Enstitü çalışanları için · yakında</small></div><div class="oge" aria-disabled="true"><b>Üye girişi</b><small>Üyeler ve kayıtlı kullanıcılar · yakında</small></div></div></div></div></header>
 <main>
 <div id="kahraman"><p class="hata">Yükleniyor…</p></div>
 <div id="seri" aria-label="Anahtar göstergeler"></div>
@@ -21,9 +22,16 @@
 <section id="bulgular"><h2>Öne çıkan bulgular</h2><div class="izgara bulgu-i" id="bulguIzgara"></div></section>
 </main>
 <footer id="alt"></footer>
-<script src="veri/veri.js?v=20261123202849"></script>
-<script src="veri/harita_il.js?v=20261123202849"></script>
-<script src="veri/giris.js?v=20261123202849"></script>
+<script>
+(function(){var d=document.getElementById("girisDugme"),m=document.getElementById("girisMenu");if(!d||!m)return;
+function ac(a){m.hidden=!a;d.setAttribute("aria-expanded",String(a))}
+d.addEventListener("click",function(e){e.stopPropagation();ac(m.hidden)});
+document.addEventListener("click",function(e){if(!m.contains(e.target))ac(false)});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!m.hidden){ac(false);d.focus()}});})();
+</script>
+<script src="veri/veri.js?v=20261123203557"></script>
+<script src="veri/harita_il.js?v=20261123203557"></script>
+<script src="veri/giris.js?v=20261123203557"></script>
 <script src="giris-hesap.js"></script>
 <script src="giris.js"></script>
 </body></html>
