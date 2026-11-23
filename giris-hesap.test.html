@@ -1,0 +1,24 @@
+<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><title>test</title></head><body><pre id="o"></pre>
+<script src="veri/veri.js"></script><script src="giris-hesap.js"></script>
+<script>
+var out=[],bad=0;
+function t(ad,f){try{var r=f();out.push((r===true?"OK   ":"FAIL ")+ad+(r===true?"":" -> "+r));if(r!==true)bad++}catch(e){out.push("FAIL "+ad+" -> "+e.message);bad++}}
+var Y=(window.VERI||{}).yerler||[],H=window.GirisHesap;
+function adi(k){return Y.filter(function(y){return y.kod===k})[0].ad_tr}
+t("GirisHesap tanimli",function(){return !!H||"yok"});
+t("bul sanliurfa",function(){var r=H.bul("sanliurfa",Y);return (r[0]&&r[0].ad==="Şanlıurfa")||JSON.stringify(r)});
+t("bul ŞANLIURFA",function(){var r=H.bul("ŞANLIURFA",Y);return (r[0]&&r[0].ad==="Şanlıurfa")||JSON.stringify(r)});
+t("bul ığdır",function(){var r=H.bul("ığdır",Y);return (r[0]&&/ğdır$/.test(r[0].ad))||JSON.stringify(r)});
+t("bul bos metin",function(){return H.bul("",Y).length===0||"bos olmali"});
+t("sirala null atlar",function(){var r=H.sirala({a:1,b:null,c:3},{a:"A",b:"B",c:"C"},2,true);return (r.length===2&&r[0].ad==="A"&&r[1].ad==="C")||JSON.stringify(r)});
+t("sirala azalan",function(){var r=H.sirala({a:1,c:3},{a:"A",c:"C"},1,false);return r[0].ad==="C"||JSON.stringify(r)});
+var g=(VERI.gostergeler||[]).filter(function(x){return x.baslik==="Nüfus"})[0];
+t("sonYil nufus",function(){var s=H.sonYil(g);return (s&&s.yil===g.yillar[s.i]&&s.i>=0)||JSON.stringify(s)});
+t("ilDegerleri 70+ il",function(){var s=H.sonYil(g),d=H.ilDegerleri(g,s.i),n=Object.keys(d).filter(function(k){return d[k]!==null}).length;return n>=70||n});
+t("fark nufus il",function(){var s=H.sonYil(g),f=H.fark(g,s.i,1),k=Object.keys(f)[0];return (typeof f[k]==="number"||f[k]===null)||"tip"});
+t("sonYil son yil <70 ise geriye",function(){var n=g.yillar.length,v={};Object.keys(g.veri).forEach(function(k){v[k]=g.veri[k].slice()});
+  Object.keys(v).forEach(function(k,j){if(k!=="TR"&&j%2===0)v[k][n-1]=null});
+  var s=H.sonYil({yillar:g.yillar,veri:v});return s.i<n-1||"geri gitmedi"});
+t("turkiye",function(){var s=H.sonYil(g);var v=H.turkiye(g,s.i);return typeof v==="number"||v});
+document.getElementById("o").textContent=out.join("\n");document.title=(bad?"FAIL ":"PASS ")+(out.length-bad)+"/"+out.length;
+</script></body></html>
