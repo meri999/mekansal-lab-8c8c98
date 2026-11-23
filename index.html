@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Enstitü Sosyal Portal</title>
+<meta name="description" content="Enstitü Sosyal Portal: TÜİK verileriyle illere göre nüfus, aile, göç ve kalkınma göstergeleri.">
+<link rel="stylesheet" href="giris.css">
+</head><body>
+<header id="ust"><a class="logo" href="./">ENSTİTÜ <i>SOSYAL</i> · Portal</a>
+<nav aria-label="Ana menü"><a href="#araclar">Araçlar</a><a href="#konular">Konular</a><a href="#bulgular">Bulgular</a><a href="#alt">Veri ve yöntem</a></nav>
+<a class="dugme" href="veri-portali.html">Veri portalına git →</a></header>
+<main>
+<div id="kahraman"><p class="hata">Yükleniyor…</p></div>
+<div id="seri" aria-label="Anahtar göstergeler"></div>
+<section id="araclar"><h2>Araçlar</h2><div class="izgara araclar-i">
+<a class="arac ana" href="veri-portali.html"><div class="ik">🗂️</div><h3>Veri portalı</h3><p>Harita ve <span id="gSay">135</span> gösterge. Ara, filtrele, karşılaştır</p></a>
+<div class="arac yakinda" aria-disabled="true"><div class="ik">📍</div><h3>İller<span class="etiket">yakında</span></h3><p>Karne, karşılaştırma, benzer iller</p></div>
+<div class="arac yakinda" aria-disabled="true"><div class="ik">🔗</div><h3>İlişki keşfi<span class="etiket">yakında</span></h3><p>İki göstergeyi çaprazla</p></div>
+<a class="arac" href="goc-agi.html"><div class="ik">🧭</div><h3>Göç ağı</h3><p>İller arası akış haritası</p></a>
+<div class="arac yakinda" aria-disabled="true"><div class="ik">🛠️</div><h3>Gösterge atölyesi<span class="etiket">yakında</span></h3><p>Kendi göstergeni kur</p></div>
+</div></section>
+<section id="konular"><h2>Konulara göre gez</h2><div class="izgara konular-i" id="konuIzgara"></div></section>
+<section id="bulgular"><h2>Öne çıkan bulgular</h2><div class="izgara bulgu-i" id="bulguIzgara"></div></section>
+</main>
+<footer id="alt"></footer>
+<script src="veri/veri.js?v=20261123202116"></script>
+<script src="veri/harita_il.js?v=20261123202116"></script>
+<script src="veri/giris.js?v=20261123202116"></script>
+<script src="giris-hesap.js"></script>
+<script src="giris.js"></script>
+</body></html>
