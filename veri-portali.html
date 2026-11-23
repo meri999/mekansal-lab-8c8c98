@@ -148,16 +148,20 @@ button,select{font:inherit;color:inherit}
 </main>
 <footer class="alt" id="alt"></footer>
 <div class="ipucu" id="ipucu"></div>
-<script src="veri/veri.js?v=20261123203557"></script>
-<script src="veri/harita_il.js?v=20261123203557"></script>
-<script src="veri/harita_bolge.js?v=20261123203557"></script>
+<script src="veri/veri.js?v=20261123225528"></script>
+<script src="veri/harita_il.js?v=20261123225528"></script>
+<script src="veri/harita_bolge.js?v=20261123225528"></script>
 <script>
 (function(){
-var G=VERI.gostergeler, YER={}, KONULAR=[["nufus","Nüfus ve yapı"],["aile","Aile"],["ekonomi","Ekonomi"],["egitim","Eğitim"],["kalkinma","Kalkınma"],["yasam","Yaşam koşulları"],["goc","Göç"]], TRALT=[["uretim","Üretim"],["fiyat","Fiyatlar"],["isgucu","İşgücü"],["dis","Dış ticaret"],["konut","Konut ve taşıt"],["guven","Güven"]], EK={uretim:1,fiyat:1,isgucu:1,dis:1,konut:1,guven:1};
+var G=VERI.gostergeler, YER={}, KONULAR=[["nufus","Nüfus ve yapı"],["aile","Aile"],["ekonomi","Ekonomi"],["egitim","Eğitim"],["kalkinma","Kalkınma"],["yasam","Yaşam koşulları"],["goc","Göç"]],
+ TRALT=[["uretim","Üretim"],["fiyat","Fiyatlar"],["isgucu","İşgücü"],["dis","Dış ticaret"],["konut","Konut ve taşıt"],["guven","Güven"],["tarim","Tarım ve hayvancılık"],["sanayi","Sanayi ve hizmet"],["finans","Finans"],["girisim","Girişimcilik"],["kamu","Kamu"]], BOLUM={}, ALTLAR={}, ALTAD={};
+/* Alt başlık anahtarı: Ekonomi'de konu kodu; diğer bölümlerde "bölüm|grup" (veriden otomatik) */
+TRALT.forEach(function(a){BOLUM[a[0]]="ekonomi";ALTAD[a[0]]=a[1]});
+G.forEach(function(g){if(!BOLUM[g.konu]){g.bolum=g.konu;g.konu=g.bolum+"|"+g.grup;BOLUM[g.konu]=g.bolum;ALTAD[g.konu]=g.grup}});
 VERI.yerler.forEach(function(y){YER[y.kod]=y});
 YER.TR=YER.TR||{kod:"TR",ad_tr:"Türkiye",duzey:"ulke"};
 var RENK=["#f7e1e2","#eeb3b6","#e0777c","#c63a41","#7b0828"];
-var st={konu:"nufus",gid:null,yil:0,duzey:"il",sec:"TR",aralik:5,sonDz:"il"};
+var st={konu:"nufus|Nüfus",gid:null,yil:0,duzey:"il",sec:"TR",aralik:5,sonDz:"il"};
 var AYLAR=["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
 function lagOf(g){return g.sik==="M"?12:g.sik==="Q"?4:1}
 function donemYaz(g,i){var d=g.yillar[i];if(!g.sik)return d;if(g.sik==="Q"){var p=d.split("-Q");return p[0]+" "+p[1]+". çeyrek"}var p2=d.split("-");return AYLAR[+p2[1]-1]+" "+p2[0]}
@@ -169,6 +173,10 @@ G.forEach(function(g){if(g.sadece_tr)return;G.forEach(function(t){if(t.sadece_tr
 G.forEach(function(g){g._td=false;if(g.sadece_tr||!g.veri.TR)return;var a=g.veri.TR.filter(function(x){return x!=null});g._td=a.length>=2&&!a.every(function(x){return Math.abs(x-100)<1e-6})});
 function trGor(g){return !!g.sadece_tr||(!g.ikiz&&g._td)}
 var GSIRA={uretim:["Gelir ve katma değer","Üretim ve satış","Girişim"],isgucu:["İşgücü piyasası","İşgücü maliyeti"],nufus:["Nüfus","Yaş yapısı","Hanehalkı","Yerleşim"],goc:["İç göç","İç göç nedenleri","Kütük ve ikamet farkı","Doğum yeri","Yabancı nüfus","Yabancı nüfus (vatandaşlığa göre)","Beyin göçü"],aile:["Doğum","Evlenme","Boşanma"],yasam:["Sağlık","Trafik","Altyapı"]};
+KONULAR.forEach(function(b){var kk=b[0];ALTLAR[kk]=[];if(kk==="ekonomi"){TRALT.forEach(function(a){if(G.some(function(g){return g.konu===a[0]}))ALTLAR[kk].push([a[0],a[1]])});return}
+  var gs=GSIRA[kk]||[],gor=[];G.forEach(function(g){if(g.bolum===kk&&gor.indexOf(g.grup)<0)gor.push(g.grup)});
+  gor.sort(function(x,y){var a=gs.indexOf(x),b2=gs.indexOf(y);a=a<0?999:a;b2=b2<0?999:b2;return a-b2||gor.indexOf(x)-gor.indexOf(y)});
+  gor.forEach(function(x){ALTLAR[kk].push([kk+"|"+x,x])})});
 var ONEM=["Türkiye GSYH (cari fiyatlarla)","GSYH büyüme hızı (zincirlenmiş hacim)","Kişi başına GSYH (TL)","Kişi başına GSYH (ABD doları)","Kişi başına GSYH endeksi (Türkiye=100)","Tarımın GSYH içindeki payı","Sanayinin GSYH içindeki payı","İnşaatın GSYH içindeki payı","Türkiye GSYH'sindeki pay","Girişim sayısı","Doğan girişim sayısı","Ölen girişim sayısı","Bin kişiye düşen girişim","Konut satış sayısı","Yabancılara konut satışı (aylık)","Bin kişiye düşen konut satışı","İlk el konut satışlarının payı","İpotekli konut satışlarının payı","Trafiğe kaydı yapılan taşıt (aylık)","Bin kişiye düşen motorlu taşıt"];
 function gorunen(k,d){var r=G.filter(function(g){return g.konu===k&&(d==="tr"?trGor(g):!g.sadece_tr)}),o=[];r.forEach(function(g){if(o.indexOf(g.grup)<0)o.push(g.grup)});var gs=GSIRA[k]||[];
   function gr(g){var a=gs.indexOf(g.grup);return a>-1?a:100+o.indexOf(g.grup)}function ok(g){var a=ONEM.indexOf(g.baslik);return a>-1?a:1000}
@@ -272,24 +280,26 @@ function gosterge(id,yilSifirla){st.gid=id;var g=gOf(id);$("gosterge").value=id;
   for(var i=g.yillar.length-1;i>=0;i--){var n=0;kk.forEach(function(k){if(v(g,k,i)!=null)n++});if(n>=kk.length*0.6){en=i;break}}
   st.yil=en;$("yilKayar").max=g.yillar.length-1;$("yilKayar").value=st.yil;$("yilYazi").textContent=g.yillar[st.yil];boya();
   document.querySelectorAll(".kk").forEach(function(b){b.classList.toggle("aktif",b.dataset.g===id)})}
-function konuAd(k){var a=TRALT.concat(KONULAR);for(var i=0;i<a.length;i++)if(a[i][0]===k)return a[i][1];return k}
+function konuAd(k){return ALTAD[k]||k}
 var DZAD={tr:"Türkiye",il:"İl",bolge:"Bölge"};
 function dzNotYaz(t){$("dzNot").innerHTML=t;$("dzNot").hidden=false}
 function kur(k,d){var once=st.gid?gOf(st.gid):null,eski=st.duzey;st.konu=k;$("dzNot").hidden=true;
   if(d==="tr"){if(eski!=="tr")st.sonDz=eski;st.duzey="tr";st.sec="TR"}
   else{st.sonDz=d;st.duzey=d;if(YER[st.sec].duzey!=="ulke"&&YER[st.sec].duzey!==(d==="il"?"il":"bolge"))st.sec="TR";haritaCiz(d)}
   $("yerSec").value=st.sec;modUygula();
-  document.querySelectorAll(".konu").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.k===k||(!b.classList.contains("altk")&&b.dataset.k==="ekonomi"&&!!EK[k]))});
-  $("altMenu").hidden=!EK[k];document.body.classList.toggle("alt-acik",!!EK[k]);
+  var bl=BOLUM[k];altCiz(bl);
+  document.querySelectorAll(".konu").forEach(function(b){b.setAttribute("aria-pressed",b.classList.contains("altk")?b.dataset.k===k:b.dataset.k===bl)});
   var gs=gorunen(k,d==="tr"?"tr":"il");$("gosterge").innerHTML=gs.map(function(g){return '<option value="'+g.id+'">'+g.baslik+'</option>'}).join("");
   var gid=gs[0].id;if(once){if(once.konu===k&&gs.indexOf(once)>-1)gid=once.id;else if(once.ikiz&&gs.some(function(x){return x.id===once.ikiz}))gid=once.ikiz}
   st.gid=gid;gosterge(gid);kutularCiz()}
+function altCiz(bl){var a=ALTLAR[bl]||[],ac=a.length>1;$("altMenu").hidden=!ac;document.body.classList.toggle("alt-acik",ac);
+  if($("altMenu").dataset.b!==bl){$("altMenu").dataset.b=bl;$("altMenu").innerHTML='<div class="alt-ic">'+a.map(function(k){return '<button class="konu altk" data-k="'+k[0]+'" aria-pressed="false">'+k[1]+'</button>'}).join("")+'</div>'}}
 function dzDegis(d){if(!dzVar(st.konu,d)){dzNotYaz("<b>"+konuAd(st.konu)+"</b> "+(d==="tr"?"Türkiye":d==="il"?"il":"bölge")+" düzeyinde yayımlanmamaktadır.");return}$("dzNot").hidden=true;if(d===st.duzey)return;kur(st.konu,d)}
 function konuDegis(k){var d=st.duzey,nt="";
   if(!dzVar(k,d)){var y=d==="tr"?(st.sonDz||"il"):"tr";nt="<b>"+konuAd(k)+"</b> "+(d==="tr"?"Türkiye":d==="il"?"il":"bölge")+" düzeyinde yayımlanmamaktadır. "+DZAD[y]+" düzeyi gösteriliyor.";d=y}
   kur(k,d);if(nt)dzNotYaz(nt)}
 /* ---- Türkiye grafiği ---- */
-function modUygula(){var tr=st.duzey==="tr";$("agLink").hidden=st.konu!=="goc";
+function modUygula(){var tr=st.duzey==="tr";$("agLink").hidden=BOLUM[st.konu]!=="goc";
   var kv=st.konu;[["dzTr",trVar(kv),"Türkiye"],["dzIl",ilVar(kv),"il"],["dzBolge",ilVar(kv),"bölge"]].forEach(function(a){var b=$(a[0]);b.classList.toggle("na",!a[1]);b.title=a[1]?"":konuAd(kv)+" "+a[2]+" düzeyinde yayımlanmamaktadır"});
   $("dzTr").setAttribute("aria-pressed",tr);$("dzIl").setAttribute("aria-pressed",st.duzey==="il");$("dzBolge").setAttribute("aria-pressed",st.duzey==="bolge");
   $("harita").hidden=tr;$("grafikAlan").hidden=!tr;document.querySelector(".yil").style.display=tr?"none":"";$("lejant").style.display=tr?"none":"";
@@ -327,9 +337,9 @@ function grafikCiz(){var g=gOf(st.gid),a=g.veri.TR,n=a.length,L=lagOf(g),b=st.ar
   function git0(){cz.style.display="none";nk.style.display="none";ip.style.display="none"}
   ov.addEventListener("mousemove",git);ov.addEventListener("touchmove",git);ov.addEventListener("mouseleave",git0);ov.addEventListener("touchend",git0)}
 /* ---- baslat ---- */
-$("konular").innerHTML=KONULAR.map(function(k){return '<button class="konu" data-k="'+k[0]+'" aria-pressed="false">'+k[1]+(k[0]==="ekonomi"?'<span class="ok" aria-hidden="true">▾</span>':'')+'</button>'}).join("");
-$("altMenu").innerHTML='<div class="alt-ic">'+TRALT.map(function(k){return '<button class="konu altk" data-k="'+k[0]+'" aria-pressed="false">'+k[1]+'</button>'}).join("")+'</div>';
-document.querySelectorAll(".konu").forEach(function(b){b.addEventListener("click",function(){var k=b.dataset.k,alt=b.classList.contains("altk");if(k==="ekonomi"&&!alt){if(EK[st.konu])return;k="uretim"}konuDegis(k)})});
+$("konular").innerHTML=KONULAR.filter(function(k){return ALTLAR[k[0]].length}).map(function(k){return '<button class="konu" data-k="'+k[0]+'" aria-pressed="false">'+k[1]+(ALTLAR[k[0]].length>1?'<span class="ok" aria-hidden="true">▾</span>':'')+'</button>'}).join("");
+$("konular").addEventListener("click",function(e){var b=e.target.closest(".konu");if(!b)return;var k=b.dataset.k;if(BOLUM[st.konu]===k)return;konuDegis(ALTLAR[k][0][0])});
+$("altMenu").addEventListener("click",function(e){var b=e.target.closest(".altk");if(b)konuDegis(b.dataset.k)});
 var ad=function(a,b){return YER[a].ad_tr.localeCompare(YER[b].ad_tr,"tr")};
 $("yerSec").innerHTML='<option value="TR">Türkiye (geneli)</option><optgroup label="Bölgeler (İBBS-1)">'+kodlar("bolge").sort(ad).map(function(k){return '<option value="'+k+'">'+YER[k].ad_tr+' bölgesi</option>'}).join("")+'</optgroup><optgroup label="İller">'+kodlar("il").sort(ad).map(function(k){return '<option value="'+k+'">'+YER[k].ad_tr+'</option>'}).join("")+'</optgroup>';
 $("yerSec").addEventListener("change",function(){sec(this.value)});
@@ -341,7 +351,7 @@ $("dzTr").addEventListener("click",function(){dzDegis("tr")});
 document.querySelectorAll("#aralik button").forEach(function(b){b.addEventListener("click",function(){st.aralik=+b.dataset.a;grafikCiz()})});
 $("vurguAc").addEventListener("change",function(){$("kutular").classList.toggle("vur",this.checked)});$("kutular").classList.add("vur");
 $("alt").innerHTML='Kaynak: <a href="https://veriportali.tuik.gov.tr" rel="noopener">TÜİK Veri Portalı</a> (SDMX API). Sınırlar: <a href="https://github.com/htastan/TRmaps" rel="noopener">TRmaps</a> (MIT). Veri üretimi: '+VERI.uretim+'. "Hesaplanmış" etiketli göstergeler TÜİK tarafından yayımlanmaz, ilgili tablolardan türetilir.';
-haritaCiz("il");if(trVar("nufus")){st.duzey="il";konuDegis("nufus");dzDegis("tr")}else konuDegis("nufus");
+haritaCiz("il");var K0=ALTLAR.nufus[0][0];if(trVar(K0)){st.duzey="il";konuDegis(K0);dzDegis("tr")}else konuDegis(K0);
 /* giris sayfasindan #konu=<kod> ile gelinirse o konuyu ac */
 (function(){var m=/#konu=([a-z]+)/.exec(location.hash);if(!m)return;var b=document.querySelector('.konu[data-k="'+m[1]+'"]');if(b)b.click()})();
 })();
