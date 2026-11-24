@@ -5,12 +5,15 @@
 <link rel="stylesheet" href="giris.css">
 </head><body>
 <header id="ust"><a class="logo" href="./"><span class="kare" aria-hidden="true"><i></i><i class="b"></i></span>Enstitü Portal</a>
-<div class="sag"><div class="menu"><button type="button" class="dugme cizgi arac-d" id="aracDugme" aria-haspopup="true" aria-expanded="false" aria-controls="aracMenu">Araçlar ▾</button>
-<div id="aracMenu" class="acilir" hidden><a class="oge" href="veri-portali.html"><b>Veri portalı</b><small>Harita ve göstergeler; kırılımlarla incele</small></a><a class="oge" href="kirilim-matrisi.html"><b>Kırılım Gezgini</b><small>Seç, çaprazla, çıktıyı değiştir</small></a><a class="oge" href="goc-agi.html"><b>Göç ağı</b><small>İller arası akış haritası</small></a><div class="oge" aria-disabled="true"><b>İl karnesi</b><small>yakında</small></div><div class="oge" aria-disabled="true"><b>İlişki keşfi</b><small>yakında</small></div><div class="oge" aria-disabled="true"><b>Gösterge atölyesi</b><small>yakında</small></div><a class="oge" href="nitel-analiz.html"><b>Nitel analiz</b><small>taslak</small></a></div></div>
-<a class="dugme cizgi" href="veri-portali.html">Veri portalına git →</a>
+<div class="sag"><a class="dugme cizgi" href="veri-portali.html">Veri portalına git →</a>
 <div class="menu"><button type="button" class="dugme" id="girisDugme" aria-haspopup="true" aria-expanded="false" aria-controls="girisMenu">Giriş yap ▾</button>
 <div id="girisMenu" class="acilir" hidden><div class="oge" aria-disabled="true"><b>Enstitü girişi</b><small>Enstitü çalışanları için · yakında</small></div><div class="oge" aria-disabled="true"><b>Üye girişi</b><small>Üyeler ve kayıtlı kullanıcılar · yakında</small></div></div></div></div></header>
 <main>
+<section id="aramaBlok" aria-label="Ara"><div class="gara">
+<div class="gkw"><div class="gkut"><span aria-hidden="true">🔎</span><input id="gAra" type="search" autocomplete="off" placeholder="Gösterge, il ya da araç arayın…" role="combobox" aria-expanded="false" aria-controls="gListe" aria-label="Gösterge, il ya da araç ara"></div>
+<ul id="gListe" role="listbox" hidden></ul></div>
+<p class="gornek">Deneyin: <button type="button" data-q="doğurganlık">doğurganlık</button><button type="button" data-q="İzmir işsizlik">İzmir işsizlik</button><button type="button" data-q="Kırılım Gezgini">Kırılım Gezgini</button></p>
+<div class="grozet" id="gRozet"></div></div></section>
 <div id="kahraman"><p class="hata">Yükleniyor…</p></div>
 <div id="seri" aria-label="Anahtar göstergeler"></div>
 <section id="araclar"><h2>Araçlar</h2><div class="izgara araclar-i">
@@ -27,7 +30,7 @@
 </main>
 <footer id="alt"></footer>
 <script>
-(function(){var P=[{d:document.getElementById("girisDugme"),m:document.getElementById("girisMenu")},{d:document.getElementById("aracDugme"),m:document.getElementById("aracMenu")}].filter(function(x){return x.d&&x.m});
+(function(){var P=[{d:document.getElementById("girisDugme"),m:document.getElementById("girisMenu")}].filter(function(x){return x.d&&x.m});
 function ac(p,a){p.m.hidden=!a;p.d.setAttribute("aria-expanded",String(a))}
 P.forEach(function(p){p.d.addEventListener("click",function(e){e.stopPropagation();var a=p.m.hidden;P.forEach(function(q){ac(q,false)});ac(p,a)})});
 document.addEventListener("click",function(e){P.forEach(function(p){if(!p.m.contains(e.target))ac(p,false)})});

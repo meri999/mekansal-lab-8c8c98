@@ -37,8 +37,7 @@
     '<div><div class="ey">Bu haftanın sorusu</div><h1>' + esc(C.soru) + '</h1>' +
     '<p class="lead">' + esc(sablon(C.cevap_sablonu, CTX)) + '</p>' +
     '<p style="font-size:12.5px;color:var(--mut);margin-top:14px">Kaynak: TÜİK, ' + esc(gt.kaynak || "Doğum İstatistikleri") + '. Harita, ' + fgercek + ' yıllık değişimi gösterir (' + esc(String(gt.yillar[s.i - fgercek])) + '–' + esc(s.yil) + ').</p></div>' +
-    '<div class="harita-kutu"><div class="arama"><label for="ilAra" style="position:absolute;left:-9999px">İl ara</label>' +
-    '<input id="ilAra" type="search" autocomplete="off" placeholder="🔎 İlinizi arayın…" role="combobox" aria-expanded="false" aria-controls="ilListe"><ul id="ilListe" role="listbox" hidden></ul></div>' +
+    '<div class="harita-kutu">' +
     '<div id="ilKart" role="status"></div><svg id="harita" role="group" aria-label="İllere göre ' + esc(gt.baslik) + ' değişimi haritası"></svg>' +
     '<div class="lejant">az düşüş<i></i>çok düşüş</div></div>';
 
@@ -85,25 +84,6 @@
   svg.addEventListener("click", function (e) { var p = e.target.closest("path"); if (p) sec(p.dataset.k); });
   svg.addEventListener("keydown", function (e) { if ((e.key === "Enter" || e.key === " ") && e.target.dataset.k) { e.preventDefault(); sec(e.target.dataset.k); } });
 
-  /* ---- il arama ---- */
-  var gir = $("ilAra"), lst = $("ilListe"), ac = -1, bulunan = [];
-  function listele() {
-    bulunan = H.bul(gir.value, V.yerler).slice(0, 8); ac = -1;
-    lst.innerHTML = bulunan.map(function (b, i) { return '<li role="option" data-i="' + i + '">' + esc(b.ad) + '</li>'; }).join("");
-    lst.hidden = !bulunan.length; gir.setAttribute("aria-expanded", String(!!bulunan.length));
-  }
-  function sectir(i) { var b = bulunan[i]; if (!b) return; sec(b.kod); gir.value = b.ad; lst.hidden = true; gir.setAttribute("aria-expanded", "false"); }
-  gir.addEventListener("input", listele);
-  gir.addEventListener("keydown", function (e) {
-    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-      e.preventDefault(); if (!bulunan.length) return;
-      ac = (ac + (e.key === "ArrowDown" ? 1 : -1) + bulunan.length) % bulunan.length;
-      Array.prototype.forEach.call(lst.children, function (li, i) { li.classList.toggle("on", i === ac); });
-    } else if (e.key === "Enter") { sectir(ac >= 0 ? ac : 0); }
-    else if (e.key === "Escape") { lst.hidden = true; gir.value = ""; }
-  });
-  lst.addEventListener("mousedown", function (e) { var li = e.target.closest("li"); if (li) { e.preventDefault(); sectir(+li.dataset.i); } });
-  gir.addEventListener("blur", function () { lst.hidden = true; });
 
   /* ---- anahtar gostergeler ---- */
   function spark(g) {
@@ -135,4 +115,49 @@
   $("alt").innerHTML = '<span><b>Kaynak:</b> <a href="https://veriportali.tuik.gov.tr" rel="noopener">TÜİK Veri Portalı</a> (SDMX API)</span>' +
     '<span><b>Son güncelleme:</b> ' + esc(V.uretim) + '</span>' +
     '<span>"Hesaplanmış" etiketli göstergeler TÜİK tarafından yayımlanmaz, ilgili tablolardan türetilir. İlişki nedensellik değildir.</span><span>Enstitü Sosyal</span>';
+  /* ---- genel arama: gosterge, il, arac ---- */
+  (function () {
+    var gir = $("gAra"), lst = $("gListe"), ac = -1, bulunan = [];
+    var araclar = Array.prototype.map.call(document.querySelectorAll("#araclar .arac"), function (k) {
+      var h = k.querySelector("h3"), p = k.querySelector("p");
+      return { ad: (h.firstChild ? h.firstChild.textContent : h.textContent).trim(), aciklama: p ? p.textContent.trim() : "",
+        href: k.getAttribute("href") || "#", pasif: k.classList.contains("yakinda") };
+    });
+    var ETIKET = { gosterge: "Gösterge", il: "İl", arac: "Araç", birlesik: "İl + gösterge" };
+    function ciz() {
+      var q = gir.value.trim();
+      bulunan = q ? H.araBul(q, { gostergeler: V.gostergeler, yerler: V.yerler, araclar: araclar }) : []; ac = -1;
+      if (!q) { lst.hidden = true; gir.setAttribute("aria-expanded", "false"); return; }
+      lst.innerHTML = bulunan.length ? bulunan.map(function (b, i) {
+        return '<li role="option" data-i="' + i + '"' + (b.pasif ? ' class="pasif" aria-disabled="true"' : '') + '><b class="et">' + ETIKET[b.tur] + '</b><span>' + esc(b.ad) +
+          (b.pasif ? ' <em>yakında</em>' : '') + '</span></li>';
+      }).join("") : '<li class="yok">Sonuç bulunamadı</li>';
+      lst.hidden = false; gir.setAttribute("aria-expanded", "true");
+    }
+    function git(i) { var b = bulunan[i]; if (b && !b.pasif) location.href = b.href; }
+    function sonraki(yon) {
+      for (var n = 1; n <= bulunan.length; n++) {
+        var j = (ac + yon * n + bulunan.length * 2) % bulunan.length;
+        if (!bulunan[j].pasif) { ac = j; break; }
+      }
+      Array.prototype.forEach.call(lst.children, function (li, i) { li.classList.toggle("on", i === ac); });
+    }
+    gir.addEventListener("input", ciz);
+    gir.addEventListener("focus", ciz);
+    gir.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); if (bulunan.length) sonraki(e.key === "ArrowDown" ? 1 : -1); }
+      else if (e.key === "Enter") { e.preventDefault(); if (ac < 0) { for (var i = 0; i < bulunan.length; i++) if (!bulunan[i].pasif) { ac = i; break; } } if (ac >= 0) git(ac); }
+      else if (e.key === "Escape") { lst.hidden = true; gir.value = ""; gir.setAttribute("aria-expanded", "false"); }
+    });
+    lst.addEventListener("mousedown", function (e) { var li = e.target.closest("li[data-i]"); if (li) { e.preventDefault(); git(+li.dataset.i); } });
+    gir.addEventListener("blur", function () { lst.hidden = true; gir.setAttribute("aria-expanded", "false"); });
+    Array.prototype.forEach.call(document.querySelectorAll("#aramaBlok .gornek button"), function (b) {
+      b.addEventListener("click", function () { gir.value = b.dataset.q; gir.focus(); ciz(); });
+    });
+    var ilS = V.yerler.filter(function (y) { return y.duzey === "il"; }).length;
+    var ilG = V.gostergeler.filter(function (g) { return !g.sadece_tr && g.yillar && g.yillar.length; });
+    var y0 = Math.min.apply(null, ilG.map(function (g) { return parseInt(g.yillar[0], 10); }));
+    var y1 = Math.max.apply(null, ilG.map(function (g) { return parseInt(g.yillar[g.yillar.length - 1], 10); }));
+    $("gRozet").innerHTML = [V.gostergeler.length + " gösterge", ilS + " il", y0 + "–" + y1, "açık veri"].map(function (t) { return "<span>" + esc(t) + "</span>"; }).join("");
+  })();
 })();
