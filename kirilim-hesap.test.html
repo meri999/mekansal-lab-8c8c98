@@ -1,0 +1,68 @@
+<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><title>test</title></head><body><pre id="o"></pre>
+<script src="kirilim-hesap.js"></script>
+<script>
+var out = [], bad = 0, H = window.KirilimHesap;
+function t(ad, f) { try { var r = f(); out.push((r === true ? "OK   " : "FAIL ") + ad + (r === true ? "" : " -> " + r)); if (r !== true) bad++; } catch (e) { out.push("FAIL " + ad + " -> " + e.message); bad++; } }
+function eq(a, b) { var x = JSON.stringify(a), y = JSON.stringify(b); return x === y || x + " <> " + y; }
+function yuv(m) { return m.map(function (r) { return r.map(function (x) { return Math.round(x * 10) / 10; }); }); }
+function kir(kol, kodlar, ortusen) {
+  return { kol: kol, ad: kol, kodlar: kodlar, etiketler: kodlar.map(function (k) { return k === "_T" ? "Toplam" : k; }), toplam: kodlar.indexOf("_T") >= 0, ortusen: !!ortusen };
+}
+function tablo(olcu, kirs, vec) { return { olcu: olcu, donemler: ["2024"], yerler: ["TR"], kirilimlar: kirs, v: { "2024": { TR: vec } } }; }
+var R2 = { k1: "SEX", k2: "YAS", k3: "-" };
+var T = tablo("sayi", [kir("SEX", ["1", "2", "_T"]), kir("YAS", ["a", "b"])], [1, 2, 3, 4, 4, 6]);
+var T3 = tablo("sayi", [kir("A", ["a0", "a1"]), kir("B", ["b0", "b1"]), kir("C", ["c0", "c1"])], [1, 2, 3, 4, 5, 6, 7, 8]);
+var T3o = tablo("oran", T3.kirilimlar, [1, 2, 3, 4, 5, 6, 7, 8]);
+var TE = tablo("sayi", [kir("A", ["a0", "a1"]), kir("B", ["b0", "b1"])], [1, null, 3, 4]);
+var TO = tablo("sayi", [kir("A", ["a0", "a1"]), kir("B", ["b0", "b1", "_T"])], [1, 2, 3, 4, 5, 6]); // _T sütunu
+
+t("KirilimHesap tanimli", function () { return !!H || "yok"; });
+t("kesit m", function () { return eq(H.kesit(T, "2024", "TR", R2, {})[0].m, [[1, 2], [3, 4]]); });
+t("kesit satirT toplanir (_T yok)", function () { return eq(H.kesit(T, "2024", "TR", R2, {})[0].satirT, [3, 7]); });
+t("kesit sutunT _T satirindan", function () { return eq(H.kesit(T, "2024", "TR", R2, {})[0].sutunT, [4, 6]); });
+t("kesit toplam", function () { return eq(H.kesit(T, "2024", "TR", R2, {})[0].toplam, 10); });
+t("kesit secilmeyen kirilim toplanir (sayi, _T yok)", function () {
+  var p = H.kesit(T3, "2024", "TR", { k1: "A", k2: "B", k3: "-" }, {})[0];
+  return eq(p.m, [[3, 7], [11, 15]]) === true && eq(p.toplam, 36) === true && eq(p.sabitlenen.length, 0);
+});
+t("kesit oran: secilmeyen sabitlenir, toplanmaz", function () {
+  var p = H.kesit(T3o, "2024", "TR", { k1: "A", k2: "B", k3: "-" }, {})[0];
+  return eq(p.m, [[1, 3], [5, 7]]) === true && eq(p.sabitlenen.length, 1) === true && eq(p.sabitlenen[0].kol, "C") === true && eq(p.satirT, [null, null]);
+});
+t("kesit oran: sabit secimi", function () {
+  return eq(H.kesit(T3o, "2024", "TR", { k1: "A", k2: "B", k3: "-" }, { C: "c1" })[0].m, [[2, 4], [6, 8]]);
+});
+t("kesit panel: k3 her kod icin bir panel", function () {
+  var ps = H.kesit(T3, "2024", "TR", { k1: "A", k2: "B", k3: "C" }, {});
+  return eq(ps.length, 2) === true && eq(ps[1].ad, "c1") === true && eq(ps[1].m, [[2, 4], [6, 8]]);
+});
+t("kesit eksik hucre null", function () { return eq(H.kesit(TE, "2024", "TR", { k1: "A", k2: "B", k3: "-" }, {})[0].m[0][1], null); });
+t("kesit eksik hucre satirT toplamda atlanir", function () { return eq(H.kesit(TE, "2024", "TR", { k1: "A", k2: "B", k3: "-" }, {})[0].satirT, [1, 7]); });
+t("kesit yer yok -> bos dizi", function () { return eq(H.kesit(T, "2024", "TR999", R2, {}), []); });
+t("kesit sutun _T hucresi satirT olur", function () { return eq(H.kesit(TO, "2024", "TR", { k1: "A", k2: "B", k3: "-" }, {})[0].satirT, [3, 6]); });
+t("pay", function () { return eq(yuv(H.pay({ m: [[1, 2], [3, 4]], satirT: [3, 7] })), [[33.3, 66.7], [42.9, 57.1]]); });
+t("pay sifir toplam", function () { return eq(H.pay({ m: [[0, 0]], satirT: [0] }), [[0, 0]]); });
+t("pay null hucre 0", function () { return eq(yuv(H.pay({ m: [[null, 2]], satirT: [2] })), [[0, 100]]); });
+t("fark sayi: pay farki", function () {
+  return eq(yuv(H.fark({ m: [[1, 3]], satirT: [4] }, { m: [[2, 2]], satirT: [4] }, "sayi")), [[-25, 25]]);
+});
+t("fark oran: dogrudan fark, null korunur", function () {
+  return eq(H.fark({ m: [[5, null]], satirT: [null] }, { m: [[3, 3]], satirT: [null] }, "oran"), [[2, null]]);
+});
+t("rolDuzelt takas", function () { return eq(H.rolDuzelt(T, R2, "k1", "YAS"), { k1: "YAS", k2: "SEX", k3: "-" }); });
+t("rolDuzelt 3 kirilim: bos kalan gelir", function () {
+  return eq(H.rolDuzelt(T3, { k1: "A", k2: "B", k3: "C" }, "k1", "B"), { k1: "B", k2: "A", k3: "C" });
+});
+t("rolDuzelt k3 yok", function () { return eq(H.rolDuzelt(T3, { k1: "A", k2: "B", k3: "C" }, "k3", "-"), { k1: "A", k2: "B", k3: "-" }); });
+t("rolDuzelt tabloda olmayan kol yok sayilir", function () { return eq(H.rolDuzelt(T, R2, "k1", "ZZZ"), R2); });
+t("varsayilanRoller 2 kirilim", function () { return eq(H.varsayilanRoller(T), { k1: "SEX", k2: "YAS", k3: "-" }); });
+t("varsayilanRoller 3 kirilim", function () { return eq(H.varsayilanRoller(T3), { k1: "A", k2: "B", k3: "C" }); });
+t("kucukUyari", function () { return eq([H.kucukUyari({ toplam: 999 }, "sayi"), H.kucukUyari({ toplam: 1000 }, "sayi"), H.kucukUyari({ toplam: 5 }, "oran"), H.kucukUyari({ toplam: null }, "sayi")], [true, false, false, false]); });
+t("donemEtiketi", function () { return eq([H.donemEtiketi("2024-Q3"), H.donemEtiketi("2024")], ["2024 Ç3", "2024"]); });
+t("ilkAlti", function () {
+  var s = [1, 2, 3, 4, 5, 6, 7, 8], r = H.ilkAlti(s), k = H.ilkAlti([1, 2]);
+  return eq([r.paneller.length, r.kesildi, k.paneller.length, k.kesildi], [6, true, 2, false]);
+});
+document.getElementById("o").textContent = out.join("\n") + "\n" + (bad ? bad + " BASARISIZ" : "HEPSI GECTI");
+document.title = bad ? "KALDI" : "GEÇTİ";
+</script></body></html>
