@@ -62,6 +62,29 @@ function cikti6() {
     });
   });
 }
+function ilHarita() {
+  tabloGit("adnks_t16", function () {
+    t("il düzeyli tabloda Kırılım 1'de İl seçeneği var", function () { return [].some.call($("k1").options, function (o) { return o.value === "__IL"; }) || "yok"; });
+    t("İl seçili değilken harita soluk (kapalı), zaman serisi açık", function () {
+      return (W.document.querySelector('#cikti [data-c="harita"]').disabled === true && W.document.querySelector('#cikti [data-c="zaman"]').disabled === false) || "yanlış";
+    });
+    tikla('#cikti [data-c="zaman"]');
+    t("zaman serisi çizilir", function () { return W.document.querySelectorAll("#sonuc svg path.seri").length > 0 || "çizgi yok"; });
+    sec("k1", "__IL");
+    t("İl seçilince harita açık, zaman serisi kapalı", function () {
+      return (W.document.querySelector('#cikti [data-c="harita"]').disabled === false && W.document.querySelector('#cikti [data-c="zaman"]').disabled === true) || "yanlış";
+    });
+    t("İl seçilince yer seçici gizli", function () { return eq($("yerw").hidden, true); });
+    t("İl satırlı matris: 81 il satırı", function () { return eq(W.document.querySelectorAll("#sonuc tbody tr").length, 82); });
+    tikla('#cikti [data-c="harita"]');
+    sonra(function () {
+      t("harita: 81 il yolu", function () { return eq(W.document.querySelectorAll("#sonuc svg path.il").length, 81); });
+      t("harita: sütun seçici görünür", function () { return eq($("sutunw").hidden, false); });
+      t("konsolda hata yok (il/harita)", function () { return eq(W.__kirilim.hatalar, 0); });
+      bitir();
+    });
+  });
+}
 function son7() {
   tabloGit("isgucu_meslek_istihdam", function () {
     t("çeyrek etiketi okunur (2021 Ç1 biçimi)", function () { return /^\d{4} Ç[1-4]$/.test($("donemYazi").textContent) || $("donemYazi").textContent; });
@@ -79,7 +102,7 @@ function son7() {
         W.__kirilim.ciz();
         t("TR o dönemde yoksa karşılaştırma çökmez", function () { return eq(W.__kirilim.hatalar, 0); });
         tb.v[son].TR = gizli;
-        bitir();
+        ilHarita();
       });
     });
   });

@@ -2,7 +2,7 @@
 (function () {
   var D = window.KIRILIM_DIZIN, H = window.KirilimHesap;
   var $ = function (id) { return document.getElementById(id); };
-  var durum = { konu: 0, tablo: null, roller: null, yer: "TR", donem: 0, cikti: "matris", deger: "sayi", kars: false, sabit: {} };
+  var durum = { sutun: "_T", konu: 0, tablo: null, roller: null, yer: "TR", donem: 0, cikti: "matris", deger: "sayi", kars: false, sabit: {} };
   var tablo = null;
   // Adres: ?tablo=<kod> o tabloyu açar; &gomulu=1 başka sayfanın içine gömülür (üst bar ve tablo seçimi gizli)
   var Q = new URLSearchParams(location.search), GOMULU = Q.get("gomulu") === "1";
@@ -72,7 +72,7 @@
   // Eski seçimler yeni tabloda geçerliyse korunur, değilse tablonun varsayılanı gelir
   function roller() {
     var kollar = tablo.kirilimlar.map(function (k) { return k.kol; }), e = durum.roller;
-    var gecerli = e && kollar.indexOf(e.k1) >= 0 && kollar.indexOf(e.k2) >= 0 && e.k1 !== e.k2 &&
+    var gecerli = e && (kollar.indexOf(e.k1) >= 0 || (e.k1 === H.IL && tablo.yerler.length > 1)) && kollar.indexOf(e.k2) >= 0 && e.k1 !== e.k2 &&
       (e.k3 === "-" || (kollar.length > 2 && kollar.indexOf(e.k3) >= 0 && e.k3 !== e.k1 && e.k3 !== e.k2));
     durum.roller = gecerli ? e : H.varsayilanRoller(tablo);
     durum.sabit = {};
@@ -83,7 +83,7 @@
   function menuKur() {
     var n = tablo.kirilimlar.length;
     var liste = tablo.kirilimlar.map(function (k) { return [k.kol, k.ad]; });
-    $("k1").innerHTML = secenekler(liste);
+    $("k1").innerHTML = secenekler((tablo.yerler.length > 1 ? [[H.IL, "İl"]] : []).concat(liste));
     $("k2").innerHTML = secenekler(liste);
     $("k3").innerHTML = secenekler(liste.concat([["-", "Yok (toplamı al)"]]));
     $("k2w").hidden = n < 2;
@@ -122,6 +122,7 @@
   function hucre(v, bc, ri, ci) { return v === null && (bc.satir[ri] || bc.sutun[ci]) ? "–" : hm(v); }
   function toplamMetni(v) { return v === null ? "–" : (oranMi() ? ond(v, 1) : say(v)); }
   function kir(kol) {
+    if (kol === H.IL) return { kol: H.IL, ad: "İl", kodlar: [], etiketler: [], ortusen: false };
     for (var i = 0; i < tablo.kirilimlar.length; i++) if (tablo.kirilimlar[i].kol === kol) return tablo.kirilimlar[i];
     return null;
   }
@@ -214,14 +215,16 @@
     return kod;
   }
   function kontrolleriKur() {
-    var oran = oranMi(), k2 = kir(durum.roller.k2);
+    var oran = oranMi(), k2 = kir(durum.roller.k2), ilMod = durum.roller.k1 === H.IL;
     var k2n = k2 ? k2.kodlar.filter(function (k) { return k !== "_T"; }).length : 0;
     var secenek = [["matris", "Isı matrisi", false], ["cubuk", "Yığılmış çubuk", oran || (k2 && k2.ortusen)],
-      ["piramit", "Karşılıklı çubuk", oran || (k2 && k2.ortusen) || k2n !== 2], ["tablo", "Tablo", false]];
+      ["piramit", "Karşılıklı çubuk", oran || (k2 && k2.ortusen) || k2n !== 2], ["tablo", "Tablo", false],
+      ["zaman", "Zaman serisi", ilMod || tablo.donemler.length < 2, ilMod ? "İl kırılımında zaman serisi yoktur" : "Tek dönemli tabloda zaman serisi yoktur"],
+      ["harita", "Harita", !ilMod, "İl kırılımı seçilince açılır"]];
     var gecerli = secenek.filter(function (x) { return x[0] === durum.cikti && !x[2]; }).length;
     if (!gecerli) durum.cikti = "matris";
     $("cikti").innerHTML = secenek.map(function (x) {
-      return '<button data-c="' + x[0] + '" aria-pressed="' + (x[0] === durum.cikti) + '"' + (x[2] ? " disabled" : "") + ">" + x[1] + "</button>";
+      return '<button data-c="' + x[0] + '" aria-pressed="' + (x[0] === durum.cikti) + '"' + (x[2] ? ' disabled title="' + (x[3] || "") + '"' : "") + ">" + x[1] + "</button>";
     }).join("");
     if (oran) durum.deger = "sayi";
     Array.prototype.forEach.call($("deger").querySelectorAll("button"), function (b) {
@@ -229,8 +232,16 @@
       if (b.dataset.d === "pay") b.disabled = oran;
     });
     var coklu = tablo.yerler.length > 1;
-    $("yerw").hidden = !coklu;
-    $("karsw").hidden = !coklu;
+    $("yerw").hidden = !coklu || ilMod;
+    $("karsw").hidden = !coklu || ilMod;
+    var cz = durum.cikti === "zaman" || durum.cikti === "harita";
+    $("sutunw").hidden = !cz;
+    if (cz) {
+      var opts = [["_T", "Toplam"]].concat(k2.kodlar.map(function (c, i) { return [c, k2.etiketler[i]]; }).filter(function (x) { return x[0] !== "_T"; }));
+      if (!opts.some(function (x) { return x[0] === durum.sutun; })) durum.sutun = "_T";
+      $("sutun").innerHTML = secenekler(opts);
+      $("sutun").value = durum.sutun;
+    }
     $("kars").disabled = durum.yer === "TR";
     $("kars").checked = durum.kars && durum.yer !== "TR";
     $("donemw").hidden = tablo.donemler.length < 2;
@@ -242,6 +253,83 @@
   function yerSecenekleri() {
     $("yer").innerHTML = secenekler(tablo.yerler.map(function (y) { return [y, yerAdi(y)]; }));
     $("yer").value = durum.yer;
+  }
+
+  /* --- zaman serisi ve harita --------------------------------------------- */
+  function guzelUst(m) {
+    if (!m) return 1;
+    var e = Math.pow(10, Math.floor(Math.log(m) / Math.LN10)), f = m / e;
+    return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * e;
+  }
+  function degerMetni(v) { return v === null ? "–" : (durum.deger === "pay" && durum.sutun !== "_T" && !oranMi() ? yuz(v) : toplamMetni(v)); }
+
+  function zamanHtml(z) {
+    var son = function (s) { for (var i = s.v.length - 1; i >= 0; i--) if (s.v[i] !== null) return s.v[i]; return -1; };
+    var dolu = z.seriler.filter(function (s) { return son(s) >= 0; });
+    if (!dolu.length) return '<div class="bos">Bu seçim için veri yok.</div>';
+    var kesik = dolu.length > 8;
+    var ser = dolu.slice().sort(function (a, b) { return son(b) - son(a); }).slice(0, 8);
+    var W = 640, Hh = 280, ml = 76, mr = 16, mt = 12, mb = 30, n = z.donemler.length, mx = 0;
+    ser.forEach(function (s) { s.v.forEach(function (x) { if (x !== null && x > mx) mx = x; }); });
+    var ust = guzelUst(mx);
+    function X(i) { return ml + (n > 1 ? i * (W - ml - mr) / (n - 1) : 0); }
+    function Y(v) { return mt + (1 - v / ust) * (Hh - mt - mb); }
+    var g = "";
+    for (var t = 0; t <= 4; t++) {
+      var tv = ust * t / 4, yy = Y(tv);
+      g += '<line x1="' + ml + '" x2="' + (W - mr) + '" y1="' + yy + '" y2="' + yy + '" stroke="#e2e2e2"/><text x="' + (ml - 8) + '" y="' + (yy + 4) + '" font-size="12" text-anchor="end" fill="#666">' +
+        (durum.deger === "pay" && durum.sutun !== "_T" && !oranMi() ? ond(tv, 0) + "%" : (tv >= 1e6 ? ond(tv / 1e6, 1) + " mn" : say(Math.round(tv)))) + "</text>";
+    }
+    var adim = Math.ceil(n / 6), etk = "";
+    for (var i = 0; i < n; i += adim) etk += '<text x="' + X(i) + '" y="' + (Hh - 8) + '" font-size="12" text-anchor="middle" fill="#666">' + kacis(z.etiketler[i]) + "</text>";
+    var yollar = "", lej = "";
+    ser.forEach(function (s, k) {
+      var d = "", acik = false, renk = RENKLER[k % RENKLER.length];
+      s.v.forEach(function (x, i) {
+        if (x === null) { acik = false; return; }
+        d += (acik ? "L" : "M") + X(i).toFixed(1) + " " + Y(x).toFixed(1); acik = true;
+      });
+      yollar += '<path class="seri" d="' + d + '" fill="none" stroke="' + renk + '" stroke-width="2.4"><title>' + kacis(s.ad + ": " + degerMetni(son(s))) + "</title></path>";
+      lej += '<span class="r" style="--r:' + renk + '">' + kacis(s.ad) + "</span>";
+    });
+    return '<svg viewBox="0 0 ' + W + " " + Hh + '" role="img" aria-label="Zaman serisi">' + g + yollar + etk + "</svg>" +
+      '<div class="lejant">' + lej + "</div>" + (kesik ? '<p class="uyari">Son dönem değeri en yüksek 8 satır gösteriliyor.</p>' : "");
+  }
+
+  function haritayiYukle() {
+    if (window.HARITA_IL) return true;
+    if (!document.getElementById("haritaJs")) {
+      var s = document.createElement("script");
+      s.id = "haritaJs"; s.src = "veri/harita_il.js";
+      s.onload = function () { ciz(); };
+      document.head.appendChild(s);
+    }
+    return false;
+  }
+
+  function haritaHtml(p) {
+    var ci = durum.sutun === "_T" ? -1 : p.sutunKodlar.indexOf(durum.sutun);
+    var pay = durum.deger === "pay" && ci >= 0 && !oranMi(), pp = pay ? H.pay(p) : null, v = {};
+    p.satirKodlar.forEach(function (y, ri) { v[y] = ci < 0 ? p.satirT[ri] : (pay ? pp[ri][ci] : p.m[ri][ci]); });
+    var liste = Object.keys(v).map(function (y) { return v[y]; }).filter(function (x) { return x !== null; }).sort(function (a, b) { return a - b; });
+    if (!liste.length) return '<div class="bos">Bu seçim için veri yok.</div>';
+    var esik = [0.2, 0.4, 0.6, 0.8].map(function (q) { return liste[Math.floor(q * liste.length)]; });
+    var renk = ["#fbeaea", "#f1b9bc", "#e5767b", "#d8232a", "#7b0828"];
+    function sinif(x) { var i = 0; while (i < 4 && x >= esik[i]) i++; return i; }
+    var k = Math.cos(39 * Math.PI / 180);
+    var yol = window.HARITA_IL.features.map(function (f) {
+      var g = f.geometry, poli = g.type === "Polygon" ? [g.coordinates] : g.coordinates, d = "";
+      poli.forEach(function (halka) { halka.forEach(function (r) {
+        r.forEach(function (c, i) { d += (i ? "L" : "M") + ((c[0] - 25.5) * k * 60).toFixed(1) + " " + ((42.4 - c[1]) * 60).toFixed(1); });
+        d += "Z";
+      }); });
+      var x = v[f.properties.kod];
+      return '<path class="il" d="' + d + '" fill="' + (x === undefined || x === null ? "#eee" : renk[sinif(x)]) + '" stroke="#fff" stroke-width=".6"><title>' +
+        kacis(f.properties.ad + ": " + degerMetni(x === undefined ? null : x)) + "</title></path>";
+    }).join("");
+    var lej = renk.map(function (r) { return '<i style="display:inline-block;width:40px;height:10px;background:' + r + '"></i>'; }).join("");
+    return '<svg viewBox="0 0 ' + ((44.9 - 25.5) * k * 60).toFixed(0) + " " + ((42.4 - 35.7) * 60).toFixed(0) + '" role="img" aria-label="İllere göre harita">' + yol + "</svg>" +
+      '<div class="lejant"><span>' + degerMetni(liste[0]) + "</span>" + lej + "<span>" + degerMetni(liste[liste.length - 1]) + "</span></div>";
   }
 
   /* --- çizim -------------------------------------------------------------- */
@@ -276,9 +364,11 @@
     $("ipucu").textContent = "Satır: " + kir(r.k1).ad + " · Sütun: " + kir(r.k2).ad +
       (r.k3 === "-" ? (k.length > 2 ? " · Üçüncü kırılım toplamı alınıyor" : "") : " · " + kir(r.k3).ad + " paneller olarak ayrıldı");
     var donem = tablo.donemler[durum.donem];
-    var tum = H.kesit(tablo, donem, durum.yer, r, durum.sabit);
+    var ilMod = r.k1 === H.IL, yerMap = {};
+    tablo.yerler.forEach(function (y) { yerMap[y] = yerAdi(y); });
+    var tum = ilMod ? H.ilKesit(tablo, donem, r, durum.sabit, yerMap) : H.kesit(tablo, donem, durum.yer, r, durum.sabit);
     $("lejant").innerHTML = "";
-    $("kaynak").textContent = "Kaynak: TÜİK (" + tablo.df_id + "). Birim: " + tablo.birim + ". Yer: " + yerAdi(durum.yer) +
+    $("kaynak").textContent = "Kaynak: TÜİK (" + tablo.df_id + "). Birim: " + tablo.birim + ". Yer: " + (ilMod ? "81 il" : yerAdi(durum.yer)) +
       ", dönem: " + H.donemEtiketi(tablo.donemEtiket[durum.donem]) + ".";
     if (!tum.length) {
       $("sonuc").innerHTML = '<div class="bos">Bu seçim için veri yok. Başka bir yer ya da dönem deneyin.</div>';
@@ -286,7 +376,26 @@
       return;
     }
     var kes = H.ilkAlti(tum), paneller = kes.paneller;
-    var trP = durum.kars && durum.yer !== "TR" ? H.kesit(tablo, donem, "TR", r, durum.sabit) : null;
+    if (durum.cikti === "zaman") {
+      var zs = H.zamanSerisi(tablo, durum.yer, r, durum.sabit, durum.sutun, durum.deger === "pay" && durum.sutun !== "_T" && !oranMi());
+      var zk = H.ilkAlti(zs);
+      $("sonuc").innerHTML = '<div class="paneller">' + zk.paneller.map(function (z) {
+        return '<div class="panelkutu">' + (z.ad ? "<h4>" + kacis(kir(r.k3).ad + ": " + z.ad) + "</h4>" : "") + zamanHtml(z) + "</div>";
+      }).join("") + "</div>";
+      notlar(paneller, zk.kesildi, zs.length);
+      yukseklikBildir();
+      return;
+    }
+    if (durum.cikti === "harita") {
+      if (!haritayiYukle()) { $("sonuc").innerHTML = '<div class="yukleniyor">Harita yükleniyor…</div>'; return; }
+      $("sonuc").innerHTML = '<div class="paneller">' + paneller.map(function (p) {
+        return '<div class="panelkutu">' + (p.ad ? "<h4>" + kacis(kir(r.k3).ad + ": " + p.ad) + "</h4>" : "") + haritaHtml(p) + "</div>";
+      }).join("") + "</div>";
+      notlar(paneller, kes.kesildi, tum.length);
+      yukseklikBildir();
+      return;
+    }
+    var trP = durum.kars && durum.yer !== "TR" && !ilMod ? H.kesit(tablo, donem, "TR", r, durum.sabit) : null;
     if (trP && trP.length !== paneller.length) trP = null;
     var en = enHucre(paneller), enFark = 0;
     if (trP) paneller.forEach(function (p, i) {
@@ -332,6 +441,7 @@
     var b = e.target.closest("button"); if (!b || b.disabled) return;
     durum.deger = b.dataset.d; ciz();
   });
+  $("sutun").addEventListener("change", function () { durum.sutun = this.value; ciz(); });
   $("yer").addEventListener("change", function () { durum.yer = this.value; ciz(); });
   $("donem").addEventListener("input", function () { durum.donem = +this.value; ciz(); });
   $("kars").addEventListener("change", function () { durum.kars = this.checked; ciz(); });

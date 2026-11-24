@@ -82,6 +82,49 @@ t("satır toplamı: sütun _T boşsa satırdan toplanır", function () { return 
 t("pay: toplam null ise null", function () { return eq(H.pay({ m: [[null, null]], satirT: [null] }), [[null, null]]); });
 t("fark: pay null ise null", function () { return eq(H.fark({ m: [[1, 1]], satirT: [null] }, { m: [[1, 1]], satirT: [2] }, "sayi"), [[null, null]]); });
 t("bosCizgi: tamamen boş satır ve sütun", function () { return eq(H.bosCizgi({ m: [[null, null], [1, null]] }), { satir: [true, false], sutun: [false, true] }); });
+
+var TI = { olcu: "sayi", donemler: ["2024"], yerler: ["TR", "TR100", "TR211"], kirilimlar: [kir("A", ["a0", "a1"]), kir("B", ["b0", "b1"])],
+  v: { "2024": { TR: [11, 22, 33, 44], TR100: [1, 2, 3, 4], TR211: [10, 20, 30, 40] } } };
+var AD = { TR100: "Bir", TR211: "İki" }, RI = { k1: "__IL", k2: "A", k3: "-" };
+t("kesit: k2 boş -> tek sütun Toplam", function () {
+  var p = H.kesit(T3, "2024", "TR", { k1: "A", k2: null, k3: "-" }, {})[0];
+  return eq([p.m, p.satirT, p.sutunT, p.sutunEtiket], [[[10], [26]], [10, 26], [36], ["Toplam"]]);
+});
+t("kesit: k1 ve k2 boş -> tek hücre", function () { return eq(H.kesit(T3, "2024", "TR", { k1: null, k2: null, k3: "-" }, {})[0].m, [[36]]); });
+t("ilKesit: iller satır, k2 sütun", function () {
+  var p = H.ilKesit(TI, "2024", RI, {}, AD)[0];
+  return eq([p.satirKodlar, p.satirEtiket, p.sutunKodlar, p.m, p.satirT, p.sutunT, p.toplam], [["TR100", "TR211"], ["Bir", "İki"], ["a0", "a1"], [[3, 7], [30, 70]], [10, 100], [33, 77], 110]);
+});
+t("ilKesit: k2 yok -> il toplamı", function () {
+  var p = H.ilKesit(TI, "2024", { k1: "__IL", k2: "-", k3: "-" }, {}, AD)[0];
+  return eq([p.m, p.sutunEtiket], [[[10], [100]], ["Toplam"]]);
+});
+t("ilKesit: TR yoksa boş", function () { var x = JSON.parse(JSON.stringify(TI)); delete x.v["2024"].TR; return eq(H.ilKesit(x, "2024", RI, {}, AD), []); });
+t("rolDuzelt: İl yalnız k1'e ve il düzeyli tabloda", function () {
+  return eq([H.rolDuzelt(TI, { k1: "A", k2: "B", k3: "-" }, "k1", "__IL"), H.rolDuzelt(TI, { k1: "A", k2: "B", k3: "-" }, "k2", "__IL"), H.rolDuzelt(T, R2, "k1", "__IL")],
+    [{ k1: "__IL", k2: "B", k3: "-" }, { k1: "A", k2: "B", k3: "-" }, R2]);
+});
+t("rolDuzelt: İl'den çıkınca çakışan k2 boştaki gerçek kırılıma gider", function () {
+  return eq(H.rolDuzelt(TI, { k1: "__IL", k2: "A", k3: "-" }, "k1", "A"), { k1: "A", k2: "B", k3: "-" });
+});
+var TZ = { olcu: "sayi", donemler: ["2023", "2024"], donemEtiket: ["2023", "2024"], yerler: ["TR"], kirilimlar: [kir("A", ["a0", "a1"]), kir("B", ["b0", "b1"])],
+  v: { "2023": { TR: [1, 2, 3, 4] }, "2024": { TR: [2, 4, 6, 8] } } };
+t("zamanSerisi: satır toplamı", function () {
+  var z = H.zamanSerisi(TZ, "TR", { k1: "A", k2: "B", k3: "-" }, {}, "_T", false)[0];
+  return eq([z.donemler, z.seriler.map(function (s) { return s.v; })], [["2023", "2024"], [[3, 6], [7, 14]]]);
+});
+t("zamanSerisi: seçilen sütun", function () {
+  var z = H.zamanSerisi(TZ, "TR", { k1: "A", k2: "B", k3: "-" }, {}, "b1", false)[0];
+  return eq(z.seriler.map(function (s) { return s.v; }), [[2, 4], [4, 8]]);
+});
+t("zamanSerisi: sütun payı (%)", function () {
+  var z = H.zamanSerisi(TZ, "TR", { k1: "A", k2: "B", k3: "-" }, {}, "b1", true)[0];
+  return eq(z.seriler[0].v.map(function (x) { return Math.round(x * 10) / 10; }), [66.7, 66.7]);
+});
+t("zamanSerisi: yerde veri yoksa null değerler", function () {
+  var z = H.zamanSerisi(TZ, "TR999", { k1: "A", k2: "B", k3: "-" }, {}, "_T", false);
+  return eq(z, []);
+});
 document.getElementById("o").textContent = out.join("\n") + "\n" + (bad ? bad + " BASARISIZ" : "HEPSI GECTI");
 document.title = bad ? "KALDI" : "GEÇTİ";
 </script></body></html>
