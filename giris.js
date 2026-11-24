@@ -98,7 +98,6 @@
     '<span>"Hesaplanmış" etiketli göstergeler TÜİK tarafından yayımlanmaz, ilgili tablolardan türetilir. İlişki nedensellik değildir.</span><span>Sınırlar: © EuroGeographics, <a href="https://ec.europa.eu/eurostat/web/gisco" rel="noopener">GISCO</a> (Eurostat)</span><span>Enstitü Sosyal</span>';
   /* ---- genel arama: gosterge, il, arac ---- */
   (function () {
-    var sol = $("kahraman").firstElementChild; if (sol) sol.appendChild($("aramaBlok")); /* "Bu haftanin sorusu" metninin altina */
     var gir = $("gAra"), lst = $("gListe"), ac = -1, bulunan = [];
     var araclar = Array.prototype.map.call(document.querySelectorAll("#araclar .arac"), function (k) {
       var h = k.querySelector("h3"), p = k.querySelector("p");

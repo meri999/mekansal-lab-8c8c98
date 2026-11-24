@@ -95,13 +95,13 @@ a.oge:hover,a.oge:focus-visible{background:#faf3f3}
 @media(max-width:640px){.dugme.cizgi.arac-d{display:inline-block}}
 
 /* genel arama (ana sayfa) */
-#aramaBlok{margin-top:22px}
+#aramaBlok{max-width:1320px;margin:6px auto 0;padding:0 40px}
 .gkw{position:relative}
-.gara{max-width:560px}
+.gara{max-width:760px;margin:0 auto;text-align:center}
 .gkut{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--b);border-radius:34px;padding:4px 20px;box-shadow:0 6px 20px #7b082820}
 .gkut input{flex:1;border:0;outline:0;font:inherit;font-size:17px;padding:10px 0;background:transparent;min-width:0}
 .gkut:focus-within{box-shadow:0 6px 24px #7b082838}
-#gListe{position:absolute;left:0;right:0;top:100%;margin:6px 0 0;padding:4px 0;list-style:none;text-align:left;background:#fff;border:1px solid #e2e2e2;border-radius:14px;box-shadow:0 10px 26px #0002;z-index:40;max-height:380px;overflow:auto}
+#gListe{text-align:left;position:absolute;left:0;right:0;top:100%;margin:6px 0 0;padding:4px 0;list-style:none;text-align:left;background:#fff;border:1px solid #e2e2e2;border-radius:14px;box-shadow:0 10px 26px #0002;z-index:40;max-height:380px;overflow:auto}
 #gListe[hidden]{display:none}
 #gListe li{display:flex;gap:12px;align-items:center;padding:9px 18px;font-size:15px;cursor:pointer}
 #gListe li:hover,#gListe li.on{background:#faf3f3}
@@ -111,8 +111,7 @@ a.oge:hover,a.oge:focus-visible{background:#faf3f3}
 #gListe .et{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--b);background:#fbeaea;border-radius:8px;padding:2px 8px;min-width:84px;text-align:center;flex:none}
 #gListe em{font-size:11px;color:#666;font-style:normal;margin-left:6px}
 .gornek{margin:12px 0 4px;font-size:13px;color:#666}
-.gornek button:first-of-type{margin-left:2px}
 .gornek button{border:0;background:none;color:#b81d24;text-decoration:underline;cursor:pointer;font:inherit;margin:0 6px}
-.grozet{display:flex;gap:8px;justify-content:flex-start;flex-wrap:wrap;margin-top:8px}
+.grozet{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:8px}
 .grozet span{border:1px solid #e2e2e2;background:#fff;border-radius:18px;padding:5px 14px;font-size:13px;color:#444}
-@media(max-width:760px){#aramaBlok{margin-top:16px}.gkut input{font-size:16px}}
+@media(max-width:760px){#aramaBlok{padding:0 16px}.gkut input{font-size:16px}}
