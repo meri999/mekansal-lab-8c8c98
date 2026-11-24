@@ -78,7 +78,7 @@
       (sira ? '<small>' + sirali.length + ' il içinde en düşükten ' + sira + '. sıra</small>' : '') +
       (tr !== null && v !== null && v !== undefined ? '<small>Türkiye ortalamasından ' + isaretli(v - tr, oy) + '</small>' : '') +
       (f !== null && f !== undefined ? '<small>' + fgercek + ' yılda ' + isaretli(f, oy) + '</small>' : '') +
-      '<small><a href="veri-portali.html#konu=aile">Veri portalında aç →</a></small>';
+      '<small><a href="veri-portali.html#konu=nufus">Veri portalında aç →</a></small>';
     kart.classList.add("acik");
     kart.querySelector("button").onclick = function () { kart.classList.remove("acik"); if (p) p.classList.remove("sec"); };
   }

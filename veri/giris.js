@@ -10,13 +10,12 @@ window.GIRIS={
     { "gosterge": "İşsizlik oranı", "etiket": "İşsizlik oranı" }
   ],
   "bulgular": [
-    { "baslik": "Doğurganlık en çok {en_cok_dusen} ilinde geriledi", "metin": "{fark_yil} yılda {en_cok_dusen_deger} çocuk. En düşük 3 il: {en_dusuk3}.", "link": "veri-portali.html#konu=aile" },
-    { "baslik": "Doğurganlığın en yüksek olduğu il: {en_yuksek}", "metin": "Hız {en_yuksek_deger}; Türkiye ortalaması {tr_son}.", "link": "veri-portali.html#konu=aile" },
+    { "baslik": "Doğurganlık en çok {en_cok_dusen} ilinde geriledi", "metin": "{fark_yil} yılda {en_cok_dusen_deger} çocuk. En düşük 3 il: {en_dusuk3}.", "link": "veri-portali.html#konu=nufus" },
+    { "baslik": "Doğurganlığın en yüksek olduğu il: {en_yuksek}", "metin": "Hız {en_yuksek_deger}; Türkiye ortalaması {tr_son}.", "link": "veri-portali.html#konu=nufus" },
     { "baslik": "Göç ağı: iller arası bağlar", "metin": "Doğum yeri ve kütük bağlarıyla il il akış haritası.", "link": "goc-agi.html" }
   ],
   "konular": [
-    { "kod": "nufus", "ad": "Nüfus ve yapı", "alt": "yaş, hane, kent" },
-    { "kod": "aile", "ad": "Aile", "alt": "doğum, evlenme, boşanma" },
+    { "kod": "nufus", "ad": "Nüfus ve demografi", "alt": "yaş, hane, doğum, evlenme" },
     { "kod": "ekonomi", "ad": "Ekonomi", "alt": "üretim, fiyat, işgücü" },
     { "kod": "egitim", "ad": "Eğitim", "alt": "eğitim süresi" },
     { "kod": "kalkinma", "ad": "Kalkınma", "alt": "beşeri kalkınma" },

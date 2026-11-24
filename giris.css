@@ -52,7 +52,7 @@ section>h2{margin:0 0 14px;color:var(--b);font-size:21px;padding:34px 40px 0}
 section{padding-bottom:6px}
 .izgara{display:grid;gap:14px;padding:0 40px}
 .araclar-i{grid-template-columns:repeat(5,1fr)}
-.konular-i{grid-template-columns:repeat(7,1fr)}
+.konular-i{grid-template-columns:repeat(6,1fr)}
 .bulgu-i{grid-template-columns:repeat(3,1fr);gap:16px}
 .arac{display:block;background:var(--beyaz);border:1px solid var(--line);border-top:4px solid var(--k);border-radius:14px;padding:16px;text-decoration:none}
 a.arac:hover,a.kart:hover,a.hik:hover{box-shadow:0 6px 18px #0002}
