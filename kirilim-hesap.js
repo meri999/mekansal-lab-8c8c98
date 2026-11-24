@@ -62,23 +62,32 @@
     var sayi = tablo.olcu === "sayi", kir = tablo.kirilimlar;
     var i1 = kirBul(tablo, roller.k1), i2 = kirBul(tablo, roller.k2);
     var i3 = roller.k3 && roller.k3 !== "-" ? kirBul(tablo, roller.k3) : -1;
-    var sabitlenen = [], temel = [];
+    // temel: seçilmeyen kırılım için kullanılacak dilim; alt: temel _T ise ve o hücre boşsa
+    // kullanılacak toplam (yalnız sayı ve iç içe olmayan kırılımda)
+    var sabitlenen = [], temel = [], alt = [];
     kir.forEach(function (k, i) {
-      if (i === i1 || i === i2 || i === i3) { temel.push(null); return; }
-      var ti = k.kodlar.indexOf("_T");
-      if (ti >= 0) { temel.push([ti]); return; }
-      if (sayi && !k.ortusen) { temel.push(gercekler(k)); return; }
+      if (i === i1 || i === i2 || i === i3) { temel.push(null); alt.push(null); return; }
+      var ti = k.kodlar.indexOf("_T"), topla_ = sayi && !k.ortusen && !k.toplamAnlamsiz;
+      if (ti >= 0 && !k.toplamAnlamsiz) { temel.push([ti]); alt.push(topla_ ? gercekler(k) : null); return; }
+      if (topla_) { temel.push(gercekler(k)); alt.push(null); return; }
       var ix = sabit[k.kol] ? k.kodlar.indexOf(sabit[k.kol]) : -1;
       if (ix < 0) ix = gercekler(k)[0];
-      temel.push([ix]);
+      temel.push([ix]); alt.push(null);
       sabitlenen.push({ kol: k.kol, ad: k.ad, etiket: k.etiketler[ix] });
     });
-    function deger(r, c, p) {
-      var spec = temel.slice();
+    function dene(tm, r, c, p) {
+      var spec = tm.slice();
       spec[i1] = r === "_T" ? [kir[i1].kodlar.indexOf("_T")] : [r];
       spec[i2] = c === "_T" ? [kir[i2].kodlar.indexOf("_T")] : [c];
       if (i3 >= 0) spec[i3] = [p];
       return topla(tablo, vec, spec);
+    }
+    function deger(r, c, p) {
+      var v = dene(temel, r, c, p);
+      if (v === null && alt.some(function (a) { return a; })) {
+        v = dene(temel.map(function (x, i) { return alt[i] || x; }), r, c, p);
+      }
+      return v;
     }
     function toplamKodu(i) { return kir[i].kodlar.indexOf("_T") >= 0 ? "_T" : null; }
     var sT = toplamKodu(i1), cT = toplamKodu(i2);
@@ -94,16 +103,15 @@
       }
       var kapsayan2 = kir[i2].ortusen, kapsayan1 = kir[i1].ortusen;
       var satirT = satirlar.map(function (r, ri) {
-        if (cT) return deger(r, "_T", p);
-        return sayi && !kapsayan2 ? dizi(m[ri]) : null;
+        var v = cT ? deger(r, "_T", p) : null;
+        return v === null && sayi && !kapsayan2 ? dizi(m[ri]) : v;
       });
       var sutunT = sutunlar.map(function (c, ci) {
-        if (sT) return deger("_T", c, p);
-        return sayi && !kapsayan1 ? dizi(m.map(function (row) { return row[ci]; })) : null;
+        var v = sT ? deger("_T", c, p) : null;
+        return v === null && sayi && !kapsayan1 ? dizi(m.map(function (row) { return row[ci]; })) : v;
       });
-      var toplam;
-      if (sT && cT) toplam = deger("_T", "_T", p);
-      else toplam = sayi && !kapsayan1 && !kapsayan2 ? dizi(satirT) : null;
+      var toplam = sT && cT ? deger("_T", "_T", p) : null;
+      if (toplam === null && sayi && !kapsayan1 && !kapsayan2) toplam = dizi(satirT);
       return {
         kod: p === null ? null : kir[i3].kodlar[p],
         ad: p === null ? null : kir[i3].etiketler[p],
@@ -116,19 +124,21 @@
     });
   }
 
-  /* Satır payı (%): satır toplamı yoksa ya da 0 ise 0; eksik hücre 0 */
+  /* Satır payı (%): satır toplamı yoksa null (uydurma 0 değil), gerçek 0 ise 0;
+     eksik hücre toplam varken 0 */
   function pay(panel) {
     return panel.m.map(function (satir, ri) {
       var t = panel.satirT[ri];
-      return satir.map(function (v) { return t ? (v || 0) / t * 100 : 0; });
+      return satir.map(function (v) { return t === null || t === undefined ? null : (t ? (v || 0) / t * 100 : 0); });
     });
   }
 
-  /* Yer ile Türkiye farkı: sayıda payların farkı (yüzde puanı), oranda değerlerin farkı */
+  /* Yer ile Türkiye farkı: sayıda payların farkı (yüzde puanı), oranda değerlerin farkı;
+     taraflardan biri bilinmiyorsa null */
   function fark(panel, panelTR, olcu) {
     if (olcu === "sayi") {
       var a = pay(panel), b = pay(panelTR);
-      return a.map(function (s, ri) { return s.map(function (v, ci) { return v - b[ri][ci]; }); });
+      return a.map(function (s, ri) { return s.map(function (v, ci) { var w = b[ri][ci]; return v === null || w === null ? null : v - w; }); });
     }
     return panel.m.map(function (s, ri) {
       return s.map(function (v, ci) {
@@ -136,6 +146,13 @@
         return v === null || w === null ? null : v - w;
       });
     });
+  }
+
+  /* Tamamen boş (hiç gözlem yok) satır ve sütunlar: yapısal olarak yayımlanmayan kategoriler */
+  function bosCizgi(panel) {
+    var satir = panel.m.map(function (s) { return s.every(function (v) { return v === null; }); });
+    var sutun = panel.m.length ? panel.m[0].map(function (_, ci) { return panel.m.every(function (s) { return s[ci] === null; }); }) : [];
+    return { satir: satir, sutun: sutun };
   }
 
   function kucukUyari(panel, olcu) {
@@ -146,6 +163,6 @@
 
   global.KirilimHesap = {
     varsayilanRoller: varsayilanRoller, rolDuzelt: rolDuzelt, kesit: kesit, pay: pay, fark: fark,
-    kucukUyari: kucukUyari, donemEtiketi: donemEtiketi, ilkAlti: ilkAlti
+    bosCizgi: bosCizgi, kucukUyari: kucukUyari, donemEtiketi: donemEtiketi, ilkAlti: ilkAlti
   };
 })(window);

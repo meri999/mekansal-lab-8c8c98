@@ -112,6 +112,8 @@
   function yazi(o) { return o > 0.55 ? "#fff" : "#1d1d1d"; }
   function oranMi() { return tablo.olcu === "oran"; }
   function hm(v) { return oranMi() ? (v === null ? "–" : ond(v, 1)) : say(v || 0); }
+  // Tamamen boş satır/sütundaki hücre "yayımlanmıyor" demektir: 0 değil "–"
+  function hucre(v, bc, ri, ci) { return v === null && (bc.satir[ri] || bc.sutun[ci]) ? "–" : hm(v); }
   function toplamMetni(v) { return v === null ? "–" : (oranMi() ? ond(v, 1) : say(v)); }
   function kir(kol) {
     for (var i = 0; i < tablo.kirilimlar.length; i++) if (tablo.kirilimlar[i].kol === kol) return tablo.kirilimlar[i];
@@ -127,7 +129,7 @@
 
   function matrisHtml(p, tr, en, enFark) {
     var pay = durum.deger === "pay" && !oranMi(), a1 = kir(durum.roller.k1).ad, a2 = kir(durum.roller.k2).ad;
-    var pp = H.pay(p), fk = tr ? H.fark(p, tr, tablo.olcu) : null;
+    var pp = H.pay(p), fk = tr ? H.fark(p, tr, tablo.olcu) : null, bc = H.bosCizgi(p);
     var h = '<div class="kaydir"><table class="mat"><thead><tr><th class="sol">' + kacis(a1) + " ↓ / " + kacis(a2) + " →</th>";
     p.sutunEtiket.forEach(function (e) { h += "<th>" + kacis(e) + "</th>"; });
     h += '<th class="top">Toplam</th></tr></thead><tbody>';
@@ -142,15 +144,15 @@
           stil = f === null ? "" : "background:" + renkFark(f, enFark) + ";color:" + yazi(o);
           oz = ' data-fark="' + (f === null ? "" : f.toFixed(2)) + '"';
         } else if (pay) {
-          o = Math.min(1, pp[ri][ci] / 100 * 1.4);
-          goster = yuz(pp[ri][ci]);
-          stil = "background:" + renkTek(o) + ";color:" + yazi(o);
+          o = pp[ri][ci] === null ? 0 : Math.min(1, pp[ri][ci] / 100 * 1.4);
+          goster = pp[ri][ci] === null ? "–" : yuz(pp[ri][ci]);
+          stil = pp[ri][ci] === null ? "" : "background:" + renkTek(o) + ";color:" + yazi(o);
         } else {
           o = v === null || !en ? 0 : v / en;
-          goster = hm(v);
+          goster = hucre(v, bc, ri, ci);
           stil = v === null ? "" : "background:" + renkTek(o) + ";color:" + yazi(o);
         }
-        h += '<td style="' + stil + '"' + oz + ' title="' + kacis(e + " / " + p.sutunEtiket[ci] + ": " + hm(v)) + '">' + goster + "</td>";
+        h += '<td style="' + stil + '"' + oz + ' title="' + kacis(e + " / " + p.sutunEtiket[ci] + ": " + hucre(v, bc, ri, ci)) + '">' + goster + "</td>";
       });
       h += '<td class="top">' + toplamMetni(p.satirT[ri]) + "</td></tr>";
     });
@@ -164,8 +166,9 @@
     p.satirEtiket.forEach(function (e, ri) {
       h += '<div class="cubuk"><span class="e">' + kacis(e) + '</span><div class="r">';
       p.sutunEtiket.forEach(function (c, ci) {
-        h += '<i style="width:' + pp[ri][ci].toFixed(1) + "%;background:" + RENKLER[ci % RENKLER.length] + '" title="' +
-          kacis(c + ": " + hm(p.m[ri][ci]) + " (" + yuz(pp[ri][ci]) + ")") + '"></i>';
+        var pv = pp[ri][ci] || 0;
+        h += '<i style="width:' + pv.toFixed(1) + "%;background:" + RENKLER[ci % RENKLER.length] + '" title="' +
+          kacis(c + ": " + hm(p.m[ri][ci]) + " (" + yuz(pv) + ")") + '"></i>';
       });
       h += "</div></div>";
     });
@@ -175,7 +178,7 @@
   function piramitHtml(p, en) {
     var h = "", pay = durum.deger === "pay", pp = H.pay(p);
     p.satirEtiket.forEach(function (e, ri) {
-      var l = pay ? pp[ri][0] : (p.m[ri][0] || 0), r = pay ? pp[ri][1] : (p.m[ri][1] || 0), ens = pay ? 100 : en || 1;
+      var l = pay ? (pp[ri][0] || 0) : (p.m[ri][0] || 0), r = pay ? (pp[ri][1] || 0) : (p.m[ri][1] || 0), ens = pay ? 100 : en || 1;
       h += '<div class="piramit"><div class="sl"><i style="width:' + (l / ens * 100).toFixed(1) + "%;background:" + RENKLER[0] +
         '" title="' + kacis(p.sutunEtiket[0] + ": " + (pay ? yuz(l) : say(l))) + '"></i></div>' +
         '<div class="m">' + kacis(e) + '</div><div><i style="width:' + (r / ens * 100).toFixed(1) + "%;background:" + RENKLER[1] +
@@ -185,13 +188,13 @@
   }
 
   function tabloHtml(p) {
-    var pay = durum.deger === "pay" && !oranMi(), pp = H.pay(p), a1 = kir(durum.roller.k1).ad;
+    var pay = durum.deger === "pay" && !oranMi(), pp = H.pay(p), a1 = kir(durum.roller.k1).ad, bc = H.bosCizgi(p);
     var h = '<div class="kaydir"><table class="duz"><thead><tr><th class="t">' + kacis(a1) + "</th>";
     p.sutunEtiket.forEach(function (e) { h += "<th>" + kacis(e) + "</th>"; });
     h += "<th>Toplam</th></tr></thead><tbody>";
     p.satirEtiket.forEach(function (e, ri) {
       h += '<tr><td class="t">' + kacis(e) + "</td>";
-      p.m[ri].forEach(function (v, ci) { h += "<td>" + (pay ? yuz(pp[ri][ci]) : hm(v)) + "</td>"; });
+      p.m[ri].forEach(function (v, ci) { h += "<td>" + (pay ? (pp[ri][ci] === null ? "–" : yuz(pp[ri][ci])) : hucre(v, bc, ri, ci)) + "</td>"; });
       h += "<td><b>" + toplamMetni(p.satirT[ri]) + "</b></td></tr>";
     });
     h += '<tr class="g"><td class="t">Toplam</td>';
@@ -207,8 +210,8 @@
   function kontrolleriKur() {
     var oran = oranMi(), k2 = kir(durum.roller.k2);
     var k2n = k2 ? k2.kodlar.filter(function (k) { return k !== "_T"; }).length : 0;
-    var secenek = [["matris", "Isı matrisi", false], ["cubuk", "Yığılmış çubuk", oran],
-      ["piramit", "Karşılıklı çubuk", oran || k2n !== 2], ["tablo", "Tablo", false]];
+    var secenek = [["matris", "Isı matrisi", false], ["cubuk", "Yığılmış çubuk", oran || (k2 && k2.ortusen)],
+      ["piramit", "Karşılıklı çubuk", oran || (k2 && k2.ortusen) || k2n !== 2], ["tablo", "Tablo", false]];
     var gecerli = secenek.filter(function (x) { return x[0] === durum.cikti && !x[2]; }).length;
     if (!gecerli) durum.cikti = "matris";
     $("cikti").innerHTML = secenek.map(function (x) {
@@ -278,6 +281,7 @@
     }
     var kes = H.ilkAlti(tum), paneller = kes.paneller;
     var trP = durum.kars && durum.yer !== "TR" ? H.kesit(tablo, donem, "TR", r, durum.sabit) : null;
+    if (trP && trP.length !== paneller.length) trP = null;
     var en = enHucre(paneller), enFark = 0;
     if (trP) paneller.forEach(function (p, i) {
       H.fark(p, trP[i], tablo.olcu).forEach(function (s) { s.forEach(function (v) { if (v !== null && Math.abs(v) > enFark) enFark = Math.abs(v); }); });

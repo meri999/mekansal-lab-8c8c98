@@ -55,10 +55,32 @@ function cikti6() {
           sec("k3", "-");
           t("oran: kirilim 3 yok -> sabitlenen notu", function () { return ($("sabit") && /sabit/.test($("sabit").textContent)) || "yok"; });
           t("konsolda hata yok", function () { return eq(W.__kirilim.hatalar, 0); });
-          bitir();
+          son7();
         });
       });
       }, 1500);
+    });
+  });
+}
+function son7() {
+  tabloGit("isgucu_meslek_istihdam", function () {
+    t("çeyrek etiketi okunur (2021 Ç1 biçimi)", function () { return /^\d{4} Ç[1-4]$/.test($("donemYazi").textContent) || $("donemYazi").textContent; });
+    tabloGit("okuryazar_cinsiyet_nufus", function () {
+      sec("k1", "CINSIYET"); sec("k2", "YAS_GRUP"); sec("k3", "-");
+      t("okuryazar: _T boş dilimde hücreler 0 değil, toplanmış", function () {
+        var ts = [].map.call(W.document.querySelectorAll("#sonuc tbody tr:first-child td:not(.top)"), function (x) { return x.textContent; });
+        return (ts.length === 2 && ts.every(function (x) { return x !== "–" && x !== "0"; })) || ts.join();
+      });
+      tabloGit("bosanma_karsilikli_yasgr", function () {
+        t("yapısal boş satır '–' görünür", function () { return /–/.test($("sonuc").textContent) || "yok"; });
+        W.__kirilim.durum.yer = "TR"; var tb = W.KIRILIM_TABLO["bosanma_karsilikli_yasgr"];
+        var son = tb.donemler[tb.donemler.length - 1], gizli = tb.v[son].TR; delete tb.v[son].TR;
+        $("kars").disabled = false; W.__kirilim.durum.kars = true; W.__kirilim.durum.yer = tb.yerler[1];
+        W.__kirilim.ciz();
+        t("TR o dönemde yoksa karşılaştırma çökmez", function () { return eq(W.__kirilim.hatalar, 0); });
+        tb.v[son].TR = gizli;
+        bitir();
+      });
     });
   });
 }

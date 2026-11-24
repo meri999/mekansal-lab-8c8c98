@@ -16,6 +16,15 @@ var T3o = tablo("oran", T3.kirilimlar, [1, 2, 3, 4, 5, 6, 7, 8]);
 var TE = tablo("sayi", [kir("A", ["a0", "a1"]), kir("B", ["b0", "b1"])], [1, null, 3, 4]);
 var TO = tablo("sayi", [kir("A", ["a0", "a1"]), kir("B", ["b0", "b1", "_T"])], [1, 2, 3, 4, 5, 6]); // _T sütunu
 
+var TB = tablo("sayi", [kir("A", ["a0", "a1"]), kir("B", ["b0", "b1"]), kir("C", ["c0", "c1", "_T"])],
+  [1, 2, null, 3, 4, null, 5, 6, null, 7, 8, null]);             // _T hücreleri boş
+var TK = tablo("sayi", [kir("A", ["a0", "a1"]), kir("B", ["b0", "b1"]), kir("C", ["c0", "c1", "_T"])],
+  [1, 2, 100, 3, 4, null, 5, 6, null, 7, 8, null]);              // yalnız bir _T dolu
+var TS = tablo("sayi", [kir("A", ["a0", "a1"]), kir("B", ["b0", "b1"]), kir("C", ["c0", "c1", "_T"])],
+  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+TS.kirilimlar[2].toplamAnlamsiz = true;                          // _T başka bir ölçü (NEET gibi)
+var TB2 = tablo("sayi", [kir("A", ["a0", "a1"]), kir("B", ["b0", "b1", "_T"])], [1, 2, null, 3, 4, null]);
+var R3 = { k1: "A", k2: "B", k3: "-" };
 t("KirilimHesap tanimli", function () { return !!H || "yok"; });
 t("kesit m", function () { return eq(H.kesit(T, "2024", "TR", R2, {})[0].m, [[1, 2], [3, 4]]); });
 t("kesit satirT toplanir (_T yok)", function () { return eq(H.kesit(T, "2024", "TR", R2, {})[0].satirT, [3, 7]); });
@@ -63,6 +72,16 @@ t("ilkAlti", function () {
   var s = [1, 2, 3, 4, 5, 6, 7, 8], r = H.ilkAlti(s), k = H.ilkAlti([1, 2]);
   return eq([r.paneller.length, r.kesildi, k.paneller.length, k.kesildi], [6, true, 2, false]);
 });
+t("_T boş dilim: seçilmeyen kırılım toplanır (0 değil)", function () { return eq(H.kesit(TB, "2024", "TR", R3, {})[0].m, [[3, 7], [11, 15]]); });
+t("_T kısmen dolu: dolu olan _T, boş olan toplam", function () { return eq(H.kesit(TK, "2024", "TR", R3, {})[0].m, [[100, 7], [11, 15]]); });
+t("toplamAnlamsiz kırılım: _T kullanılmaz, ilke sabitlenir", function () {
+  var p = H.kesit(TS, "2024", "TR", R3, {})[0];
+  return eq(p.m, [[1, 4], [7, 10]]) === true && eq(p.sabitlenen.length, 1) === true && eq(p.sabitlenen[0].kol, "C");
+});
+t("satır toplamı: sütun _T boşsa satırdan toplanır", function () { return eq(H.kesit(TB2, "2024", "TR", { k1: "A", k2: "B", k3: "-" }, {})[0].satirT, [3, 7]); });
+t("pay: toplam null ise null", function () { return eq(H.pay({ m: [[null, null]], satirT: [null] }), [[null, null]]); });
+t("fark: pay null ise null", function () { return eq(H.fark({ m: [[1, 1]], satirT: [null] }, { m: [[1, 1]], satirT: [2] }, "sayi"), [[null, null]]); });
+t("bosCizgi: tamamen boş satır ve sütun", function () { return eq(H.bosCizgi({ m: [[null, null], [1, null]] }), { satir: [true, false], sutun: [false, true] }); });
 document.getElementById("o").textContent = out.join("\n") + "\n" + (bad ? bad + " BASARISIZ" : "HEPSI GECTI");
 document.title = bad ? "KALDI" : "GEÇTİ";
 </script></body></html>
