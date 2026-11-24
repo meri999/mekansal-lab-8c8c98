@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nitel Analiz · Enstitü Portal</title>
+<meta name="description" content="Görüşme dökümleri, anket cevapları ve yorumları tarayıcınızdan çıkarmadan okuyun: kelime, duygu ve tema analizi.">
+<meta name="theme-color" content="#d8232a">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&family=Roboto+Slab:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="kirilim.css">
+<link rel="stylesheet" href="nitel.css">
+</head>
+<body>
+<header class="ust"><div class="ust-ic">
+  <a class="marka" href="./"><span class="kare" aria-hidden="true"><i></i><i class="b"></i></span>Enstitü Portal</a>
+  <span class="sayfa">Nitel Analiz</span><span class="rozet">taslak</span>
+  <a class="geri" href="./">← Portala dön</a>
+</div></header>
+
+<main class="ana">
+  <section class="panel">
+    <h1>Nitel Analiz</h1>
+    <p class="alt">Görüşme dökümü, anket cevabı ya da yorum yükleyin; kelimeleri, duyguyu ve temaları aynı yerden inceleyin.</p>
+  </section>
+
+  <section class="panel" aria-label="Metin yükleme">
+    <div class="yukle">
+      <div class="birak" id="birak" tabindex="0" role="button" aria-label="Dosya seçin ya da buraya bırakın">
+        <b>Dosyayı buraya bırakın</b>
+        <span>ya da <u>dosya seçin</u></span>
+        <small>CSV ve düz metin (.txt). Word ve Excel sonra eklenecek.</small>
+      </div>
+      <div class="yapistir">
+        <label for="yapistir">Ya da metni yapıştırın</label>
+        <textarea id="yapistir" rows="5" placeholder="Görüşme dökümünü ya da yorumları buraya yapıştırın…" disabled></textarea>
+        <button type="button" class="dugme" disabled>Havuza ekle</button>
+      </div>
+    </div>
+    <p class="gizlilik"><span aria-hidden="true">🔒</span> Metinleriniz tarayıcınızdan çıkmaz; hiçbir sunucuya gönderilmez.</p>
+  </section>
+
+  <section class="panel" aria-label="Havuz özeti">
+    <div class="ozet" id="ozet">
+      <div><small>Kayıt</small><b>–</b><em>havuzda</em></div>
+      <div><small>Kaynak</small><b>–</b><em>dosya / oturum</em></div>
+      <div><small>Toplam kelime</small><b>–</b><em>&nbsp;</em></div>
+      <div><small>Duygu etiketli</small><b>–</b><em>&nbsp;</em></div>
+      <div><small>Kodlanmış</small><b>–</b><em>&nbsp;</em></div>
+    </div>
+  </section>
+
+  <section class="panel" aria-label="Araçlar">
+    <div class="konular" id="sekmeler" role="tablist" aria-label="Araç">
+      <button role="tab" data-s="havuz" aria-selected="true">Havuz</button>
+      <button role="tab" data-s="kelime" aria-selected="false">Kelimeler</button>
+      <button role="tab" data-s="duygu" aria-selected="false">Duygu</button>
+      <button role="tab" data-s="kod" aria-selected="false" class="yakinda">Kodlama <span class="mini">yakında</span></button>
+      <button role="tab" data-s="alinti" aria-selected="false" class="yakinda">Alıntılar <span class="mini">yakında</span></button>
+    </div>
+
+    <div class="sek" id="s-havuz">
+      <div class="kontrol">
+        <div><label for="ara">Ara</label><input id="ara" type="search" placeholder="Kayıtlarda ara" disabled></div>
+        <div><label for="kaynakSec">Kaynak</label><select id="kaynakSec" disabled><option>Tümü</option></select></div>
+        <div><span class="etk">Görünüm</span><div class="seg"><button aria-pressed="true" disabled>Liste</button><button aria-pressed="false" disabled>Konuşma</button></div></div>
+      </div>
+      <div class="bos">Henüz metin yüklenmedi. Yukarıdan dosya yükleyin ya da metin yapıştırın; kayıtlar burada listelenir.</div>
+    </div>
+
+    <div class="sek" id="s-kelime" hidden>
+      <div class="kontrol">
+        <div><label for="kokSec">Kelime biçimi</label><select id="kokSec" disabled><option>Olduğu gibi</option><option>Kök (ekleri at)</option></select></div>
+        <div><label for="durakSec">Sık sözcükler</label><select id="durakSec" disabled><option>Durak sözcüklerini çıkar</option><option>Hepsini göster</option></select></div>
+        <div><label for="enAz">En az geçme</label><select id="enAz" disabled><option>2</option></select></div>
+      </div>
+      <div class="iki">
+        <div><h4>Sık geçen kelimeler</h4><div class="bos">Kelime sıklığı burada görünecek.</div></div>
+        <div><h4>Seçilen kelimenin geçtiği cümleler</h4><div class="bos">Bir kelimeye tıklayınca cümleleri burada listelenir.</div></div>
+      </div>
+    </div>
+
+    <div class="sek" id="s-duygu" hidden>
+      <div class="kontrol">
+        <div><label for="duyguKaynak">Metin kaynağı</label><select id="duyguKaynak" disabled><option>Tüm kayıtlar</option></select></div>
+        <div><label for="tarihSec">Tarih sütunu</label><select id="tarihSec" disabled><option>Yok</option></select></div>
+        <div><span class="etk">Sözlük</span><div class="seg"><button aria-pressed="true" disabled>Başlangıç sözlüğü</button><button aria-pressed="false" disabled>Enstitü eklemeleri</button></div></div>
+      </div>
+      <p class="not">Duygu etiketleri sözlüğe dayanır ve yaklaşık sonuç verir; her etiketi elle düzeltebilirsiniz.</p>
+      <div class="iki">
+        <div><h4>Dağılım</h4><div class="bos">Olumlu, olumsuz ve nötr dağılımı burada görünecek.</div>
+          <div class="lejant"><span class="r" style="--r:#2f7d4f">▲ Olumlu</span><span class="r" style="--r:#c0392b">▼ Olumsuz</span><span class="r" style="--r:#9a9a9a">● Nötr</span></div></div>
+        <div><h4>Örnek alıntılar</h4><div class="bos">Her sınıftan örnek metinler burada listelenir.</div></div>
+      </div>
+      <div><h4>Zaman içinde seyir</h4><div class="bos">Tarih sütunu seçilirse aylık seyir burada çizilir.</div></div>
+    </div>
+
+    <div class="sek" id="s-kod" hidden>
+      <div class="bos">Kodlama: metin içinde bir yeri seçip kod atayacaksınız, kod kitabı ve kod sayıları burada olacak. Sonraki aşamada eklenecek.</div>
+    </div>
+    <div class="sek" id="s-alinti" hidden>
+      <div class="bos">Alıntı bankası: etiketlediğiniz iyi alıntıları toplayıp rapora aktaracaksınız. Sonraki aşamada eklenecek.</div>
+    </div>
+  </section>
+
+  <section class="panel kayit-bar" aria-label="Çalışmayı kaydet">
+    <span class="alt">Çalışmanız bu tarayıcıda otomatik saklanır.</span>
+    <div class="sag-d"><button type="button" class="dugme cizgi" disabled>Projeyi indir</button><button type="button" class="dugme cizgi" disabled>Proje yükle</button><button type="button" class="dugme cizgi" disabled>Temizle</button></div>
+  </section>
+</main>
+<footer class="altbilgi">Taslak sürüm: analiz işlevleri henüz bağlı değil.</footer>
+
+<script src="nitel.js"></script>
+</body>
+</html>
