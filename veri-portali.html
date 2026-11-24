@@ -151,7 +151,7 @@ button,select{font:inherit;color:inherit}
 <footer class="alt" id="alt"></footer>
 <div class="ipucu" id="ipucu"></div>
 <script src="veri/veri.js?v=20261124150052"></script>
-<script src="veri/harita_il.js?v=20261124150052"></script>
+<script src="veri/harita_il.js?v=20261124224300"></script>
 <script src="veri/kirilim_dizin.js"></script>
 <script src="veri/harita_bolge.js?v=20261124150052"></script>
 <script>
@@ -359,7 +359,7 @@ $("geri").addEventListener("click",function(){sec("TR")});
 $("dzTr").addEventListener("click",function(){dzDegis("tr")});
 document.querySelectorAll("#aralik button").forEach(function(b){b.addEventListener("click",function(){st.aralik=+b.dataset.a;grafikCiz()})});
 $("vurguAc").addEventListener("change",function(){$("kutular").classList.toggle("vur",this.checked)});$("kutular").classList.add("vur");
-$("alt").innerHTML='Kaynak: <a href="https://veriportali.tuik.gov.tr" rel="noopener">TÜİK Veri Portalı</a> (SDMX API). Sınırlar: <a href="https://github.com/htastan/TRmaps" rel="noopener">TRmaps</a> (MIT). Veri üretimi: '+VERI.uretim+'. "Hesaplanmış" etiketli göstergeler TÜİK tarafından yayımlanmaz, ilgili tablolardan türetilir.';
+$("alt").innerHTML='Kaynak: <a href="https://veriportali.tuik.gov.tr" rel="noopener">TÜİK Veri Portalı</a> (SDMX API). Sınırlar: il © EuroGeographics, <a href="https://ec.europa.eu/eurostat/web/gisco" rel="noopener">GISCO</a> (Eurostat); bölge <a href="https://github.com/htastan/TRmaps" rel="noopener">TRmaps</a> (MIT). Veri üretimi: '+VERI.uretim+'. "Hesaplanmış" etiketli göstergeler TÜİK tarafından yayımlanmaz, ilgili tablolardan türetilir.';
 haritaCiz("il");var K0=ALTLAR.nufus[0][0];if(trVar(K0)){st.duzey="il";konuDegis(K0);dzDegis("tr")}else konuDegis(K0);
 /* giris sayfasindan #konu=<kod> ile gelinirse o konuyu ac */
 (function(){var m=/#konu=([a-z]+)/.exec(location.hash);if(!m)return;var kk=m[1]==="aile"?"nufus":m[1];var b=document.querySelector('.konu[data-k="'+kk+'"]');if(b)b.click()})();

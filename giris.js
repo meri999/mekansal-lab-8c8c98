@@ -95,7 +95,7 @@
   }).join("");
   $("alt").innerHTML = '<span><b>Kaynak:</b> <a href="https://veriportali.tuik.gov.tr" rel="noopener">TÜİK Veri Portalı</a> (SDMX API)</span>' +
     '<span><b>Son güncelleme:</b> ' + esc(V.uretim) + '</span>' +
-    '<span>"Hesaplanmış" etiketli göstergeler TÜİK tarafından yayımlanmaz, ilgili tablolardan türetilir. İlişki nedensellik değildir.</span><span>Enstitü Sosyal</span>';
+    '<span>"Hesaplanmış" etiketli göstergeler TÜİK tarafından yayımlanmaz, ilgili tablolardan türetilir. İlişki nedensellik değildir.</span><span>Sınırlar: © EuroGeographics, <a href="https://ec.europa.eu/eurostat/web/gisco" rel="noopener">GISCO</a> (Eurostat)</span><span>Enstitü Sosyal</span>';
   /* ---- genel arama: gosterge, il, arac ---- */
   (function () {
     var sol = $("kahraman").firstElementChild; if (sol) sol.appendChild($("aramaBlok")); /* "Bu haftanin sorusu" metninin altina */

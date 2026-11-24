@@ -300,7 +300,7 @@
     if (window.HARITA_IL) return true;
     if (!document.getElementById("haritaJs")) {
       var s = document.createElement("script");
-      s.id = "haritaJs"; s.src = "veri/harita_il.js";
+      s.id = "haritaJs"; s.src = "veri/harita_il.js?v=20261124224300";
       s.onload = function () { ciz(); };
       document.head.appendChild(s);
     }
