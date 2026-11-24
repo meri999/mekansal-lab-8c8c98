@@ -111,12 +111,6 @@ button,select{font:inherit;color:inherit}
 .k-kir:hover,.k-kir:focus-visible{background:#f6d5d6}
 .k-kaynak{font-size:11px;color:#8a97a1;margin-top:3px;line-height:1.25}
 .bos{padding:20px 4px;color:var(--soluk)}
-.kirilim-kutu{display:flex;align-items:center;gap:12px;margin-top:12px;padding:10px 14px;border:1.5px dashed var(--vurgu);border-radius:10px;background:var(--vurgu-acik);color:var(--bordo);text-decoration:none}
-.kirilim-kutu[hidden]{display:none}
-.kirilim-kutu:hover,.kirilim-kutu:focus-visible{background:#f6d5d6}
-.kirilim-kutu .kk-ik{display:grid;grid-template-columns:repeat(2,9px);gap:2px}.kirilim-kutu .kk-ik i{width:9px;height:9px;border-radius:2px;background:var(--vurgu)}.kirilim-kutu .kk-ik i:nth-child(2),.kirilim-kutu .kk-ik i:nth-child(3){background:var(--bordo)}
-.kirilim-kutu .kk-metin{flex:1;display:flex;flex-direction:column;line-height:1.3}.kirilim-kutu b{font-size:14px}.kirilim-kutu small{font-size:12px;color:var(--soluk)}
-.kirilim-kutu .kk-ok{font-weight:700;color:var(--vurgu-koyu)}
 .alt{max-width:1320px;margin:0 auto;padding:6px 16px 28px;font-size:12.5px;color:var(--soluk)}
 .alt a{color:var(--vurgu-koyu)}
 @media(max-width:920px){.ana{grid-template-columns:minmax(0,1fr)}.harita-kart{position:static}.ara{margin-left:0;width:100%}.ara select{width:100%}}
@@ -147,7 +141,6 @@ button,select{font:inherit;color:inherit}
     <div class="yil"><span>Yıl</span><input type="range" id="yilKayar" min="0" max="0" step="1" aria-label="Yıl"><b id="yilYazi"></b></div>
     <div class="lejant" id="lejant"></div>
     <div class="not-harita" id="notHarita"></div>
-    <a class="kirilim-kutu" id="kirilimKutu" href="kirilim-matrisi.html" hidden><span class="kk-ik" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="kk-metin"><b>Kırılımlarla incele</b><small id="kirilimAd"></small></span><span class="kk-ok" aria-hidden="true">→</span></a>
   </section>
   <section class="panel" aria-live="polite" aria-label="Seçili yer göstergeleri">
     <div class="baslik"><h1 id="yerAd"></h1><span id="yerAlt"></span><button class="geri" id="geri" hidden>Türkiye'ye dön</button>
@@ -219,7 +212,7 @@ function haritaCiz(duzey){var s='<svg viewBox="0 0 '+P.w+' '+P.h.toFixed(0)+'" r
       ip.style.display="block";ip.style.left=(e.clientX+14)+"px";ip.style.top=(e.clientY+14)+"px";
       ip.textContent=YER[k].ad_tr+" · "+(x==null?"veri yok":fmt(x,g.ondalik)+" "+g.birim)});
     p.addEventListener("mouseleave",function(){ip.style.display="none"})})}
-function boya(){if(st.duzey==="tr")return;if(siraModu())siraCiz();var g=gOf(st.gid),kk=kodlar(st.duzey),vals=[],pa=$("harita").querySelectorAll("path");kirilimKutu(g);
+function boya(){if(st.duzey==="tr")return;if(siraModu())siraCiz();var g=gOf(st.gid),kk=kodlar(st.duzey),vals=[],pa=$("harita").querySelectorAll("path");
   kk.forEach(function(k){var x=v(g,k,st.yil);if(x!=null)vals.push(x)});
   vals.sort(function(a,b){return a-b});
   var esik=[];for(var i=1;i<5;i++)esik.push(vals.length?vals[Math.min(vals.length-1,Math.floor(vals.length*i/5))]:0);
@@ -230,13 +223,9 @@ function boya(){if(st.duzey==="tr")return;if(siraModu())siraCiz();var g=gOf(st.g
   if(!vals.length){L.innerHTML="";$("notHarita").textContent="Bu gösterge "+(st.duzey==="il"?"il":"bölge")+" düzeyinde yayımlanmıyor. Diğer düzeye geçmeyi deneyin."}
   else{L.innerHTML='<span>'+fmt(vals[0],g.ondalik)+'</span><span class="kutu">'+RENK.map(function(c){return '<span style="background:'+c+'"></span>'}).join("")+'</span><span>'+fmt(vals[vals.length-1],g.ondalik)+' '+g.birim+'</span><span>· '+vals.length+' '+(st.duzey==="il"?"il":"bölge")+', beşli eşit sayılı sınıflar</span>';
     $("notHarita").textContent=(g.not||"")+(g.sonraki?" Veri yılı "+g.yillar[g.yillar.length-1]+"; sonraki güncelleme "+g.sonraki+".":"")}}
-/* ---- Kırılımlarla incele kutusu: göstergenin tablosu kırılım aracında varsa ---- */
+/* ---- Kırılımlarla incele: göstergenin tablosu kırılım aracında varsa kartta bağlantı çıkar ---- */
 var KT={};
 if(window.KIRILIM_DIZIN)KIRILIM_DIZIN.konular.forEach(function(k){k.tablolar.forEach(function(t){(t.df||[]).forEach(function(d){if(!KT[d])KT[d]=t})})});
-function kirilimKutu(g){var a=$("kirilimKutu");if(!a)return;var t=g&&KT[g.df_id];
-  if(!t){a.hidden=true;return}
-  a.hidden=false;a.href="kirilim-matrisi.html?tablo="+t.kod;
-  $("kirilimAd").textContent=t.kirilimlar.map(function(b){return b.ad}).join(", ")+(t.cografya==="il"?" ve il":"")+" kırılımlarıyla"}
 /* ---- kutular ---- */
 function sparkSvg(a,i){var y=a.slice(0,i+1).filter(function(x){return x!=null}).slice(-(a.length>60?36:15));if(y.length<2)return "";
   var mn=Math.min.apply(null,y),mx=Math.max.apply(null,y);if(mx===mn){mn-=1;mx+=1}
@@ -331,7 +320,7 @@ function grafikCiz(){var g=gOf(st.gid),a=g.veri.TR,n=a.length,L=lagOf(g),b=st.ar
   document.querySelectorAll("#aralik button").forEach(function(x){x.setAttribute("aria-pressed",(+x.dataset.a)===st.aralik)});
   $("grBaslik").textContent=g.baslik;var sn=son(g,"TR");
   $("grSon").innerHTML='<b>'+fmt(a[sn],g.ondalik)+'</b> '+g.birim+' · '+donemYaz(g,sn)+(L>1?degisim(g,a[sn],a[sn-L]):"");
-  $("notHarita").textContent=(g.not?g.not+". ":"")+"Kaynak: "+g.kaynak+".";kirilimKutu(g);
+  $("notHarita").textContent=(g.not?g.not+". ":"")+"Kaynak: "+g.kaynak+".";
   if(idx.length<2){$("grafik").innerHTML='<div class="bos">Bu aralıkta yeterli veri yok.</div>';return}
   var W=640,H=300,ml=48,mr=14,mt=12,mb=28,mn=1e18,mx=-1e18;
   idx.forEach(function(i){mn=Math.min(mn,a[i]);mx=Math.max(mx,a[i])});var pd=(mx-mn||1)*0.08;mn-=pd;mx+=pd;
