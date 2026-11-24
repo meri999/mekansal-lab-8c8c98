@@ -363,6 +363,11 @@ $("alt").innerHTML='Kaynak: <a href="https://veriportali.tuik.gov.tr" rel="noope
 haritaCiz("il");var K0=ALTLAR.nufus[0][0];if(trVar(K0)){st.duzey="il";konuDegis(K0);dzDegis("tr")}else konuDegis(K0);
 /* giris sayfasindan #konu=<kod> ile gelinirse o konuyu ac */
 (function(){var m=/#konu=([a-z]+)/.exec(location.hash);if(!m)return;var kk=m[1]==="aile"?"nufus":m[1];var b=document.querySelector('.konu[data-k="'+kk+'"]');if(b)b.click()})();
+/* ana sayfa aramasindan #g=<gosterge id> ve/veya #yer=<yer kodu> ile gelinirse ac; gecersizse sessizce yok say */
+(function(){var h=location.hash,mg=/[#&]g=([A-Za-z0-9_]+)/.exec(h),my=/[#&]yer=([A-Za-z0-9]+)/.exec(h);if(!mg&&!my)return;
+try{var g=mg?gOf(mg[1]):null;
+if(g){var d=g.sadece_tr?"tr":"il";if(dzVar(g.konu,d))kur(g.konu,d);if($("gosterge").querySelector('option[value="'+g.id+'"]'))gosterge(g.id)}
+if(my&&YER[my[1]])sec(my[1])}catch(e){}})();
 })();
 </script>
 </body>
