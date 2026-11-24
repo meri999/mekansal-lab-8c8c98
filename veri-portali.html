@@ -107,6 +107,8 @@ button,select{font:inherit;color:inherit}
 .srk:hover,.srk:focus-visible{border-color:var(--vurgu)}
 .srk .no{width:22px;color:var(--soluk);font-size:12px}.srk .ad{flex:1}.srk b{font-variant-numeric:tabular-nums}
 .spark{width:100%;height:26px;margin-top:4px;color:var(--vurgu)}
+.k-kir{display:inline-block;margin-top:6px;font-size:12px;font-weight:700;color:var(--vurgu-koyu);background:var(--vurgu-acik);border-radius:12px;padding:2px 10px;cursor:pointer}
+.k-kir:hover,.k-kir:focus-visible{background:#f6d5d6}
 .k-kaynak{font-size:11px;color:#8a97a1;margin-top:3px;line-height:1.25}
 .bos{padding:20px 4px;color:var(--soluk)}
 .kirilim-kutu{display:flex;align-items:center;gap:12px;margin-top:12px;padding:10px 14px;border:1.5px dashed var(--vurgu);border-radius:10px;background:var(--vurgu-acik);color:var(--bordo);text-decoration:none}
@@ -280,9 +282,12 @@ function kutularCiz(){if(siraModu()){siraCiz();return}var kod=st.sec,gs=gorunen(
       '<span class="k-donem">'+donemYaz(g,i)+'</span>'+
       (ay?'<div class="k-ayr">'+(ay.z>0?"▲ ":"▼ ")+bd+' ortalamasının '+(ay.z>0?"çok üstünde":"çok altında")+' (ort. '+fmt(ay.m,g.ondalik)+')</div>':"")+degisim(g,v(g,kod,i),(function(){var L=lagOf(g);if(L>1)return v(g,kod,i-L);var j=onceki(g,kod,i);return j>=0?v(g,kod,j):null})())+
       (tr!=null?'<div class="k-kars">Türkiye: '+fmt(tr,g.ondalik)+'</div>':"")+sira(g,kod,i)+sparkSvg(g.veri[kod],i)+
+      (KT[g.df_id]?'<span class="k-kir" role="link" tabindex="0" data-t="'+KT[g.df_id].kod+'">Kırılımlarla incele →</span>':"")+
       '<div class="k-kaynak">'+g.kaynak+(g.sonraki?' · yıllık, sonraki güncelleme '+g.sonraki:g.sik==="M"?" · aylık":g.sik==="Q"?" · üç aylık":"")+'</div></button>'});
   $("kutular").innerHTML=h+"</div>";
-  $("kutular").querySelectorAll(".kk").forEach(function(b){b.addEventListener("click",function(){gosterge(b.dataset.g)})})}
+  $("kutular").querySelectorAll(".kk").forEach(function(b){b.addEventListener("click",function(){gosterge(b.dataset.g)})});
+  $("kutular").querySelectorAll(".k-kir").forEach(function(r){var git=function(e){e.stopPropagation();e.preventDefault();location.href="kirilim-matrisi.html?tablo="+r.dataset.t};
+    r.addEventListener("click",git);r.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" ")git(e)})})}
 /* ---- durum ---- */
 function sec(k){if(st.duzey==="tr"&&k!=="TR"){var dd=YER[k].duzey==="il"?"il":"bolge";if(!dzVar(st.konu,dd)){dzNotYaz("<b>"+konuAd(st.konu)+"</b> "+(dd==="il"?"il":"bölge")+" düzeyinde yayımlanmamaktadır.");$("yerSec").value="TR";return}kur(st.konu,dd)}st.sec=k;if(YER[k].duzey==="il"&&st.duzey!=="il")dzDegis("il");else if(YER[k].duzey==="bolge"&&st.duzey!=="bolge")dzDegis("bolge");
   $("yerSec").value=k;boya();kutularCiz()}
