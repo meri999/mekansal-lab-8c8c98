@@ -85,25 +85,6 @@
   svg.addEventListener("keydown", function (e) { if ((e.key === "Enter" || e.key === " ") && e.target.dataset.k) { e.preventDefault(); sec(e.target.dataset.k); } });
 
 
-  /* ---- anahtar gostergeler ---- */
-  function spark(g) {
-    var a = g.veri.TR || [], p = [], n = a.length;
-    for (var i = 0; i < n; i++) if (typeof a[i] === "number") p.push([i, a[i]]);
-    if (p.length < 2) return "";
-    var lo = Math.min.apply(null, p.map(function (x) { return x[1]; })), hi = Math.max.apply(null, p.map(function (x) { return x[1]; }));
-    var pts = p.map(function (x) { return (x[0] / (n - 1) * 100).toFixed(1) + "," + (hi === lo ? 15 : 27 - (x[1] - lo) / (hi - lo) * 24).toFixed(1); }).join(" ");
-    return '<svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true"><polyline points="' + pts + '" fill="none" stroke="#d8232a" stroke-width="2" vector-effect="non-scaling-stroke"></polyline></svg>';
-  }
-  $("seri").innerHTML = C.anahtar.map(function (a) {
-    var g = gOf(a.gosterge); if (!g) return "";
-    var arr = g.veri.TR || [], son = -1;
-    for (var i = arr.length - 1; i >= 0; i--) if (typeof arr[i] === "number") { son = i; break; }
-    if (son < 0) return '<div class="kart"><small>' + esc(a.etiket) + '</small><div class="b">—</div></div>';
-    var onc = typeof arr[son - 1] === "number" ? arr[son - 1] : null, v = arr[son];
-    var d = onc === null ? "" : (v - onc > 0 ? "▲ " : v - onc < 0 ? "▼ " : "") + isaretli(v - onc, g.ondalik) + " (" + esc(g.yillar[son - 1]) + "→" + esc(g.yillar[son]) + ")";
-    return '<div class="kart"><small>' + esc(a.etiket) + ' · ' + esc(g.yillar[son]) + '</small><div class="b">' + (g.birim === "%" ? "%" + sayi(v, g.ondalik) : kisalt(v, g.ondalik) + (g.birim && g.birim.length < 4 && g.birim !== "kişi" ? " " + esc(g.birim) : "")) + '</div><span class="d">' + d + '</span>' + spark(g) + '</div>';
-  }).join("");
-
   /* ---- araclar, konular, bulgular, alt bilgi ---- */
   $("gSay").textContent = V.gostergeler.length;
   $("konuIzgara").innerHTML = C.konular.map(function (k) {
@@ -117,6 +98,7 @@
     '<span>"Hesaplanmış" etiketli göstergeler TÜİK tarafından yayımlanmaz, ilgili tablolardan türetilir. İlişki nedensellik değildir.</span><span>Enstitü Sosyal</span>';
   /* ---- genel arama: gosterge, il, arac ---- */
   (function () {
+    var sol = $("kahraman").firstElementChild; if (sol) sol.appendChild($("aramaBlok")); /* "Bu haftanin sorusu" metninin altina */
     var gir = $("gAra"), lst = $("gListe"), ac = -1, bulunan = [];
     var araclar = Array.prototype.map.call(document.querySelectorAll("#araclar .arac"), function (k) {
       var h = k.querySelector("h3"), p = k.querySelector("p");
