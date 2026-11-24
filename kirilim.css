@@ -93,3 +93,7 @@ table.duz tr.g td{background:#efefef;font-weight:600;color:var(--bordo)}
 /* dar ekranda uzun tablo adı sayfayı taşırmasın */
 .kontrol>div:not(.yil){flex:1 1 200px;min-width:0;max-width:100%}
 .kontrol select{width:100%;min-width:0}
+
+/* gömülü kullanım (?gomulu=1) */
+html.gomulu .ust,html.gomulu .konular,html.gomulu #tablow,html.gomulu main>section.panel:first-child{display:none}
+html.gomulu .ana{padding:0}

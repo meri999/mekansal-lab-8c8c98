@@ -4,6 +4,12 @@
   var $ = function (id) { return document.getElementById(id); };
   var durum = { konu: 0, tablo: null, roller: null, yer: "TR", donem: 0, cikti: "matris", deger: "sayi", kars: false, sabit: {} };
   var tablo = null;
+  // Adres: ?tablo=<kod> o tabloyu açar; &gomulu=1 başka sayfanın içine gömülür (üst bar ve tablo seçimi gizli)
+  var Q = new URLSearchParams(location.search), GOMULU = Q.get("gomulu") === "1";
+  if (GOMULU) document.documentElement.classList.add("gomulu");
+  function yukseklikBildir() {
+    if (GOMULU && window.parent !== window) setTimeout(function () { window.parent.postMessage({ kirilimYukseklik: document.documentElement.scrollHeight }, "*"); }, 0);
+  }
   window.__kirilim = { durum: durum, hatalar: 0, konuSec: function (i) { konuSec(i); } };
   window.addEventListener("error", function () { window.__kirilim.hatalar++; });
 
@@ -25,12 +31,12 @@
     }).join("");
   }
 
-  function konuSec(i) {
+  function konuSec(i, kod) {
     durum.konu = i;
     konuSekmeleri();
     var liste = D.konular[i].tablolar;
     $("tablo").innerHTML = secenekler(liste.map(function (x) { return [x.kod, x.baslik]; }));
-    tabloSec(liste[0].kod);
+    tabloSec(kod || liste[0].kod);
   }
 
   function tabloYukle(kod) {
@@ -305,6 +311,7 @@
     }
     $("lejant").innerHTML = lej;
     notlar(paneller, kes.kesildi, tum.length);
+    yukseklikBildir();
   }
   window.__kirilim.ciz = function () { ciz(); };
 
@@ -333,5 +340,8 @@
     if (kol) { durum.sabit[kol] = e.target.value; ciz(); }
   });
 
-  konuSec(0);
+  var ilk = Q.get("tablo"), ilkKonu = 0;
+  D.konular.forEach(function (k, i) { k.tablolar.forEach(function (x) { if (x.kod === ilk) ilkKonu = i; }); });
+  konuSec(ilkKonu, ilk && dizinTablo(ilk) ? ilk : null);
+  window.addEventListener("resize", yukseklikBildir);
 })();
