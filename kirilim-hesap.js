@@ -1,4 +1,4 @@
-/* Kırılım matrisi hesapları: saf fonksiyonlar, DOM'a dokunmaz.
+/* Kırılım Gezgini hesapları: saf fonksiyonlar, DOM'a dokunmaz.
    Tablo biçimi: betikler/05f_kirilim_uret.R çıktısı (window.KIRILIM_TABLO[kod]).
    v[donem][yer] yoğun düz dizidir; en soldaki kırılım en yavaş değişir. */
 (function (global) {

@@ -1,4 +1,4 @@
-/* Kırılım matrisi sayfası: menüler ve çizim. Hesap: kirilim-hesap.js */
+/* Kırılım Gezgini sayfası: menüler ve çizim. Hesap: kirilim-hesap.js */
 (function () {
   var D = window.KIRILIM_DIZIN, H = window.KirilimHesap;
   var $ = function (id) { return document.getElementById(id); };
