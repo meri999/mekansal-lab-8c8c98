@@ -89,3 +89,7 @@ table.duz tr.g td{background:#efefef;font-weight:600;color:var(--bordo)}
 .piramit i{display:block;height:20px}
 .lejant{flex-wrap:wrap;gap:6px 14px}
 .lejant span.r::before{content:"";display:inline-block;width:11px;height:11px;border-radius:3px;background:var(--r);margin-right:5px;vertical-align:-1px}
+
+/* dar ekranda uzun tablo adı sayfayı taşırmasın */
+.kontrol>div:not(.yil){flex:1 1 200px;min-width:0;max-width:100%}
+.kontrol select{width:100%;min-width:0}

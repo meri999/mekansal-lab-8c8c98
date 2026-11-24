@@ -12,6 +12,56 @@ function bitir() {
   document.getElementById("o").textContent = out.join("\n") + "\n" + (bad ? bad + " BASARISIZ" : "HEPSI GECTI");
   document.title = bad ? "KALDI" : "GEÇTİ";
 }
+function tikla(sel) { var e = W.document.querySelector(sel); e.click(); }
+function tabloGit(kod, f) {
+  var konu = -1; D.konular.forEach(function (k, i) { k.tablolar.forEach(function (x) { if (x.kod === kod) konu = i; }); });
+  W.__kirilim.konuSec(konu); sec("tablo", kod); sonra(f);
+}
+function cikti6() {
+  tabloGit("evlenme_egt_yas_gr", function () {
+    sec("k3", "SEX");
+    var ps = W.document.querySelectorAll("#sonuc .panelkutu");
+    t("uc kirilim: k3=SEX iki panel, her birinde matris", function () { return eq(ps.length, 2) === true && (ps[0].querySelector("table") ? true : "tablo yok"); });
+    tikla('#cikti [data-c="tablo"]');
+    var d = W.__kirilim.durum, tb = W.KIRILIM_TABLO[d.tablo];
+    var panel = W.KirilimHesap.kesit(tb, tb.donemler[d.donem], d.yer, d.roller, d.sabit)[0];
+    var son = W.document.querySelector("#sonuc .panelkutu tr.g td:last-child");
+    t("tablo ciktisi: toplam hucresi _T hucresine esit", function () { return eq(son && son.textContent, panel.toplam.toLocaleString("tr-TR")); });
+    tikla('#cikti [data-c="cubuk"]');
+    t("cubuk ciktisi cizilir", function () { return W.document.querySelectorAll("#sonuc .cubuk").length > 0 || "cubuk yok"; });
+    sec("k3", "EDUCATION_LEV");
+    t("6 panelden fazlasi: ilk alti uyarisi", function () { return /ilk altı/.test($("notlar").textContent) || $("notlar").textContent; });
+    tabloGit("adnks_t16", function () {
+      t("il tablosunda yer secici gorunur", function () { return eq($("yerw").hidden, false); });
+      t("il tablosunda karsilastirma gorunur", function () { return eq($("karsw").hidden, false); });
+      sec("yer", "TR100");
+      var k = $("kars"); k.checked = true; k.dispatchEvent(new W.Event("change", { bubbles: true }));
+      tikla('#cikti [data-c="matris"]');
+      t("karsilastirma: hucrelerde data-fark", function () { return W.document.querySelectorAll("#sonuc td[data-fark]").length > 0 || "yok"; });
+      W.__kirilim.durum.yer = "TR999"; W.__kirilim.ciz();
+      t("secili yerde veri yok: mesaj", function () { return /veri yok/.test($("sonuc").textContent) || $("sonuc").textContent; });
+      W.__kirilim.durum.yer = "XX"; W.__kirilim.ciz();
+      t("secili yerde veri yok: mesaj, cokme yok", function () { return /veri yok/.test($("sonuc").textContent) || $("sonuc").textContent; });
+      tabloGit("bosanma_cins_yasgr", function () {
+        var bay = D.yerler.filter(function (y) { return y.ad_tr === "Bayburt"; })[0].kod;
+        sec("yer", bay);
+        t("kucuk toplam (Bayburt boşanma): gozlem az notu", function () { return /gözlem az/.test($("notlar").textContent) || $("notlar").textContent; });
+      });
+      sonra(function () {
+      tabloGit("bed_nufus_dagilim", function () {
+        t("oran tablosunda satir payi kapali", function () { return eq(W.document.querySelector('#deger [data-d="pay"]').disabled, true); });
+        t("oran tablosunda piramit/cubuk kapali", function () { return eq(W.document.querySelector('#cikti [data-c="cubuk"]').disabled, true); });
+        tabloGit("tamamlama_oran", function () {
+          sec("k3", "-");
+          t("oran: kirilim 3 yok -> sabitlenen notu", function () { return ($("sabit") && /sabit/.test($("sabit").textContent)) || "yok"; });
+          t("konsolda hata yok", function () { return eq(W.__kirilim.hatalar, 0); });
+          bitir();
+        });
+      });
+      }, 1500);
+    });
+  });
+}
 window.onload = function () {
   F = document.getElementById("f"); W = F.contentWindow;
   sonra(function () {
@@ -44,8 +94,7 @@ window.onload = function () {
             var d = W.__kirilim.durum, kol = W.KIRILIM_TABLO[d.tablo].kirilimlar.map(function (k) { return k.kol; });
             return (kol.indexOf(d.roller.k1) >= 0 && kol.indexOf(d.roller.k2) >= 0 && (d.roller.k3 === "-" || kol.indexOf(d.roller.k3) >= 0)) || JSON.stringify(d.roller);
           });
-          t("konsolda hata yok", function () { return eq(W.__kirilim.hatalar, 0); });
-          bitir();
+          cikti6();
         });
       });
     });
