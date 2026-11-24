@@ -292,7 +292,7 @@
       yollar += '<path class="seri" d="' + d + '" fill="none" stroke="' + renk + '" stroke-width="2.4"><title>' + kacis(s.ad + ": " + degerMetni(son(s))) + "</title></path>";
       lej += '<span class="r" style="--r:' + renk + '">' + kacis(s.ad) + "</span>";
     });
-    return '<svg viewBox="0 0 ' + W + " " + Hh + '" role="img" aria-label="Zaman serisi">' + g + yollar + etk + "</svg>" +
+    return '<svg viewBox="0 0 ' + W + " " + Hh + '" class="zsvg" role="img" aria-label="Zaman serisi">' + g + yollar + etk + "</svg>" +
       '<div class="lejant">' + lej + "</div>" + (kesik ? '<p class="uyari">Son dönem değeri en yüksek 8 satır gösteriliyor.</p>' : "");
   }
 
@@ -328,7 +328,7 @@
         kacis(f.properties.ad + ": " + degerMetni(x === undefined ? null : x)) + "</title></path>";
     }).join("");
     var lej = renk.map(function (r) { return '<i style="display:inline-block;width:40px;height:10px;background:' + r + '"></i>'; }).join("");
-    return '<svg viewBox="0 0 ' + ((44.9 - 25.5) * k * 60).toFixed(0) + " " + ((42.4 - 35.7) * 60).toFixed(0) + '" role="img" aria-label="İllere göre harita">' + yol + "</svg>" +
+    return '<svg viewBox="0 0 ' + ((44.9 - 25.5) * k * 60).toFixed(0) + " " + ((42.4 - 35.7) * 60).toFixed(0) + '" class="hsvg" role="img" aria-label="İllere göre harita">' + yol + "</svg>" +
       '<div class="lejant"><span>' + degerMetni(liste[0]) + "</span>" + lej + "<span>" + degerMetni(liste[liste.length - 1]) + "</span></div>";
   }
 

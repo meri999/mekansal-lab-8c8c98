@@ -106,3 +106,6 @@ html.gomulu .ana{padding:0}
 .kontrol>div:has(>.seg){flex:0 1 auto}
 .seg{flex-wrap:wrap;max-width:100%}
 .seg button{white-space:nowrap}
+
+.panelkutu svg.zsvg{max-height:340px}
+.panelkutu svg.hsvg{max-height:400px}
