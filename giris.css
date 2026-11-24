@@ -96,3 +96,8 @@ a.arac:hover,a.kart:hover,a.hik:hover{box-shadow:0 6px 18px #0002}
  .dugme.cizgi{display:none}
  .acilir{width:230px}
 }
+
+/* üst menüdeki Araçlar listesi */
+a.oge{display:block;text-decoration:none;opacity:1}
+a.oge:hover,a.oge:focus-visible{background:#faf3f3}
+@media(max-width:640px){.dugme.cizgi.arac-d{display:inline-block}}

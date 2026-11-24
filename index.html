@@ -5,7 +5,9 @@
 <link rel="stylesheet" href="giris.css">
 </head><body>
 <header id="ust"><a class="logo" href="./"><span class="kare" aria-hidden="true"><i></i><i class="b"></i></span>Enstitü Portal</a>
-<div class="sag"><a class="dugme cizgi" href="veri-portali.html">Veri portalına git →</a>
+<div class="sag"><div class="menu"><button type="button" class="dugme cizgi arac-d" id="aracDugme" aria-haspopup="true" aria-expanded="false" aria-controls="aracMenu">Araçlar ▾</button>
+<div id="aracMenu" class="acilir" hidden><a class="oge" href="veri-portali.html"><b>Veri portalı</b><small>Harita ve göstergeler; kırılımlarla incele</small></a><a class="oge" href="goc-agi.html"><b>Göç ağı</b><small>İller arası akış haritası</small></a><div class="oge" aria-disabled="true"><b>İl karnesi</b><small>yakında</small></div><div class="oge" aria-disabled="true"><b>İlişki keşfi</b><small>yakında</small></div><div class="oge" aria-disabled="true"><b>Gösterge atölyesi</b><small>yakında</small></div></div></div>
+<a class="dugme cizgi" href="veri-portali.html">Veri portalına git →</a>
 <div class="menu"><button type="button" class="dugme" id="girisDugme" aria-haspopup="true" aria-expanded="false" aria-controls="girisMenu">Giriş yap ▾</button>
 <div id="girisMenu" class="acilir" hidden><div class="oge" aria-disabled="true"><b>Enstitü girişi</b><small>Enstitü çalışanları için · yakında</small></div><div class="oge" aria-disabled="true"><b>Üye girişi</b><small>Üyeler ve kayıtlı kullanıcılar · yakında</small></div></div></div></div></header>
 <main>
@@ -23,11 +25,11 @@
 </main>
 <footer id="alt"></footer>
 <script>
-(function(){var d=document.getElementById("girisDugme"),m=document.getElementById("girisMenu");if(!d||!m)return;
-function ac(a){m.hidden=!a;d.setAttribute("aria-expanded",String(a))}
-d.addEventListener("click",function(e){e.stopPropagation();ac(m.hidden)});
-document.addEventListener("click",function(e){if(!m.contains(e.target))ac(false)});
-document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!m.hidden){ac(false);d.focus()}});})();
+(function(){var P=[{d:document.getElementById("girisDugme"),m:document.getElementById("girisMenu")},{d:document.getElementById("aracDugme"),m:document.getElementById("aracMenu")}].filter(function(x){return x.d&&x.m});
+function ac(p,a){p.m.hidden=!a;p.d.setAttribute("aria-expanded",String(a))}
+P.forEach(function(p){p.d.addEventListener("click",function(e){e.stopPropagation();var a=p.m.hidden;P.forEach(function(q){ac(q,false)});ac(p,a)})});
+document.addEventListener("click",function(e){P.forEach(function(p){if(!p.m.contains(e.target))ac(p,false)})});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")P.forEach(function(p){if(!p.m.hidden){ac(p,false);p.d.focus()}})});})();
 </script>
 <script src="veri/veri.js?v=20261124140714"></script>
 <script src="veri/harita_il.js?v=20261124140714"></script>
