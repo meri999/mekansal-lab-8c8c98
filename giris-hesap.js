@@ -45,8 +45,60 @@
     function sirali(l) { return l.map(function (y) { return { kod: y.kod, ad: y.ad_tr }; }).sort(function (a, b) { return a.ad.localeCompare(b.ad, "tr"); }); }
     return sirali(bas).concat(sirali(ic)); /* once bastan eslesenler */
   }
+  /* Genel arama: gosterge, il, arac ve "il + gosterge" birlesimi. En cok 8 sonuc. */
+  function sozcukler(m) { return katla(m).split(/[\s\-–—,.:;()\/]+/).filter(Boolean); }
+  function onekler(q, kelimeler) {
+    return q.every(function (t) { return kelimeler.some(function (w) { return w.indexOf(t) === 0; }); });
+  }
+  function araBul(metin, kaynak) {
+    var q = sozcukler(metin); if (!q.length) return [];
+    var G = (kaynak && kaynak.gostergeler) || [], Y = (kaynak && kaynak.yerler) || [], A = (kaynak && kaynak.araclar) || [];
+    var gor = {}, tek = [];
+    G.forEach(function (g) { /* ayni baslik tek kez; il surumu (sadece_tr olmayan) tercih edilir */
+      var k = g.baslik, var_ = gor[k];
+      if (var_ === undefined) { gor[k] = tek.length; tek.push(g); }
+      else if (tek[var_].sadece_tr && !g.sadece_tr) tek[var_] = g;
+    });
+    function gKel(g) { return sozcukler(g.baslik + " " + (g.grup || "")); }
+    function gSonuc(g, ek, il) {
+      return { tur: il ? "birlesik" : "gosterge", ad: il ? il.ad_tr + " · " + g.baslik : g.baslik, ek: ek || g.grup || "",
+        href: "veri-portali.html#g=" + g.id + (il ? "&yer=" + il.kod : ""), pasif: false };
+    }
+    var iller = Y.filter(function (y) { return y.duzey === "il"; });
+    var birlesik = [], ilSon = [], gSon = [], aSon = [];
+    /* il + gosterge: bir sozcuk il adinin onekiyse, kalanlar gosterge ile eslesir */
+    if (q.length > 1) {
+      q.forEach(function (t, i) {
+        if (t.length < 3) return;
+        var es = iller.filter(function (y) { return katla(y.ad_tr).indexOf(t) === 0; });
+        if (!es.length || es.length > 3) return;
+        var kalan = q.filter(function (_, j) { return j !== i; });
+        tek.forEach(function (g) {
+          if (g.sadece_tr || !onekler(kalan, gKel(g))) return;
+          es.forEach(function (y) { if (birlesik.length < 3) birlesik.push(gSonuc(g, "", y)); });
+        });
+      });
+    }
+    iller.forEach(function (y) {
+      if (onekler(q, sozcukler(y.ad_tr))) ilSon.push({ tur: "il", ad: y.ad_tr, ek: "İl", href: "veri-portali.html#yer=" + y.kod, pasif: false });
+    });
+    ilSon.sort(function (a, b) { return a.ad.localeCompare(b.ad, "tr"); });
+    var gEs = tek.filter(function (g) { return onekler(q, gKel(g)); });
+    gEs.sort(function (a, b) {
+      var pa = katla(a.baslik).indexOf(q[0]) === 0 ? 0 : 1, pb = katla(b.baslik).indexOf(q[0]) === 0 ? 0 : 1;
+      return pa - pb;
+    });
+    gEs.forEach(function (g) { gSon.push(gSonuc(g)); });
+    var aAd = [];
+    A.forEach(function (a) { /* adiyla eslesen arac, gostergelerden once; yalniz aciklamasiyla eslesen sonda */
+      var r = { tur: "arac", ad: a.ad, ek: a.aciklama || "Araç", href: a.href, pasif: !!a.pasif };
+      if (onekler(q, sozcukler(a.ad))) aAd.push(r);
+      else if (onekler(q, sozcukler(a.aciklama || ""))) aSon.push(r);
+    });
+    return birlesik.concat(ilSon.slice(0, 3), aAd.slice(0, 3), gSon.slice(0, 5), aSon.slice(0, 2)).slice(0, 8);
+  }
   function turkiye(g, i) {
     var v = g.veri.TR ? g.veri.TR[i] : null; return (typeof v === "number" && isFinite(v)) ? v : null;
   }
-  global.GirisHesap = { sonYil: sonYil, ilDegerleri: ilDegerleri, fark: fark, sirala: sirala, bul: bul, turkiye: turkiye, katla: katla, MIN_IL: MIN_IL };
+  global.GirisHesap = { sonYil: sonYil, ilDegerleri: ilDegerleri, fark: fark, sirala: sirala, bul: bul, turkiye: turkiye, katla: katla, araBul: araBul, MIN_IL: MIN_IL };
 })(window);

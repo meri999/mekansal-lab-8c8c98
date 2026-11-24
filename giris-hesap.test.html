@@ -22,5 +22,19 @@ t("sonYil son yil <70 ise geriye",function(){var n=g.yillar.length,v={};Object.k
   Object.keys(v).forEach(function(k,j){if(k!=="TR"&&j%2===0)v[k][n-1]=null});
   var s=H.sonYil({yillar:g.yillar,veri:v});return s.i<n-1||"geri gitmedi"});
 t("turkiye",function(){var s=H.sonYil(g);var v=H.turkiye(g,s.i);return typeof v==="number"||v});
+var K={gostergeler:VERI.gostergeler,yerler:Y,araclar:[{ad:"Kırılım Gezgini",href:"kirilim-matrisi.html",aciklama:"Seç, çaprazla",pasif:false},{ad:"İl karnesi",href:"#",aciklama:"Bir ilin karnesi",pasif:true},{ad:"Göç ağı",href:"goc-agi.html",aciklama:"İller arası akış",pasif:false}]};
+var izmir=Y.filter(function(y){return y.ad_tr==="İzmir"&&y.duzey==="il"})[0];
+t("araBul tanimli",function(){return typeof H.araBul==="function"||"yok"});
+t("araBul bos",function(){return H.araBul("",K).length===0||"bos olmali"});
+t("araBul bosluk",function(){return H.araBul("   ",K).length===0||"bos olmali"});
+t("araBul eslesmeyen",function(){return H.araBul("zzzqq",K).length===0||"bos olmali"});
+t("araBul dogurganlik gosterge",function(){var r=H.araBul("dogurganlik",K);return (r[0]&&r[0].tur==="gosterge"&&/oğurganlık/i.test(r[0].ad))||JSON.stringify(r[0])});
+t("araBul izmir il",function(){var r=H.araBul("izmir",K);return (r[0]&&r[0].tur==="il"&&r[0].ad==="İzmir"&&r[0].href==="veri-portali.html#yer="+izmir.kod)||JSON.stringify(r[0])});
+t("araBul izmir issizlik birlesik",function(){var r=H.araBul("izmir issizlik",K);return (r[0]&&r[0].tur==="birlesik"&&r[0].href==="veri-portali.html#g=g38&yer="+izmir.kod)||JSON.stringify(r[0])});
+t("araBul kirilim arac",function(){var r=H.araBul("kirilim",K);return (r[0]&&r[0].tur==="arac"&&r[0].href==="kirilim-matrisi.html"&&r[0].pasif===false)||JSON.stringify(r[0])});
+t("araBul pasif arac",function(){var r=H.araBul("karnesi",K);return (r[0]&&r[0].tur==="arac"&&r[0].pasif===true)||JSON.stringify(r[0])});
+t("araBul issizlik tek baslik",function(){var r=H.araBul("issizlik",K).filter(function(x){return x.ad==="İşsizlik oranı"});return r.length===1||r.length});
+t("araBul en cok 8",function(){return H.araBul("nufus",K).length<=8||"cok"});
+t("araBul sadece_tr il ile birlesmez",function(){var r=H.araBul("izmir issizlik",K).filter(function(x){return /g113$|g113&/.test(x.href)});return r.length===0||"g113 geldi"});
 document.getElementById("o").textContent=out.join("\n");document.title=(bad?"FAIL ":"PASS ")+(out.length-bad)+"/"+out.length;
 </script></body></html>
