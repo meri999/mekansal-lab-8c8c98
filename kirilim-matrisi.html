@@ -4,78 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kırılım matrisi · Enstitü Portal</title>
-<meta name="description" content="Bir TÜİK tablosunun iki kırılımını çaprazlar: nüfus piramidi, evlenenlerin yaş grupları. İl seç, Türkiye ile karşılaştır.">
+<meta name="description" content="TÜİK tablolarının kırılımlarını (cinsiyet, yaş grubu, eğitim, medeni durum…) kendiniz seçip çaprazlayın: ısı matrisi, çubuk ve tablo olarak görün.">
 <meta name="theme-color" content="#d8232a">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&family=Roboto+Slab:wght@700&display=swap" rel="stylesheet">
-<style>
-:root{--zemin:#f6f6f6;--kart:#ffffff;--yazi:#1d1d1d;--soluk:#666666;--cizgi:#e2e2e2;--vurgu:#d8232a;--vurgu-koyu:#b81d24;--vurgu-acik:#fbeaea;--bordo:#7b0828;--eksi:#2b6f8a;--slab:"Roboto Slab","Rockwell","Georgia",serif;--mont:"Montserrat",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
-*{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--zemin);color:var(--yazi);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:15px;line-height:1.45}
-button,select{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--vurgu);outline-offset:2px}
-.ust{background:var(--kart);border-bottom:2px solid var(--vurgu);position:sticky;top:0;z-index:20}
-.ust-ic{max-width:1320px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.marka{font-family:var(--slab);font-weight:700;font-size:17px;display:flex;align-items:center;gap:10px;white-space:nowrap;color:inherit;text-decoration:none}
-.marka .kare{display:inline-flex;gap:3px}
-.marka i{width:11px;height:11px;border-radius:3px;background:var(--vurgu);display:block}
-.marka i.b{background:var(--bordo)}
-.sayfa{font-family:var(--mont);font-weight:700;font-size:14px;color:var(--bordo)}
-.geri{margin-left:auto;font-family:var(--mont);font-weight:500;font-size:13.5px;color:var(--vurgu-koyu);text-decoration:none;padding:6px 12px;border-radius:16px}
-.geri:hover{background:var(--vurgu-acik)}
-.ana{max-width:1320px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:16px}
-.panel{background:var(--kart);border:1px solid var(--cizgi);border-radius:12px;padding:14px 16px;min-width:0}
-h1{font-family:var(--slab);font-size:24px;margin:0 0 2px;color:var(--bordo)}
-.alt{margin:0;color:var(--soluk);font-size:14px}
-
-/* kontroller */
-.kontrol{display:flex;gap:14px 18px;flex-wrap:wrap;align-items:flex-end}
-.kontrol label,.etk{display:block;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--soluk);margin-bottom:4px}
-.kontrol select{border:1px solid var(--cizgi);background:var(--kart);border-radius:8px;padding:7px 9px;min-width:190px;max-width:100%}
-.seg{display:inline-flex;border:1px solid var(--cizgi);border-radius:8px;overflow:hidden}
-.seg button{border:0;background:var(--kart);padding:7px 12px;cursor:pointer;font-size:13px;color:var(--soluk)}
-.seg button[aria-pressed="true"]{background:var(--vurgu-acik);color:var(--vurgu-koyu);font-weight:600}
-.seg button:disabled{opacity:.45;cursor:default}
-.onay{display:flex;align-items:center;gap:7px;font-size:14px;padding-bottom:6px;cursor:pointer}
-.onay input{accent-color:var(--vurgu);width:16px;height:16px}
-.yil{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--soluk);min-width:220px;padding-bottom:4px}
-.yil input{flex:1;accent-color:var(--vurgu)}
-.yil b{color:var(--yazi);min-width:2.8em;text-align:right}
-
-/* özet */
-.ozet{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-.ozet div{border:1px solid var(--cizgi);border-radius:10px;padding:9px 12px}
-.ozet small{display:block;font-size:12px;color:var(--soluk)}
-.ozet b{font-family:var(--mont);font-size:20px;color:var(--bordo);font-variant-numeric:tabular-nums}
-.ozet em{display:block;font-style:normal;font-size:12px;color:var(--soluk)}
-
-/* ısı matrisi ve tablo */
-.kaydir{overflow-x:auto}
-table.mat{border-collapse:separate;border-spacing:2px;font-size:12.5px;font-variant-numeric:tabular-nums;min-width:560px;width:100%}
-table.mat th{font-weight:600;color:var(--soluk);padding:4px 6px;font-size:12px;white-space:nowrap}
-table.mat th.sol{text-align:right}
-table.mat td{text-align:center;padding:7px 4px;border-radius:5px;cursor:default}
-table.mat td.kose{outline:1.5px solid var(--yazi);outline-offset:-1.5px}
-table.mat td.top,table.mat th.top{color:var(--yazi);font-weight:600;background:none}
-table.mat td.sec{outline:2px solid var(--vurgu);outline-offset:-2px}
-.eksen{font-size:12px;color:var(--soluk);text-align:center;margin:2px 0 6px}
-.eksen-sol{font-size:12px;color:var(--soluk);margin-bottom:4px}
-
-/* lejant */
-.lejant{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--soluk);margin-top:10px}
-.lejant .sk{height:9px;width:150px;border-radius:5px}
-
-/* piramit */
-svg{display:block;width:100%;height:auto}
-.etiket-yaz{font-size:11px;fill:var(--soluk)}
-.deger-yaz{font-size:10px;fill:var(--soluk)}
-.uyari{font-size:12.5px;color:var(--soluk);border-left:3px solid var(--cizgi);padding:2px 0 2px 10px;margin:12px 0 0}
-.altbilgi{max-width:1320px;margin:0 auto;padding:6px 16px 28px;font-size:12.5px;color:var(--soluk)}
-.altbilgi a{color:var(--vurgu-koyu)}
-.sr{position:absolute;left:-9999px}
-.ipucu{position:fixed;pointer-events:none;background:var(--yazi);color:#fff;padding:5px 9px;border-radius:6px;font-size:12.5px;z-index:50;display:none;white-space:nowrap}
-</style>
+<link rel="stylesheet" href="kirilim.css">
 </head>
 <body>
 <header class="ust"><div class="ust-ic">
@@ -87,377 +20,36 @@ svg{display:block;width:100%;height:auto}
 <main class="ana">
   <section class="panel">
     <h1 id="baslik">Kırılım matrisi</h1>
-    <p class="alt" id="aciklama"></p>
+    <p class="alt" id="aciklama">Bir konu ve tablo seçin, tablonun kırılımlarından ikisini ya da üçünü çaprazlayın, çıktının biçimini kendiniz belirleyin.</p>
   </section>
 
   <section class="panel" aria-label="Seçimler">
+    <div class="konular" id="konu" role="tablist" aria-label="Konu"></div>
     <div class="kontrol">
-      <div><span class="etk">Tablo</span><div class="seg" id="segTablo" role="group" aria-label="Tablo"></div></div>
-      <div><label for="ilSec">Yer</label><select id="ilSec"></select></div>
-      <div class="yil"><span>Yıl</span><input type="range" id="yilKayar" min="0" max="0" step="1" aria-label="Yıl"><b id="yilYazi"></b></div>
-      <div><span class="etk">Görünüm</span><div class="seg" id="segGorunum" role="group" aria-label="Görünüm"></div></div>
-      <div><span class="etk">Değer</span><div class="seg" id="segDeger" role="group" aria-label="Değer"><button data-d="sayi" aria-pressed="true">Sayı</button><button data-d="pay" aria-pressed="false">Pay (%)</button></div></div>
-      <label class="onay" id="karsilastirEtiket"><input type="checkbox" id="karsilastir"> Türkiye ile karşılaştır</label>
+      <div><label for="tablo">Tablo</label><select id="tablo"></select></div>
+      <div id="k1w"><label for="k1">Kırılım 1 (satır)</label><select id="k1"></select></div>
+      <div id="k2w"><label for="k2">Kırılım 2 (sütun)</label><select id="k2"></select></div>
+      <div id="k3w"><label for="k3">Kırılım 3 (paneller)</label><select id="k3"></select></div>
+      <div id="yerw" hidden><label for="yer">Yer</label><select id="yer"></select></div>
+      <div id="donemw" class="yil" hidden><span>Dönem</span><input type="range" id="donem" min="0" max="0" step="1" aria-label="Dönem"><b id="donemYazi"></b></div>
+      <div><span class="etk">Çıktı</span><div class="seg" id="cikti" role="group" aria-label="Çıktı"></div></div>
+      <div><span class="etk">Değer</span><div class="seg" id="deger" role="group" aria-label="Değer"><button data-d="sayi" aria-pressed="true">Sayı</button><button data-d="pay" aria-pressed="false">Satır payı (%)</button></div></div>
+      <label class="onay" id="karsw" hidden><input type="checkbox" id="kars"> Türkiye ile karşılaştır</label>
     </div>
+    <p class="alt" id="ipucu" style="margin-top:10px"></p>
   </section>
 
-  <section class="ozet" id="ozet" aria-live="polite"></section>
-
   <section class="panel" aria-live="polite">
-    <div id="icerik"></div>
+    <div id="sonuc"></div>
     <div class="lejant" id="lejant"></div>
-    <p class="uyari" id="not"></p>
+    <div id="notlar"></div>
   </section>
 </main>
 <footer class="altbilgi" id="kaynak"></footer>
-<div class="ipucu" id="ipucu"></div>
+<div class="ipucu" id="balon"></div>
 
-<script src="veri/kirilim.js?v=20261124124641"></script>
-<script>
-(function () {
-  var K = window.KIRILIM;
-  var $ = function (id) { return document.getElementById(id); };
-
-  var durum = { t: 0, il: "TR", yil: 0, gorunum: "grafik", deger: "sayi", kars: false, sec: null };
-  var tablo = null;
-
-  var yerAd = {};
-  K.yerler.forEach(function (y) { yerAd[y.kod] = y.ad_tr; });
-
-  function sayiYaz(v, ond) {
-    return v.toLocaleString("tr-TR", { minimumFractionDigits: ond || 0, maximumFractionDigits: ond || 0 });
-  }
-  function yuzde(v, ond) { return sayiYaz(v, ond === undefined ? 1 : ond) + "%"; }
-  function kacis(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
-
-  /* --- veri erişimi ---------------------------------------------------- */
-
-  function matris(il, yil) {
-    var v = tablo.v[yil] && tablo.v[yil][il];
-    return v || [];
-  }
-  function bilinmeyen(il, yil) {
-    var b = tablo.bilinmeyen && tablo.bilinmeyen[yil];
-    return (b && b[il]) || 0;
-  }
-  function toplam(v) {
-    var t = 0;
-    for (var i = 0; i < v.length; i++) t += v[i];
-    return t;
-  }
-  function hucre(v, r, c) { return v[r * tablo.sutun.kodlar.length + c] || 0; }
-
-  // Hücreleri toplamın yüzdesi olarak verir
-  function paya(v) {
-    var t = toplam(v) || 1;
-    return v.map(function (x) { return x / t * 100; });
-  }
-
-  // Etiketin başındaki sayı (yaş eşikleri için): "65-69" -> 65
-  function baslangic(etiket) { return parseInt(etiket, 10); }
-
-  /* --- renkler --------------------------------------------------------- */
-
-  function sira(deger, en) {
-    return Math.max(0, Math.min(1, deger / (en || 1)));
-  }
-  function renkTek(oran) {
-    return "rgba(216,35,42," + (0.06 + oran * 0.9).toFixed(3) + ")";
-  }
-  function renkFark(fark, en) {
-    var o = sira(Math.abs(fark), en);
-    var a = (0.06 + o * 0.85).toFixed(3);
-    return fark >= 0 ? "rgba(216,35,42," + a + ")" : "rgba(43,111,138," + a + ")";
-  }
-  function yaziRengi(oran) { return oran > 0.55 ? "#fff" : "#1d1d1d"; }
-
-  /* --- seçiciler ------------------------------------------------------- */
-
-  function tabloSec() {
-    $("segTablo").innerHTML = K.tablolar.map(function (t, i) {
-      return '<button data-t="' + i + '" aria-pressed="' + (i === durum.t) + '">' + kacis(t.baslik) + "</button>";
-    }).join("");
-  }
-
-  function ilSecenekleri() {
-    $("ilSec").innerHTML = K.yerler.map(function (y) {
-      return '<option value="' + y.kod + '">' + kacis(y.ad_tr) + "</option>";
-    }).join("");
-    $("ilSec").value = durum.il;
-  }
-
-  function tabloyuYukle() {
-    tablo = K.tablolar[durum.t];
-    durum.yil = tablo.yillar.length - 1;
-    durum.sec = null;
-    $("baslik").textContent = tablo.baslik;
-    $("aciklama").textContent = tablo.aciklama + ". Satır: " + tablo.satir.ad.toLowerCase() + ", sütun: " + tablo.sutun.ad.toLowerCase() + ".";
-    $("yilKayar").max = tablo.yillar.length - 1;
-    $("yilKayar").value = durum.yil;
-    var g = tablo.gorsel === "piramit" ? "Piramit" : "Isı matrisi";
-    $("segGorunum").innerHTML =
-      '<button data-g="grafik" aria-pressed="true">' + g + "</button>" +
-      '<button data-g="tablo" aria-pressed="false">Tablo</button>';
-    durum.gorunum = "grafik";
-    $("kaynak").innerHTML = 'Kaynak: <a href="https://veriportali.tuik.gov.tr" rel="noopener">TÜİK Veri Portalı</a> (' + kacis(tablo.df_id) + '). ' +
-      (tablo.birim ? "Birim: " + kacis(tablo.birim) + ". " : "") + "Üretim: " + kacis(K.uretim) + ".";
-  }
-
-  function butonDurumlari() {
-    function isaretle(kutu, ozellik, deger) {
-      Array.prototype.forEach.call($(kutu).querySelectorAll("button"), function (b) {
-        b.setAttribute("aria-pressed", b.dataset[ozellik] === String(deger));
-      });
-    }
-    isaretle("segTablo", "t", durum.t);
-    isaretle("segGorunum", "g", durum.gorunum);
-    isaretle("segDeger", "d", durum.deger);
-    // karşılaştırma yalnız pay olarak anlamlı; Türkiye seçiliyken kapalı
-    var turkiye = durum.il === "TR";
-    $("karsilastir").disabled = turkiye;
-    if (turkiye) { durum.kars = false; $("karsilastir").checked = false; }
-    $("karsilastirEtiket").style.opacity = turkiye ? 0.5 : 1;
-    var paySart = durum.kars;
-    Array.prototype.forEach.call($("segDeger").querySelectorAll("button"), function (b) {
-      b.disabled = paySart && b.dataset.d === "sayi";
-    });
-    $("yilYazi").textContent = tablo.yillar[durum.yil];
-  }
-
-  /* --- özet kartları --------------------------------------------------- */
-
-  function kart(ad, deger, altSatir) {
-    return "<div><small>" + kacis(ad) + "</small><b>" + deger + "</b>" + (altSatir ? "<em>" + altSatir + "</em>" : "") + "</div>";
-  }
-
-  // il ve Türkiye için aynı ölçüyü hesaplayıp kartı kurar
-  function ozetKart(ad, olcu, il, tr, yil) {
-    var a = olcu(matris(il, yil));
-    var alt = "";
-    if (durum.kars && il !== "TR") alt = "Türkiye: " + yuzde(olcu(matris("TR", yil)));
-    return kart(ad, yuzde(a), alt);
-  }
-
-  function ozetYaz() {
-    var yil = tablo.yillar[durum.yil], v = matris(durum.il, yil), t = toplam(v);
-    var nr = tablo.satir.kodlar.length, nc = tablo.sutun.kodlar.length;
-    var h = kart("Toplam", sayiYaz(t), yerAd[durum.il] + ", " + yil);
-
-    if (tablo.gorsel === "piramit") {
-      var kadin = function (m) { var k = 0, s = toplam(m) || 1; for (var c = 0; c < nc; c++) k += m[nc + c] || 0; return k / s * 100; };
-      var grup = function (alt, ust) {
-        return function (m) {
-          var s = toplam(m) || 1, k = 0;
-          for (var r = 0; r < nr; r++) for (var c = 0; c < nc; c++) {
-            var b = baslangic(tablo.sutun.etiketler[c]);
-            if (b >= alt && b < ust) k += m[r * nc + c] || 0;
-          }
-          return k / s * 100;
-        };
-      };
-      h += ozetKart("Kadın payı", kadin, durum.il, "TR", yil);
-      h += ozetKart("0-14 yaş payı", grup(0, 15), durum.il, "TR", yil);
-      h += ozetKart("65 yaş ve üzeri payı", grup(65, 200), durum.il, "TR", yil);
-    } else {
-      var kose = function (m) { var k = 0, s = toplam(m) || 1; for (var i = 0; i < nr; i++) k += m[i * nc + i] || 0; return k / s * 100; };
-      var ustte = function (m) { var k = 0, s = toplam(m) || 1; for (var r = 0; r < nr; r++) for (var c = 0; c < nc; c++) if (r > c) k += m[r * nc + c] || 0; return k / s * 100; };
-      var altta = function (m) { var k = 0, s = toplam(m) || 1; for (var r = 0; r < nr; r++) for (var c = 0; c < nc; c++) if (r < c) k += m[r * nc + c] || 0; return k / s * 100; };
-      h += ozetKart("Aynı yaş grubunda", kose, durum.il, "TR", yil);
-      h += ozetKart("Erkek daha büyük", ustte, durum.il, "TR", yil);
-      h += ozetKart("Kadın daha büyük", altta, durum.il, "TR", yil);
-    }
-    $("ozet").innerHTML = h;
-  }
-
-  /* --- ısı matrisi ----------------------------------------------------- */
-
-  function isiMatrisi() {
-    var yil = tablo.yillar[durum.yil];
-    var v = matris(durum.il, yil), nr = tablo.satir.kodlar.length, nc = tablo.sutun.kodlar.length;
-    var pay = durum.deger === "pay" || durum.kars;
-    var pv = paya(v), tr = paya(matris("TR", yil));
-    var en = 0, i;
-    for (i = 0; i < v.length; i++) {
-      var d = durum.kars ? pv[i] - tr[i] : (pay ? pv[i] : v[i]);
-      en = Math.max(en, Math.abs(d));
-    }
-
-    var satirT = [], sutunT = [];
-    for (var r = 0; r < nr; r++) satirT[r] = 0;
-    for (var c = 0; c < nc; c++) sutunT[c] = 0;
-    for (r = 0; r < nr; r++) for (c = 0; c < nc; c++) { satirT[r] += hucre(v, r, c); sutunT[c] += hucre(v, r, c); }
-
-    var h = '<div class="eksen">' + kacis(tablo.sutun.ad) + " →</div>";
-    h += '<div class="kaydir"><table class="mat"><thead><tr><th class="sol">' + kacis(tablo.satir.ad) + " ↓</th>";
-    for (c = 0; c < nc; c++) h += "<th>" + kacis(tablo.sutun.etiketler[c]) + "</th>";
-    h += '<th class="top">Toplam</th></tr></thead><tbody>';
-
-    for (r = 0; r < nr; r++) {
-      h += '<tr><th class="sol">' + kacis(tablo.satir.etiketler[r]) + "</th>";
-      for (c = 0; c < nc; c++) {
-        var ham = hucre(v, r, c), p = pv[r * nc + c], f = p - tr[r * nc + c];
-        var goster = durum.kars ? (f >= 0 ? "+" : "−") + sayiYaz(Math.abs(f), 1) : (pay ? sayiYaz(p, 1) : sayiYaz(ham));
-        var oran = sira(Math.abs(durum.kars ? f : (pay ? p : ham)), en);
-        var bg = durum.kars ? renkFark(f, en) : renkTek(oran);
-        var sinif = (r === c ? "kose" : "") + (durum.sec === r + "-" + c ? " sec" : "");
-        h += '<td class="' + sinif + '" data-r="' + r + '" data-c="' + c + '" style="background:' + bg + ";color:" + yaziRengi(oran) + '">' + goster + "</td>";
-      }
-      h += '<td class="top">' + sayiYaz(satirT[r]) + "</td></tr>";
-    }
-    h += '<tr><th class="sol top">Toplam</th>';
-    for (c = 0; c < nc; c++) h += '<td class="top">' + sayiYaz(sutunT[c]) + "</td>";
-    h += '<td class="top">' + sayiYaz(toplam(v)) + "</td></tr></tbody></table></div>";
-    $("icerik").innerHTML = h;
-
-    var sk = durum.kars
-      ? '<span>Türkiye\'den düşük</span><span class="sk" style="background:linear-gradient(90deg,rgba(43,111,138,.9),#f3f3f3,rgba(216,35,42,.9))"></span><span>yüksek (yüzde puanı)</span>'
-      : '<span>0</span><span class="sk" style="background:linear-gradient(90deg,rgba(216,35,42,.06),rgba(216,35,42,.96))"></span><span>' + (pay ? yuzde(en) : sayiYaz(en)) + "</span>";
-    $("lejant").innerHTML = sk;
-  }
-
-  /* --- piramit --------------------------------------------------------- */
-
-  function piramit() {
-    var yil = tablo.yillar[durum.yil];
-    var v = matris(durum.il, yil), nr = tablo.satir.kodlar.length, nc = tablo.sutun.kodlar.length;
-    var pay = durum.deger === "pay" || durum.kars;
-    var deg = pay ? paya(v) : v, trDeg = paya(matris("TR", yil));
-
-    var en = 0, i;
-    for (i = 0; i < deg.length; i++) en = Math.max(en, deg[i]);
-    if (durum.kars) for (i = 0; i < trDeg.length; i++) en = Math.max(en, trDeg[i]);
-
-    var W = 640, orta = W / 2, bosluk = 30, yan = orta - bosluk - 8, sat = 21, ust = 14;
-    var H = ust + nc * sat + 30;
-    var s = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Nüfus piramidi">';
-    var renkler = ["#7b0828", "#d8232a"];
-
-    for (var k = 0; k < nc; k++) {
-      var y = ust + (nc - 1 - k) * sat;           // en genç grup altta
-      s += '<text class="etiket-yaz" x="' + orta + '" y="' + (y + 15) + '" text-anchor="middle">' + kacis(tablo.sutun.etiketler[k]) + "</text>";
-      for (var r = 0; r < nr; r++) {
-        var d = deg[r * nc + k], uz = d / (en || 1) * yan;
-        var sol = r === 0;
-        var x = sol ? orta - bosluk - uz : orta + bosluk;
-        s += '<rect data-r="' + r + '" data-c="' + k + '" x="' + x.toFixed(1) + '" y="' + (y + 3) + '" width="' + uz.toFixed(1) + '" height="' + (sat - 6) + '" fill="' + renkler[r] + '" opacity="' + (durum.kars ? 0.78 : 1) + '"/>';
-        if (durum.kars) {
-          var tu = trDeg[r * nc + k] / (en || 1) * yan;
-          var tx = sol ? orta - bosluk - tu : orta + bosluk;
-          s += '<rect x="' + tx.toFixed(1) + '" y="' + (y + 1) + '" width="' + tu.toFixed(1) + '" height="' + (sat - 2) + '" fill="none" stroke="#1d1d1d" stroke-width="1.4" pointer-events="none"/>';
-        }
-      }
-    }
-    s += '<text class="etiket-yaz" x="' + (orta - bosluk - 4) + '" y="' + (H - 6) + '" text-anchor="end">← ' + kacis(tablo.satir.etiketler[0]) + "</text>";
-    s += '<text class="etiket-yaz" x="' + (orta + bosluk + 4) + '" y="' + (H - 6) + '">' + kacis(tablo.satir.etiketler[1]) + " →</text>";
-    s += "</svg>";
-    $("icerik").innerHTML = s;
-
-    var b = pay ? yuzde(en) : sayiYaz(en);
-    $("lejant").innerHTML = '<span style="display:inline-block;width:12px;height:12px;background:#7b0828;border-radius:3px"></span>' + kacis(tablo.satir.etiketler[0]) +
-      '<span style="display:inline-block;width:12px;height:12px;background:#d8232a;border-radius:3px;margin-left:10px"></span>' + kacis(tablo.satir.etiketler[1]) +
-      (durum.kars ? '<span style="display:inline-block;width:14px;height:10px;border:1.4px solid #1d1d1d;margin-left:10px"></span>Türkiye' : "") +
-      "<span style=\"margin-left:12px\">En geniş çubuk: " + b + (pay ? " (toplam nüfusun payı)" : "") + "</span>";
-  }
-
-  /* --- düz tablo ------------------------------------------------------- */
-
-  function duzTablo() {
-    var yil = tablo.yillar[durum.yil];
-    var v = matris(durum.il, yil), nr = tablo.satir.kodlar.length, nc = tablo.sutun.kodlar.length;
-    var pay = durum.deger === "pay" || durum.kars;
-    var pv = paya(v), tr = paya(matris("TR", yil));
-
-    var h = '<div class="kaydir"><table class="mat"><thead><tr><th class="sol">' + kacis(tablo.sutun.ad) + " ↓ / " + kacis(tablo.satir.ad) + " →</th>";
-    // satır ve sütun rollerini çevirmeden aynı yönde bırak: satırlar = satır kırılımı
-    for (var c = 0; c < nc; c++) h += "<th>" + kacis(tablo.sutun.etiketler[c]) + "</th>";
-    h += "</tr></thead><tbody>";
-    for (var r = 0; r < nr; r++) {
-      h += '<tr><th class="sol">' + kacis(tablo.satir.etiketler[r]) + "</th>";
-      for (c = 0; c < nc; c++) {
-        var i = r * nc + c, goster;
-        if (durum.kars) goster = (pv[i] - tr[i] >= 0 ? "+" : "−") + sayiYaz(Math.abs(pv[i] - tr[i]), 1);
-        else if (pay) goster = sayiYaz(pv[i], 1);
-        else goster = sayiYaz(v[i] || 0);
-        h += '<td style="background:none">' + goster + "</td>";
-      }
-      h += "</tr>";
-    }
-    h += "</tbody></table></div>";
-    $("icerik").innerHTML = h;
-    $("lejant").innerHTML = durum.kars ? "Değerler Türkiye ile arasındaki fark (yüzde puanı)." : (pay ? "Değerler toplamın yüzdesi." : "");
-  }
-
-  /* --- notlar ---------------------------------------------------------- */
-
-  function notYaz() {
-    var yil = tablo.yillar[durum.yil], s = "";
-    if (tablo.gorsel === "piramit") {
-      s = "Adrese dayalı nüfus kaydı; yıl sonu durumu. Pay, bölgenin toplam nüfusuna oranlanır.";
-    } else {
-      s = "Yalnızca yaşı bilinen evlenmeler gösterilir.";
-      var b = bilinmeyen(durum.il, yil);
-      if (b > 0) s += " Yaşı bilinmeyen " + sayiYaz(b) + " evlenme matrise girmez.";
-      s += " Çerçeveli köşegen, eşlerin aynı yaş grubunda olduğu hücrelerdir.";
-    }
-    if (durum.il !== "TR" && matris(durum.il, yil).length && toplam(matris(durum.il, yil)) < 2000 && tablo.gorsel === "matris") {
-      s += " Bu ilde gözlem sayısı az; yüzdeler yıldan yıla dalgalanabilir.";
-    }
-    $("not").textContent = s;
-  }
-
-  /* --- çizim ----------------------------------------------------------- */
-
-  function ciz() {
-    butonDurumlari();
-    ozetYaz();
-    if (durum.gorunum === "tablo") duzTablo();
-    else if (tablo.gorsel === "piramit") piramit();
-    else isiMatrisi();
-    notYaz();
-  }
-
-  /* --- olaylar --------------------------------------------------------- */
-
-  $("segTablo").addEventListener("click", function (e) {
-    var b = e.target.closest("button"); if (!b) return;
-    durum.t = +b.dataset.t;
-    tabloyuYukle();
-    ciz();
-  });
-  $("segGorunum").addEventListener("click", function (e) {
-    var b = e.target.closest("button"); if (!b) return;
-    durum.gorunum = b.dataset.g; ciz();
-  });
-  $("segDeger").addEventListener("click", function (e) {
-    var b = e.target.closest("button"); if (!b || b.disabled) return;
-    durum.deger = b.dataset.d; ciz();
-  });
-  $("ilSec").addEventListener("change", function () { durum.il = this.value; ciz(); });
-  $("yilKayar").addEventListener("input", function () { durum.yil = +this.value; ciz(); });
-  $("karsilastir").addEventListener("change", function () { durum.kars = this.checked; ciz(); });
-
-  // hücre üzerinde ipucu
-  var ipucu = $("ipucu");
-  $("icerik").addEventListener("mousemove", function (e) {
-    var h = e.target.closest("[data-r]");
-    if (!h) { ipucu.style.display = "none"; return; }
-    var r = +h.dataset.r, c = +h.dataset.c, yil = tablo.yillar[durum.yil];
-    var v = matris(durum.il, yil), nc = tablo.sutun.kodlar.length, ham = v[r * nc + c] || 0;
-    var p = paya(v)[r * nc + c];
-    ipucu.innerHTML = kacis(tablo.satir.ad) + ": <b>" + kacis(tablo.satir.etiketler[r]) + "</b> · " + kacis(tablo.sutun.ad) + ": <b>" + kacis(tablo.sutun.etiketler[c]) + "</b><br>" + sayiYaz(ham) + " (" + yuzde(p) + ")";
-    ipucu.style.display = "block";
-    ipucu.style.left = Math.min(e.clientX + 14, window.innerWidth - ipucu.offsetWidth - 8) + "px";
-    ipucu.style.top = (e.clientY + 14) + "px";
-  });
-  $("icerik").addEventListener("mouseleave", function () { ipucu.style.display = "none"; });
-
-  /* --- başlangıç ------------------------------------------------------- */
-
-  tabloSec();
-  ilSecenekleri();
-  tabloyuYukle();
-  ciz();
-})();
-</script>
+<script src="veri/kirilim_dizin.js"></script>
+<script src="kirilim-hesap.js"></script>
+<script src="kirilim.js"></script>
 </body>
 </html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><title>test</title></head><body><pre id="o"></pre>
+<iframe id="f" src="kirilim-matrisi.html" style="width:1100px;height:900px"></iframe>
+<script>
+var out = [], bad = 0;
+function t(ad, f) { try { var r = f(); out.push((r === true ? "OK   " : "FAIL ") + ad + (r === true ? "" : " -> " + r)); if (r !== true) bad++; } catch (e) { out.push("FAIL " + ad + " -> " + e.message); bad++; } }
+function eq(a, b) { return a === b || a + " <> " + b; }
+var F, W, D;
+function $(id) { return W.document.getElementById(id); }
+function sec(id, deger) { var e = $(id); e.value = deger; e.dispatchEvent(new W.Event("change", { bubbles: true })); }
+function sonra(f, ms) { setTimeout(f, ms || 700); }
+function bitir() {
+  document.getElementById("o").textContent = out.join("\n") + "\n" + (bad ? bad + " BASARISIZ" : "HEPSI GECTI");
+  document.title = bad ? "KALDI" : "GEÇTİ";
+}
+window.onload = function () {
+  F = document.getElementById("f"); W = F.contentWindow;
+  sonra(function () {
+    D = W.KIRILIM_DIZIN;
+    t("dizin yuklendi", function () { return !!D || "yok"; });
+    t("konu sekmesi sayisi = dizindeki konu sayisi", function () { return eq($("konu").querySelectorAll("button").length, D.konular.length); });
+    t("tablo secici dolu", function () { return eq($("tablo").options.length, D.konular[0].tablolar.length); });
+    t("ilk tablo yuklendi", function () { return !!W.KIRILIM_TABLO[$("tablo").value] || "yuklenmedi"; });
+    // iki kırılımlı tablo: k3 gizli
+    var iki = null; D.konular.forEach(function (k) { k.tablolar.forEach(function (x) { if (x.kirilimSayisi === 2 && !iki) iki = [k, x]; }); });
+    var uc = null; D.konular.forEach(function (k) { k.tablolar.forEach(function (x) { if (x.kirilimSayisi === 3 && !uc) uc = [k, x]; }); });
+    W.__kirilim.konuSec(D.konular.indexOf(iki[0]));
+    sec("tablo", iki[1].kod);
+    sonra(function () {
+      t("iki kirilimli tabloda k3 gizli", function () { return eq($("k3w").hidden, true); });
+      t("iki kirilimli tabloda k2 gorunur", function () { return eq($("k2w").hidden, false); });
+      var k2 = $("k2").value;
+      sec("k1", k2);
+      t("k1'e k2 degeri verilince ikisi ayri kalir", function () { return ($("k1").value !== $("k2").value) || "ayni"; });
+      t("k1 secilen deger", function () { return eq($("k1").value, k2); });
+      W.__kirilim.konuSec(D.konular.indexOf(uc[0]));
+      sec("tablo", uc[1].kod);
+      sonra(function () {
+        t("uc kirilimli tabloda k3 gorunur", function () { return eq($("k3w").hidden, false); });
+        t("uc secici farkli", function () { return ($("k1").value !== $("k2").value && $("k2").value !== $("k3").value && $("k1").value !== $("k3").value) || [$("k1").value, $("k2").value, $("k3").value].join(); });
+        W.__kirilim.konuSec(0);
+        sec("tablo", iki[0] === D.konular[0] ? iki[1].kod : D.konular[0].tablolar[0].kod);
+        sonra(function () {
+          t("tablo degisince secimler gecerli", function () {
+            var d = W.__kirilim.durum, kol = W.KIRILIM_TABLO[d.tablo].kirilimlar.map(function (k) { return k.kol; });
+            return (kol.indexOf(d.roller.k1) >= 0 && kol.indexOf(d.roller.k2) >= 0 && (d.roller.k3 === "-" || kol.indexOf(d.roller.k3) >= 0)) || JSON.stringify(d.roller);
+          });
+          t("konsolda hata yok", function () { return eq(W.__kirilim.hatalar, 0); });
+          bitir();
+        });
+      });
+    });
+  }, 1200);
+};
+</script></body></html>
