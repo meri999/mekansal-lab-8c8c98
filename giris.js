@@ -124,10 +124,24 @@
   $("konuIzgara").innerHTML = C.konular.map(function (k) {
     return '<a class="kart konu" href="veri-portali.html#konu=' + esc(k.kod) + '"><b>' + esc(k.ad) + '</b><span>' + esc(k.alt) + '</span></a>';
   }).join("");
+  /* bulgu karti: "gosterge" verilmisse o gostergenin il siralamasindan, verilmemisse kahraman gostergesinden uretilir */
+  function bulguCtx(ad) {
+    try {
+      var g = gOf(ad); if (!g) return null;
+      var y = H.sonYil(g), d = H.ilDegerleri(g, y.i), o = g.ondalik;
+      var ust = H.sirala(d, ADLAR, 1, false)[0], alt = H.sirala(d, ADLAR, 1, true)[0], t = H.turkiye(g, y.i);
+      if (!ust || !alt) return null;
+      return { yil: y.yil, tr_son: t === null ? "—" : sayi(t, o), en_yuksek: ust.ad, en_yuksek_deger: sayi(ust.deger, o), en_dusuk: alt.ad, en_dusuk_deger: sayi(alt.deger, o) };
+    } catch (e) { return null; }
+  }
   if (HERO_OK) {
-    $("bulguIzgara").innerHTML = C.bulgular.map(function (b) {
-      return '<a class="hik" href="' + esc(b.link) + '"><div class="t"><h3>' + esc(sablon(b.baslik, CTX)) + '</h3><p>' + esc(sablon(b.metin, CTX)) + '</p></div></a>';
-    }).join("");
+    var kartlar = C.bulgular.map(function (b) {
+      var c = b.gosterge ? bulguCtx(b.gosterge) : CTX;
+      if (!c) return ""; /* verisi hesaplanamayan bulgu bos kart olarak gosterilmez */
+      return '<a class="hik" href="' + esc(b.link) + '"><div class="t"><h3>' + esc(sablon(b.baslik, c)) + '</h3><p>' + esc(sablon(b.metin, c)) + '</p></div></a>';
+    }).filter(Boolean);
+    $("bulguIzgara").innerHTML = kartlar.join("");
+    if (!kartlar.length) $("bulgular").hidden = true;
   } else {
     $("bulgular").hidden = true; /* bulgular hesaplanan veriye bagli: veri yoksa bos kart gostermek yerine gizlenir */
   }
@@ -162,6 +176,13 @@
       Array.prototype.forEach.call(lst.children, function (li, i) { li.classList.toggle("on", i === ac); li.setAttribute("aria-selected", i === ac ? "true" : "false"); });
       if (ac >= 0) gir.setAttribute("aria-activedescendant", "gO" + ac);
     }
+    /* "/" tusu aramaya odaklanir (yazi alani, secim kutusu ya da duzenlenebilir alan odaktayken calismaz) */
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "/" || e.ctrlKey || e.metaKey || e.altKey) return;
+      var t = e.target, ad = t && t.tagName ? t.tagName.toLowerCase() : "";
+      if (ad === "input" || ad === "textarea" || ad === "select" || (t && t.isContentEditable)) return;
+      e.preventDefault(); gir.focus(); gir.select();
+    });
     gir.addEventListener("input", ciz);
     gir.addEventListener("focus", ciz);
     gir.addEventListener("keydown", function (e) {

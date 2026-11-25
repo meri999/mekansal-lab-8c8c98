@@ -4,23 +4,73 @@ window.GIRIS={
   "fark_yil": 10,
   "harita_gosterge": "Toplam doğurganlık hızı",
   "anahtar": [
-    { "gosterge": "Toplam doğurganlık hızı", "etiket": "Toplam doğurganlık hızı" },
-    { "gosterge": "Nüfus", "etiket": "Nüfus" },
-    { "gosterge": "Ortanca yaş", "etiket": "Ortanca yaş" },
-    { "gosterge": "İşsizlik oranı", "etiket": "İşsizlik oranı" }
+    {
+      "gosterge": "Toplam doğurganlık hızı",
+      "etiket": "Toplam doğurganlık hızı"
+    },
+    {
+      "gosterge": "Nüfus",
+      "etiket": "Nüfus"
+    },
+    {
+      "gosterge": "Ortanca yaş",
+      "etiket": "Ortanca yaş"
+    },
+    {
+      "gosterge": "İşsizlik oranı",
+      "etiket": "İşsizlik oranı"
+    }
   ],
   "bulgular": [
-    { "baslik": "Doğurganlık en çok {en_cok_dusen} ilinde geriledi", "metin": "{fark_yil} yılda {en_cok_dusen_deger} çocuk. En düşük 3 il: {en_dusuk3}.", "link": "veri-portali.html#konu=nufus" },
-    { "baslik": "Doğurganlığın en yüksek olduğu il: {en_yuksek}", "metin": "Hız {en_yuksek_deger}; Türkiye ortalaması {tr_son}.", "link": "veri-portali.html#konu=nufus" },
-    { "baslik": "Göç ağı: iller arası bağlar", "metin": "Doğum yeri ve kütük bağlarıyla il il akış haritası.", "link": "goc-agi.html" }
+    {
+      "gosterge": "Ortanca yaş",
+      "baslik": "En genç il {en_dusuk}, en yaşlı il {en_yuksek}",
+      "metin": "Ortanca yaş {en_dusuk_deger} ile {en_yuksek_deger} arasında değişiyor. Türkiye ortalaması {tr_son} ({yil}).",
+      "link": "veri-portali.html#konu=nufus"
+    },
+    {
+      "gosterge": "İşsizlik oranı",
+      "baslik": "İşsizlik en yüksek {en_yuksek}, en düşük {en_dusuk}",
+      "metin": "İşsizlik oranı %{en_dusuk_deger} ile %{en_yuksek_deger} arasında. Türkiye ortalaması %{tr_son} ({yil}).",
+      "link": "veri-portali.html#konu=ekonomi"
+    },
+    {
+      "baslik": "Doğurganlığın en yüksek olduğu il: {en_yuksek}",
+      "metin": "Hız {en_yuksek_deger}; Türkiye ortalaması {tr_son} ({tr_son_yil}).",
+      "link": "veri-portali.html#konu=nufus"
+    }
   ],
   "konular": [
-    { "kod": "nufus", "ad": "Nüfus ve demografi", "alt": "yaş, hane, doğum, evlenme" },
-    { "kod": "ekonomi", "ad": "Ekonomi", "alt": "üretim, fiyat, işgücü" },
-    { "kod": "egitim", "ad": "Eğitim", "alt": "eğitim süresi" },
-    { "kod": "kalkinma", "ad": "Kalkınma", "alt": "beşeri kalkınma" },
-    { "kod": "yasam", "ad": "Yaşam koşulları", "alt": "sağlık, trafik, altyapı" },
-    { "kod": "goc", "ad": "Göç", "alt": "kütük, doğum yeri" }
+    {
+      "kod": "nufus",
+      "ad": "Nüfus ve demografi",
+      "alt": "yaş, hane, doğum, evlenme"
+    },
+    {
+      "kod": "ekonomi",
+      "ad": "Ekonomi",
+      "alt": "üretim, fiyat, işgücü"
+    },
+    {
+      "kod": "egitim",
+      "ad": "Eğitim",
+      "alt": "eğitim süresi"
+    },
+    {
+      "kod": "kalkinma",
+      "ad": "Kalkınma",
+      "alt": "beşeri kalkınma"
+    },
+    {
+      "kod": "yasam",
+      "ad": "Yaşam koşulları",
+      "alt": "sağlık, trafik, altyapı"
+    },
+    {
+      "kod": "goc",
+      "ad": "Göç",
+      "alt": "kütük, doğum yeri"
+    }
   ]
 }
 ;

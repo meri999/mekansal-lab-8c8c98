@@ -159,3 +159,7 @@ a.oge:hover,a.oge:focus-visible{background:#f6efe8}
  .dugme .kz{display:inline}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}#harita path{transition:none}}
+
+/* aramaya "/" kısayolu ipucu (dokunmatik cihazda gizli) */
+.kisayol{flex:none;font:600 12px var(--govde);color:var(--mut);border:1px solid var(--line);border-radius:6px;padding:1px 7px;background:var(--bg)}
+@media(hover:none){.kisayol{display:none}}
