@@ -97,8 +97,24 @@
     });
     return birlesik.concat(ilSon.slice(0, 3), aAd.slice(0, 3), gSon.slice(0, 5), aSon.slice(0, 2)).slice(0, 8);
   }
+  /* portaldaki gibi n esit sayili sinif: esik[i-1]=vals[min(len-1,floor(len*i/n))]; sinif = x>=esik sayisi */
+  function sinifla(d, n) {
+    n = n || 5;
+    var vals = [], sinif = {};
+    Object.keys(d).forEach(function (k) { if (typeof d[k] === "number" && isFinite(d[k])) vals.push(d[k]); });
+    vals.sort(function (a, b) { return a - b; });
+    var esik = [];
+    if (vals.length) for (var i = 1; i < n; i++) esik.push(vals[Math.min(vals.length - 1, Math.floor(vals.length * i / n))]);
+    Object.keys(d).forEach(function (k) {
+      var x = d[k];
+      if (typeof x !== "number" || !isFinite(x)) { sinif[k] = null; return; }
+      var c = 0; while (c < esik.length && x >= esik[c]) c++;
+      sinif[k] = c;
+    });
+    return { esik: esik, sinif: sinif };
+  }
   function turkiye(g, i) {
     var v = g.veri.TR ? g.veri.TR[i] : null; return (typeof v === "number" && isFinite(v)) ? v : null;
   }
-  global.GirisHesap = { sonYil: sonYil, ilDegerleri: ilDegerleri, fark: fark, sirala: sirala, bul: bul, turkiye: turkiye, katla: katla, araBul: araBul, MIN_IL: MIN_IL };
+  global.GirisHesap = { sonYil: sonYil, ilDegerleri: ilDegerleri, fark: fark, sirala: sirala, bul: bul, turkiye: turkiye, sinifla: sinifla, katla: katla, araBul: araBul, MIN_IL: MIN_IL };
 })(window);
