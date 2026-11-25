@@ -284,7 +284,7 @@
       return '<tr class="tik" tabindex="0" data-y="' + q.g.id + '" data-yil="' + q.yil + '"><td><button type="button" class="gor" tabindex="-1">' + esc(q.g.baslik) + '</button><span class="grup">' + esc(KONU[q.g.konu] || q.g.konu) + (buyuk(q.g) ? " · nüfusla büyür" : "") + '</span></td><td class="sa">' + q.yil + '</td><td class="sa">' + isr(q.rho) + '</td><td><span class="cubuk ' + (q.rho > 0 ? "p" : "n") + '" style="width:' + w + 'px"></span></td><td class="sa">' + q.n + "</td></tr>";
     }).join("");
     s.innerHTML = '<h2 class="sonuc-baslik">' + esc(g.baslik) + " ile en güçlü ilişkiler</h2>" +
-      (goster.length ? '<div class="kaydir"><table class="siralama"><thead><tr><th>Gösterge</th><th class="sa">Yıl</th><th class="sa">ρ</th><th><span class="sr">Güç</span></th><th class="sa">İl</th></tr></thead><tbody>' + satir + "</tbody></table></div>" +
+      (goster.length ? '<div class="kaydir liste"><table class="siralama"><thead><tr><th>Gösterge</th><th class="sa">Yıl</th><th class="sa">ρ</th><th><span class="sr">Güç</span></th><th class="sa">İl</th></tr></thead><tbody>' + satir + "</tbody></table></div>" +
         (liste.length > 25 ? '<p class="alt" style="margin-top:8px">' + liste.length + " ilişkiden ilk 25'i gösteriliyor. Daha fazlası için alt sınırı yükseltin.</p>" : "")
         : '<p class="bos">Alt sınır |ρ| ≥ ' + f(S.e, 1) + " için ilişki bulunamadı. Sınırı düşürmeyi deneyin.</p>") +
       notlar(n);
@@ -298,7 +298,7 @@
     return Object.keys(y).sort();
   }
   function cizgiGrafik(gx, gy, kod, bas, son) {
-    var W = 720, Hh = 300, sol = 50, sag = 16, ust = 16, alt = 42, seri = [];
+    var W = 720, Hh = 280, sol = 50, sag = 16, ust = 16, alt = 42, seri = [];
     [gx, gy].forEach(function (g, j) {
       var p = [], mn = Infinity, mx = -Infinity;
       g.yillar.forEach(function (t, i) { var v = g.veri[kod] && g.veri[kod][i]; if (/^\d{4}$/.test(t) && +t >= +bas && +t <= +son && typeof v === "number" && isFinite(v)) { p.push([+t, v]); if (v < mn) mn = v; if (v > mx) mx = v; } });
@@ -318,7 +318,7 @@
       o += '<path d="' + d + '" fill="none" stroke="' + q.c + '" stroke-width="2.4" stroke-linejoin="round"/>';
       q.p.forEach(function (a) { var v = q.mx > q.mn ? (a[1] - q.mn) / (q.mx - q.mn) * 100 : 50; o += '<circle cx="' + sx(a[0]).toFixed(1) + '" cy="' + sy(v).toFixed(1) + '" r="3" fill="' + q.c + '"/>'; });
     });
-    o += '<text class="eksenyazi" transform="translate(13,' + ((ust + Hh - alt) / 2) + ') rotate(-90)" text-anchor="middle">her seri kendi en düşük-en yüksek aralığında (0-100)</text></svg>';
+    o += '<text class="eksenyazi" transform="translate(13,' + ((ust + Hh - alt) / 2) + ') rotate(-90)" text-anchor="middle">kendi aralığında (0–100)</text></svg>';
     return o;
   }
   var teyitSay = 0;
@@ -347,14 +347,13 @@
     if (a < kr) n.push("<li>İlişki, " + z.n + " gözlem için tesadüf sınırının (|ρ| ≈ " + f(kr, 2) + ") altında; yön hakkında bir şey söylemek zor.</li>");
     else if (a < S.e) n.push("<li>İlişki tesadüf sınırının (|ρ| ≈ " + f(kr, 2) + ") üstünde ama seçtiğiniz alt sınırın (" + f(S.e, 1) + ") altında; zayıf bir işaret olarak okuyun.</li>");
     n.push("<li>Çok sayıda gösterge çifti denendiğinde bazıları tesadüfen yüksek çıkar; bu aracı keşif için kullanın.</li>");
-    s.innerHTML = ust +
-      '<div class="ozet">' +
+    s.innerHTML = ust + '<div class="izgara-iki"><div>' + cizgi + lej + '</div><div class="yan">' +
+      '<div class="ozet iki">' +
       kart("Yıllık değişim ilişkisi (ρ)", isr(z.rho), (z.rho > 0 ? "birlikte" : "ters yönde") + " hareket", z.rho > 0 ? "pozitif" : "negatif") +
       kart("Yıllık değişim sayısı", String(z.n), z.yillar[0] + "–" + z.yillar[z.yillar.length - 1]) +
       kart("Güven", guvenli, "tesadüf sınırı |ρ| ≈ " + f(kr, 2)) +
       '<div id="teyit"><small>Başka illerde</small><b>…</b><em>hesaplanıyor</em></div></div>' +
-      cizgi + lej +
-      notlar(n);
+      notlar(n) + "</div></div>";
     $("kaynak").innerHTML = "Kaynak: TÜİK. " + esc(gx.baslik) + ": " + esc(gx.kaynak || "") + ". " + esc(gy.baslik) + ": " + esc(gy.kaynak || "") + ".";
     var id = ++teyitSay;
     setTimeout(function () { /* 81 il icin tembel teyit */

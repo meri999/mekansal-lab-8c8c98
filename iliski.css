@@ -55,3 +55,10 @@ h1.kucuk{font-size:19px;margin:0 0 6px}
 #ipucu{display:none}
 .ornekler{margin-top:6px}
 .sonuc-baslik{font-size:14px;margin-bottom:6px}
+.izgara-iki .ozet.iki{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.izgara-iki .ozet.iki b{font-size:17px}
+.kaydir.liste{max-height:calc(100vh - 420px);min-height:220px;overflow-y:auto}
+.siralama thead th{position:sticky;top:0;background:var(--kart);z-index:1}
+.siralama td{padding:4px 8px}
+.siralama .grup{display:inline;margin-left:8px}
+.sonuc-baslik+.kaydir.liste{margin-top:0}
