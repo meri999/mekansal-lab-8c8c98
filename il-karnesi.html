@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>İl Karnesi · Enstitü Portal</title>
+<meta name="description" content="Bir ilin karnesi, illerin karşılaştırması ve benzer iller: yüzlerce göstergede il, Türkiye ve diğer iller yan yana.">
+<meta name="theme-color" content="#d8232a">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&family=Roboto+Slab:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="kirilim.css?v=20261125180000">
+<link rel="stylesheet" href="iliski.css?v=20261125230000">
+<link rel="stylesheet" href="karne.css?v=20261125230000">
+</head>
+<body>
+<header class="ust"><div class="ust-ic">
+  <a class="marka" href="./"><span class="kare" aria-hidden="true"><i></i><i class="b"></i></span>Enstitü Portal</a>
+  <span class="sayfa">İl Karnesi</span>
+  <a class="geri" href="./">← Portala dön</a>
+</div></header>
+
+<main class="ana">
+  <section class="panel" aria-label="Seçimler">
+    <h1 class="kucuk">İl Karnesi</h1>
+    <div class="konular" id="modlar" role="tablist" aria-label="Görünüm">
+      <button type="button" role="tab" data-m="karne" aria-selected="true">Tek il karnesi</button>
+      <button type="button" role="tab" data-m="kars" aria-selected="false">İlleri karşılaştır</button>
+      <button type="button" role="tab" data-m="benzer" aria-selected="false">Benzer iller</button>
+    </div>
+    <div class="kontrol">
+      <div id="ilw"><label for="il">İl</label><select id="il"></select></div>
+      <div id="chipw" hidden><span class="etk" id="chipEtk">Karşılaştırılan iller (en çok 4)</span><div class="chipler" id="chipler" role="group" aria-labelledby="chipEtk"></div></div>
+      <div id="eklew" hidden><label for="ekle">İl ekle</label><select id="ekle"></select></div>
+      <div id="konuw"><label for="konu">Konu</label><select id="konu"></select></div>
+      <label class="onay" id="buyw"><input type="checkbox" id="buy"> Nüfusla birlikte büyüyen göstergeleri de göster</label>
+    </div>
+  </section>
+
+  <section class="panel" aria-live="polite">
+    <div id="sonuc"><p class="yukleniyor">Yükleniyor…</p></div>
+  </section>
+</main>
+<footer class="altbilgi" id="kaynak"></footer>
+<div class="ipucu" id="balon"></div>
+
+<script src="veri/veri.js?v=20261125203655"></script>
+<script src="veri/harita_il.js?v=20261125203655"></script>
+<script src="cikti.js?v=20261125230000"></script>
+<script src="iliski-hesap.js?v=20261125230000"></script>
+<script src="karne-hesap.js?v=20261125230000"></script>
+<script src="karne.js?v=20261125230000"></script>
+</body>
+</html>

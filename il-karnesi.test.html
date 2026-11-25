@@ -1,0 +1,51 @@
+<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><title>test</title></head><body><pre id="o"></pre>
+<iframe id="f" src="il-karnesi.html#m=karne&il=TR100" style="width:1100px;height:900px"></iframe>
+<script>
+var out=[],bad=0,W;
+function t(ad,f){try{var r=f();out.push((r===true?"OK   ":"FAIL ")+ad+(r===true?"":" -> "+r));if(r!==true)bad++}catch(e){out.push("FAIL "+ad+" -> "+e.message);bad++}}
+function $(i){return W.document.getElementById(i)}
+function sec(i,v){var e=$(i);e.value=v;e.dispatchEvent(new W.Event("change",{bubbles:true}))}
+function q(s){return W.document.querySelectorAll(s)}
+function sonra(f,ms){setTimeout(f,ms||400)}
+function bitir(){document.getElementById("o").textContent=out.join("\n")+"\n"+(bad?bad+" BASARISIZ":"HEPSI GECTI");document.title=bad?"KALDI":"GEÇTİ"}
+document.getElementById("f").onload=function(){W=this.contentWindow;sonra(adim1)};
+function adim1(){
+ t("karne: 100+ satir",function(){var n=q("#sonuc tbody tr").length;return n>100||n});
+ t("karne: ilk satir ortanca siradan en uzak (1/81 ya da 81/81)",function(){var c=q("#sonuc tbody tr")[0].children[3].textContent;return /^(1|81) \/ 81$/.test(c)||c});
+ t("karne: serit her satirda",function(){return q("#sonuc tbody tr svg.serit").length===q("#sonuc tbody tr").length||"eksik"});
+ t("karne: Not: ve iki indirme dugmesi",function(){var d=[].map.call(q("#sonuc [data-is]"),function(b){return b.textContent});return (/Not:/.test($("sonuc").textContent)&&d.length===2&&/Görsel/.test(d[0])&&/Excel/.test(d[1]))||d.join()});
+ var yk=null;W.URL.createObjectURL=function(b){yk=b;return "blob:z"};
+ q('#sonuc [data-is="xlsx"]')[0].click();
+ t("karne: excel uretir",function(){return (yk&&yk.size>3000)||"yok"});
+ var ilk=q("#sonuc tbody tr").length;sec("konu","egitim");
+ sonra(function(){
+  t("karne: konu filtresi satirlari azaltir",function(){var n=q("#sonuc tbody tr").length;return (n>0&&n<ilk)||n});
+  sec("konu","");W.document.querySelector('#modlar [data-m="kars"]').click();
+  sonra(function(){
+   t("kars: en az 2 il, chip'ler",function(){return q("#chipler .chip").length>=2||q("#chipler .chip").length});
+   t("kars: oneri cumlesi",function(){return /Öne çıkan/.test($("sonuc").textContent)||"yok"});
+   t("kars: sutunlar il sayisi kadar",function(){var n=q("#sonuc thead th").length;return n===q("#chipler .chip").length+3||n});
+   sec("ekle",$("ekle").options[5].value);
+   sonra(function(){
+    t("kars: il eklenince 3 chip",function(){return q("#chipler .chip").length===3||q("#chipler .chip").length});
+    q("#chipler .chip button")[2].click();
+    sonra(function(){
+     t("kars: il cikarilinca 2 chip, 2 ilde cikarma kilitli",function(){var b=q("#chipler .chip button");return (q("#chipler .chip").length===2&&b[0].disabled&&b[1].disabled)||"kilit"});
+     W.document.querySelector('#modlar [data-m="benzer"]').click();
+     sonra(function(){
+      t("benzer: 80 satir",function(){var n=q("#sonuc tr.tik").length;return n>=75||n});
+      t("benzer: harita 81 il",function(){var n=q("#harita path").length;return n===81||n});
+      t("benzer: artan uzaklik",function(){var r=[].map.call(q("#sonuc tr.tik td:nth-child(4)"),function(c){return parseFloat(c.textContent.replace(",","."))});return r.every(function(v,i){return i===0||r[i-1]<=v+1e-9})||r.slice(0,5).join()});
+      q("#sonuc tr.tik")[0].click();
+      sonra(function(){
+       t("benzer: satira tiklayinca karsilastirmaya gecer",function(){return (W.document.querySelector('#modlar [aria-selected="true"]').dataset.m==="kars"&&q("#chipler .chip").length===2)||"gecmedi"});
+       t("baglanti hash'e yazildi",function(){return /m=kars&ls=TR\d+,TR\w+/.test(W.location.hash)||W.location.hash});
+       bitir();
+      },500);
+     });
+    });
+   });
+  });
+ });
+}
+</script></body></html>

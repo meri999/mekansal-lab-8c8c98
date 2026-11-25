@@ -164,48 +164,13 @@
     return o + "</svg>";
   }
 
-  function indir(ad, blob) { var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = ad; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000); }
+  var indir = window.Cikti.indir;
   function dosyaAdi() { return SON.zaman ? "zaman-" + SON.kod + "-" + SON.gx.id + "-" + SON.gy.id : "iliski-" + SON.gx.id + "-" + SON.gy.id + "-" + SON.yil; }
   function pngIndir() {
-    if (!SON) return; var svg, Hh = 520, ad = dosyaAdi(), im = new Image();
+    if (!SON) return; var svg, Hh = 520, ad = dosyaAdi();
     if (SON.zaman) { var z = SON.z; Hh = 420; svg = cizgiGrafik(SON.gx, SON.gy, SON.kod, S.b, S.s, true, { ust: SON.yerAd + ": " + SON.gx.baslik + " ve " + SON.gy.baslik, alt: "Yıllık değişim ilişkisi ρ = " + isr(z.rho) + " (" + z.n + " yıllık değişim, " + z.yillar[0] + "–" + z.yillar[z.yillar.length - 1] + ")" }); }
     else svg = serpilme(SON.k, SON.gx, SON.gy, SON.yil, true);
-    im.onload = function () {
-      var c = document.createElement("canvas"); c.width = 1440; c.height = Math.round(1440 * Hh / 720); var x = c.getContext("2d");
-      x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height);
-      c.toBlob(function (b) { if (b) indir(ad + ".png", b); }, "image/png");
-    };
-    im.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
-  }
-  /* ---- Excel (.xlsx): kutuphanesiz, sikistirmasiz zip ---- */
-  var CRC = (function () { var t = [], c, n, k; for (n = 0; n < 256; n++) { c = n; for (k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
-  function crc32(b) { var c = 0xFFFFFFFF; for (var i = 0; i < b.length; i++) c = CRC[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
-  function zip(dosyalar) {
-    var enc = new TextEncoder(), parcalar = [], merkez = [], ofs = 0;
-    function u16(v) { return [v & 255, (v >>> 8) & 255]; } function u32(v) { return [v & 255, (v >>> 8) & 255, (v >>> 16) & 255, (v >>> 24) & 255]; }
-    dosyalar.forEach(function (d) {
-      var ad = enc.encode(d[0]), v = enc.encode(d[1]), c = crc32(v);
-      var yer = [].concat(u32(0x04034b50), u16(20), u16(0x0800), u16(0), u16(0), u16(0x21), u32(c), u32(v.length), u32(v.length), u16(ad.length), u16(0));
-      parcalar.push(new Uint8Array(yer), ad, v);
-      merkez.push(new Uint8Array([].concat(u32(0x02014b50), u16(20), u16(20), u16(0x0800), u16(0), u16(0), u16(0x21), u32(c), u32(v.length), u32(v.length), u16(ad.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(ofs))), ad);
-      ofs += yer.length + ad.length + v.length;
-    });
-    var mb = 0; merkez.forEach(function (m) { mb += m.length; });
-    var son = new Uint8Array([].concat(u32(0x06054b50), u16(0), u16(0), u16(dosyalar.length), u16(dosyalar.length), u32(mb), u32(ofs), u16(0)));
-    return new Blob(parcalar.concat(merkez, [son]), { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-  }
-  function xesc(t) { return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
-  function sayfa(satirlar) {
-    var o = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols><col min="1" max="5" width="36" customWidth="1"/></cols><sheetData>';
-    satirlar.forEach(function (r, i) {
-      o += '<row r="' + (i + 1) + '">';
-      r.forEach(function (h, j) {
-        var ref = String.fromCharCode(65 + j) + (i + 1);
-        o += typeof h === "number" ? '<c r="' + ref + '"><v>' + h + "</v></c>" : '<c r="' + ref + '" t="inlineStr"><is><t>' + xesc(h) + "</t></is></c>";
-      });
-      o += "</row>";
-    });
-    return o + "</sheetData></worksheet>";
+    window.Cikti.png(svg, 720, Hh, ad);
   }
   function excelIndir() {
     if (!SON) return; var gx = SON.gx, gy = SON.gy, deger, ozet;
@@ -226,14 +191,7 @@
         ["Sıra ilişkisi (Spearman ρ)", k.rho, ""], ["Doğrusal ilişki (Pearson r)", k.pearson === null ? "" : k.pearson, ""],
         ["Kaynak 1", gx.kaynak || "", ""], ["Kaynak 2", gy.kaynak || "", ""]];
     }
-    var ns = "http://schemas.openxmlformats.org/", ctx = "application/vnd.openxmlformats-officedocument.spreadsheetml.";
-    var dosyalar = [
-      ["[Content_Types].xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="' + ctx + 'sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="' + ctx + 'worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="' + ctx + 'worksheet+xml"/></Types>'],
-      ["_rels/.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="' + ns + 'officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
-      ["xl/workbook.xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="' + ns + 'officeDocument/2006/relationships"><sheets><sheet name="Değerler" sheetId="1" r:id="rId1"/><sheet name="Özet" sheetId="2" r:id="rId2"/></sheets></workbook>'],
-      ["xl/_rels/workbook.xml.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="' + ns + 'officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="' + ns + 'officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/></Relationships>'],
-      ["xl/worksheets/sheet1.xml", sayfa(deger)], ["xl/worksheets/sheet2.xml", sayfa(ozet)]];
-    indir(dosyaAdi() + ".xlsx", zip(dosyalar));
+    window.Cikti.xlsx([{ ad: "Değerler", satirlar: deger }, { ad: "Özet", satirlar: ozet }], dosyaAdi());
   }
   $("sonuc").addEventListener("click", function (e) {
     var b = e.target.closest("[data-is]"); if (b) { var i = b.dataset.is; if (i === "xlsx") excelIndir(); else if (i === "png") pngIndir(); return; }

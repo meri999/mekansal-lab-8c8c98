@@ -1,0 +1,32 @@
+<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><title>test</title></head><body><pre id="o"></pre>
+<script src="veri/veri.js"></script><script src="iliski-hesap.js"></script><script src="karne-hesap.js"></script>
+<script>
+var out=[],bad=0;
+function t(ad,f){try{var r=f();out.push((r===true?"OK   ":"FAIL ")+ad+(r===true?"":" -> "+r));if(r!==true)bad++}catch(e){out.push("FAIL "+ad+" -> "+e.message);bad++}}
+function yak(a,b,e){return Math.abs(a-b)<=(e||1e-9)||a+" != "+b}
+var K=window.KarneHesap,H=window.IliskiHesap,iller=H.ilKodlari(VERI.yerler),G=VERI.gostergeler;
+var L=G.filter(function(g){return !g.sik&&H.ilDuzeyli(g,iller)});
+var OZ=L.map(function(g){return K.ozet(g,iller)}).filter(Boolean);
+var ist="TR100",urfa=VERI.yerler.filter(function(y){return y.ad_tr==="Şanlıurfa"&&y.duzey==="il"})[0].kod;
+t("ozet tanimli ve cok gosterge",function(){return OZ.length>100||OZ.length});
+t("ozet: en az 70 il",function(){return OZ.every(function(o){return o.n>=70})||"az il"});
+t("z ortalamasi 0, sapma 1",function(){var o=OZ[0],t0=0,k=Object.keys(o.d);k.forEach(function(c){t0+=K.z(o,c)});return yak(t0/k.length,0,1e-9)});
+t("sira 1 = en yuksek deger",function(){var o=OZ[0],k=Object.keys(o.d),en=k.filter(function(c){return o.sira[c]===1})[0];return k.every(function(c){return o.d[en]>=o.d[c]})||"degil"});
+t("siralar 1..n benzersiz",function(){var o=OZ[0],s=Object.keys(o.sira).map(function(c){return o.sira[c]}).sort(function(a,b){return a-b});return (s[0]===1&&s[s.length-1]===o.n&&new Set(s).size===o.n)||"bozuk"});
+t("sabit seride z null",function(){var g={yillar:["2000"],birim:"",veri:{}};iller.forEach(function(k){g.veri[k]=[5]});var o=K.ozet(g,iller);return (o&&K.z(o,ist)===null)||"null degil"});
+t("az ilde ozet null",function(){var g={yillar:["2000"],birim:"",veri:{}};iller.slice(0,10).forEach(function(k){g.veri[k]=[5]});return K.ozet(g,iller)===null||"dolu"});
+t("satirlar ayrisma (siraya gore) azalan",function(){var r=K.satirlar(OZ,ist);return (r.length>100&&r.every(function(q,i,a){return i===0||a[i-1].uzak>=q.uzak-1e-12}))||r.length});
+t("yuzdelik 0..1, 1 = en yuksek",function(){var o=OZ[0],k=Object.keys(o.d),en=k.filter(function(c){return o.sira[c]===1})[0],dn=k.filter(function(c){return o.sira[c]===o.n})[0];return (yak(K.pc(o,en),1)===true&&yak(K.pc(o,dn),0)===true)||"uc"});
+t("satirlar: sira 1..81",function(){return K.satirlar(OZ,ist).every(function(q){return q.sira>=1&&q.sira<=q.n})||"aralik"});
+t("karsilastir yayilim azalan, iki il",function(){var r=K.karsilastir(OZ,[ist,urfa]);return (r.length>100&&r.every(function(q,i,a){return i===0||a[i-1].yayilim>=q.yayilim-1e-12}))||r.length});
+t("karsilastir ayni il yayilim 0",function(){var r=K.karsilastir(OZ,[ist,ist]);return r.every(function(q){return q.yayilim<1e-12})||"sifir degil"});
+var B=K.benzerlik(OZ,ist,iller);
+t("benzerlik 0..1 araliginda",function(){return B.every(function(q){return q.uzaklik>=0&&q.uzaklik<=1})||"aralik"});
+t("benzerlik 80 il, artan",function(){return (B.length>=75&&B.every(function(q,i,a){return i===0||a[i-1].uzaklik<=q.uzaklik}))||B.length});
+t("benzerlik kendini icermez",function(){return B.every(function(q){return q.kod!==ist})||"kendisi var"});
+t("benzerlik simetrik",function(){var a=B.filter(function(q){return q.kod===urfa})[0],b=K.benzerlik(OZ,urfa,iller).filter(function(q){return q.kod===ist})[0];return yak(a.uzaklik,b.uzaklik,1e-9)});
+t("Istanbul'a en benzer Sanliurfa degil (uzakliga gore sonlarda)",function(){var i=B.map(function(q){return q.kod}).indexOf(urfa);return i>B.length/2||i});
+t("benzerlik az ortak gosterge elenir",function(){return K.benzerlik(OZ.slice(0,5),ist,iller,20).length===0||"elenmedi"});
+t("ciftFark artan",function(){var r=K.ciftFark(OZ,ist,urfa);return (r.length>100&&r.every(function(q,i,a){return i===0||a[i-1].fark<=q.fark}))||r.length});
+document.title="test "+(bad?"KALDI "+bad:"GEÇTİ");document.getElementById("o").textContent=out.join("\n");
+</script></body></html>
