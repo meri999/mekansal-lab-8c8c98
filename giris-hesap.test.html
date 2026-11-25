@@ -41,5 +41,8 @@ t("sinifla bes sinif",function(){var r=H.sinifla(D10);return (r.sinif.k1===0&&r.
 t("sinifla null",function(){var r=H.sinifla({a:1,b:null,c:2});return r.sinif.b===null||JSON.stringify(r)});
 t("sinifla bos",function(){var a=H.sinifla({}),b=H.sinifla({a:null});return (a.esik.length===0&&b.esik.length===0&&b.sinif.a===null)||"bos"});
 t("sinifla esit degerler",function(){var r=H.sinifla({a:5,b:5,c:5});return (r.sinif.a===r.sinif.b&&r.sinif.b===r.sinif.c)||JSON.stringify(r)});
+function lum(h){var c=[1,3,5].map(function(i){var v=parseInt(h.substr(i,2),16)/255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4)});return 0.2126*c[0]+0.7152*c[1]+0.0722*c[2]}
+function oran(a,b){var x=lum(a),y=lum(b);return (Math.max(x,y)+0.05)/(Math.min(x,y)+0.05)}
+t("secili il ton: kendi sinifindan ve ust sinifindan ayirt edilir",function(){var P=H.PAL5,K=H.KOYU5;if(!P||!K)return "palet yok";for(var i=0;i<5;i++){var o1=oran(K[i],P[i]),o2=oran(K[i],P[Math.min(i+1,4)]);if(o1<1.5||(i<4&&o2<1.5))return "sinif "+i+" "+o1.toFixed(2)+"/"+o2.toFixed(2)}return true});
 document.getElementById("o").textContent=out.join("\n");document.title=(bad?"FAIL ":"PASS ")+(out.length-bad)+"/"+out.length;
 </script></body></html>

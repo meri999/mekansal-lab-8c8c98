@@ -33,7 +33,7 @@
   };
 
   /* portal haritasindaki gibi bes esit sayili sinif; en cok dusen en koyu */
-  var PAL5 = ["#f7e1e2", "#eeb3b6", "#e0777c", "#c63a41", "#7b0828"], KOYU5 = ["#c9a3a6", "#d27f84", "#b24348", "#8f1f27", "#3d0414"];
+  var PAL5 = H.PAL5, KOYU5 = H.KOYU5;
   var ters = {}; Object.keys(fk).forEach(function (k) { ters[k] = fk[k] === null ? null : -fk[k]; });
   var SN = H.sinifla(ters).sinif;
   function boya(kod) { var c = SN[kod]; return c === null || c === undefined ? "#ececec" : PAL5[c]; }

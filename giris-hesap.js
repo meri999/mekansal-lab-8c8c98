@@ -113,8 +113,10 @@
     });
     return { esik: esik, sinif: sinif };
   }
+  /* harita paleti (portaldaki RENK) ve secili il tonlari: her koyu ton hem kendi sinifindan hem ust sinifin renginden ayirt edilir */
+  var PAL5 = ["#f7e1e2", "#eeb3b6", "#e0777c", "#c63a41", "#7b0828"], KOYU5 = ["#d27f84", "#b24348", "#8f1f27", "#2a0310", "#1a0108"];
   function turkiye(g, i) {
     var v = g.veri.TR ? g.veri.TR[i] : null; return (typeof v === "number" && isFinite(v)) ? v : null;
   }
-  global.GirisHesap = { sonYil: sonYil, ilDegerleri: ilDegerleri, fark: fark, sirala: sirala, bul: bul, turkiye: turkiye, sinifla: sinifla, katla: katla, araBul: araBul, MIN_IL: MIN_IL };
+  global.GirisHesap = { sonYil: sonYil, ilDegerleri: ilDegerleri, fark: fark, sirala: sirala, bul: bul, turkiye: turkiye, sinifla: sinifla, PAL5: PAL5, KOYU5: KOYU5, katla: katla, araBul: araBul, MIN_IL: MIN_IL };
 })(window);
