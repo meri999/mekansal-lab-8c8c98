@@ -32,6 +32,13 @@
     en_yuksek: yuksek ? yuksek.ad : "—", en_yuksek_deger: yuksek ? sayi(yuksek.deger, oy) : "—"
   };
 
+  /* portal haritasindaki gibi bes esit sayili sinif; en cok dusen en koyu */
+  var PAL5 = ["#f7e1e2", "#eeb3b6", "#e0777c", "#c63a41", "#7b0828"], KOYU5 = ["#c9a3a6", "#d27f84", "#b24348", "#8f1f27", "#3d0414"];
+  var ters = {}; Object.keys(fk).forEach(function (k) { ters[k] = fk[k] === null ? null : -fk[k]; });
+  var SN = H.sinifla(ters).sinif;
+  function boya(kod) { var c = SN[kod]; return c === null || c === undefined ? "#ececec" : PAL5[c]; }
+  function koyu(kod) { var c = SN[kod]; return c === null || c === undefined ? "#ececec" : KOYU5[c]; }
+
   /* ---- kahraman ---- */
   $("kahraman").innerHTML =
     '<div><div class="ey">Bu haftanın sorusu</div><h1>' + esc(C.soru) + '</h1>' +
@@ -39,37 +46,28 @@
     '<p style="font-size:12.5px;color:var(--mut);margin-top:14px">Kaynak: TÜİK, ' + esc(gt.kaynak || "Doğum İstatistikleri") + '. Harita, ' + fgercek + ' yıllık değişimi gösterir (' + esc(String(gt.yillar[s.i - fgercek])) + '–' + esc(s.yil) + ').</p></div>' +
     '<div class="harita-kutu">' +
     '<div id="ilKart" role="status"></div><svg id="harita" role="group" aria-label="İllere göre ' + esc(gt.baslik) + ' değişimi haritası"></svg>' +
-    '<div class="lejant">az düşüş<i></i>çok düşüş</div></div>';
+    '<div class="lejant"' + (Object.keys(SN).some(function (k) { return SN[k] !== null; }) ? '' : ' hidden') + '>az düşüş' + PAL5.map(function (c) { return '<i style="background:' + c + '"></i>'; }).join('') + 'çok düşüş</div></div>';
 
   /* ---- harita ---- */
   var minx = 1e9, maxx = -1e9, miny = 1e9, maxy = -1e9;
   function halkalar(g) { return g.type === "Polygon" ? [g.coordinates] : g.coordinates; }
   F.forEach(function (f) { halkalar(f.geometry).forEach(function (p) { p[0].forEach(function (c) { minx = Math.min(minx, c[0]); maxx = Math.max(maxx, c[0]); miny = Math.min(miny, c[1]); maxy = Math.max(maxy, c[1]); }); }); });
   var K = 1.28, W = (maxx - minx) * K, HH = maxy - miny;
-  var vals = Object.keys(fk).map(function (k) { return fk[k]; }).filter(function (v) { return v !== null; });
-  var vmin = Math.min.apply(null, vals), vmax = Math.max.apply(null, vals);
-  var PAL = [[247, 217, 214], [233, 163, 159], [200, 80, 90], [123, 8, 40]];
-  function renk(v) {
-    if (v === null || v === undefined) return "#ececec";
-    var t = vmax === vmin ? 1 : (vmax - v) / (vmax - vmin); /* en cok dusen = 1 */
-    var i = Math.min(2, Math.floor(t * 3)), u = t * 3 - i;
-    return "rgb(" + PAL[i].map(function (c, j) { return Math.round(c + (PAL[i + 1][j] - c) * u); }).join(",") + ")";
-  }
   var svg = $("harita"); svg.setAttribute("viewBox", "0 0 " + W.toFixed(2) + " " + HH.toFixed(2));
   var yol = "";
   F.forEach(function (f) {
     var kod = f.properties.kod, d = halkalar(f.geometry).map(function (p) {
       return p.map(function (r) { return "M" + r.map(function (c) { return ((c[0] - minx) * K).toFixed(2) + "," + (maxy - c[1]).toFixed(2); }).join("L") + "Z"; }).join("");
     }).join("");
-    yol += '<path d="' + d + '" data-k="' + esc(kod) + '" fill="' + renk(fk[kod]) + '" tabindex="-1" role="button" aria-label="' + esc(ADLAR[kod] || f.properties.ad || kod) + '"></path>';
+    yol += '<path d="' + d + '" data-k="' + esc(kod) + '" fill="' + boya(kod) + '" tabindex="-1" role="button" aria-label="' + esc(ADLAR[kod] || f.properties.ad || kod) + '"></path>';
   });
   svg.innerHTML = yol;
 
   /* ---- il secimi ---- */
   var sirali = H.sirala(deg, ADLAR, 200, true);
   function sec(kod) {
-    Array.prototype.forEach.call(svg.querySelectorAll("path.sec"), function (p) { p.classList.remove("sec"); });
-    var p = svg.querySelector('path[data-k="' + kod + '"]'); if (p) { var odak = document.activeElement === p; p.classList.add("sec"); svg.appendChild(p); if (odak) p.focus({ preventScroll: true }); }
+    Array.prototype.forEach.call(svg.querySelectorAll("path.sec"), function (q) { q.classList.remove("sec"); q.setAttribute("fill", boya(q.dataset.k)); });
+    var p = svg.querySelector('path[data-k="' + kod + '"]'); if (p) { var odak = document.activeElement === p; p.classList.add("sec"); p.setAttribute("fill", koyu(kod)); svg.appendChild(p); if (odak) p.focus({ preventScroll: true }); }
     var v = deg[kod], f = fk[kod], sira = sirali.map(function (x) { return x.kod; }).indexOf(kod) + 1;
     var kart = $("ilKart");
     kart.innerHTML = '<button type="button" aria-label="Kapat">×</button><h3>' + esc(ADLAR[kod] || kod) + '</h3>' +
@@ -79,9 +77,17 @@
       (f !== null && f !== undefined ? '<small>' + fgercek + ' yılda ' + isaretli(f, oy) + '</small>' : '') +
       '<small><a href="veri-portali.html#konu=nufus">Veri portalında aç →</a></small>';
     kart.classList.add("acik");
-    kart.querySelector("button").onclick = function () { kart.classList.remove("acik"); if (p) p.classList.remove("sec"); };
+    kart.querySelector("button").onclick = function () { kart.classList.remove("acik"); if (p) { p.classList.remove("sec"); p.setAttribute("fill", boya(kod)); } };
   }
   svg.addEventListener("click", function (e) { var p = e.target.closest("path"); if (p) sec(p.dataset.k); });
+  var ip = $("ipucu");
+  svg.addEventListener("mousemove", function (e) {
+    var p = e.target.closest("path"); if (!p || !ip) return;
+    var v = deg[p.dataset.k];
+    ip.style.display = "block"; ip.style.left = (e.clientX + 14) + "px"; ip.style.top = (e.clientY + 14) + "px";
+    ip.textContent = (ADLAR[p.dataset.k] || p.dataset.k) + " · " + (v === null || v === undefined ? "veri yok" : sayi(v, oy));
+  });
+  svg.addEventListener("mouseleave", function () { if (ip) ip.style.display = "none"; });
   svg.addEventListener("keydown", function (e) { if ((e.key === "Enter" || e.key === " ") && e.target.dataset.k) { e.preventDefault(); sec(e.target.dataset.k); } });
 
 
