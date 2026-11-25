@@ -1,0 +1,306 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-25T17:14:03.130455+00:00",
+  "title": "Design System: Enstitü Portal",
+  "extensions": {
+    "colorMeta": {
+      "brand-red": {
+        "role": "primary",
+        "displayName": "Enstitü Kırmızısı",
+        "canonical": "#d1181e",
+        "tonalRamp": [
+          "#941115",
+          "#b3151a",
+          "#d1181e",
+          "#d93f44",
+          "#e1666a",
+          "#e88d90",
+          "#f0b4b6",
+          "#f8dbdc"
+        ]
+      },
+      "brand-burgundy": {
+        "role": "primary",
+        "displayName": "Bordo",
+        "canonical": "#721530",
+        "tonalRamp": [
+          "#510f22",
+          "#611229",
+          "#721530",
+          "#8a3d53",
+          "#a26476",
+          "#ba8c99",
+          "#d1b3bc",
+          "#e9dbdf"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Mürekkep",
+        "canonical": "#17171a",
+        "tonalRamp": [
+          "#101012",
+          "#141416",
+          "#17171a",
+          "#3e3e41",
+          "#656567",
+          "#8d8d8e",
+          "#b4b4b5",
+          "#dbdbdc"
+        ]
+      },
+      "ink-muted": {
+        "role": "neutral",
+        "displayName": "Sönük Gri",
+        "canonical": "#62626a",
+        "tonalRamp": [
+          "#45454b",
+          "#54545b",
+          "#62626a",
+          "#7d7d83",
+          "#97979c",
+          "#b2b2b6",
+          "#cccccf",
+          "#e7e7e8"
+        ]
+      },
+      "paper-cream": {
+        "role": "neutral",
+        "displayName": "Krem Kâğıt",
+        "canonical": "#fbfbf2",
+        "tonalRamp": [
+          "#b2b2ac",
+          "#d6d6cf",
+          "#fbfbf2",
+          "#fcfcf4",
+          "#fcfcf6",
+          "#fdfdf9",
+          "#fefefb",
+          "#fefefd"
+        ]
+      },
+      "paper-white": {
+        "role": "neutral",
+        "displayName": "Beyaz",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#b5b5b5",
+          "#dadada",
+          "#ffffff",
+          "#ffffff",
+          "#ffffff",
+          "#ffffff",
+          "#ffffff",
+          "#ffffff"
+        ]
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Sıcak Çizgi",
+        "canonical": "#e6e4d8",
+        "tonalRamp": [
+          "#a3a299",
+          "#c5c3b9",
+          "#e6e4d8",
+          "#eae9df",
+          "#eeede5",
+          "#f3f2ec",
+          "#f7f6f2",
+          "#fbfbf9"
+        ]
+      },
+      "tint-hover": {
+        "role": "neutral",
+        "displayName": "Sıcak Dokunuş",
+        "canonical": "#f6efe8",
+        "tonalRamp": [
+          "#aea9a5",
+          "#d2ccc6",
+          "#f6efe8",
+          "#f8f2ec",
+          "#f9f4f0",
+          "#fbf7f4",
+          "#fcfaf8",
+          "#fefdfb"
+        ]
+      },
+      "tint-label": {
+        "role": "neutral",
+        "displayName": "Etiket Pembesi",
+        "canonical": "#f6e6e8",
+        "tonalRamp": [
+          "#aea3a5",
+          "#d2c5c6",
+          "#f6e6e8",
+          "#f8eaec",
+          "#f9eef0",
+          "#fbf3f4",
+          "#fcf7f8",
+          "#fefbfb"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Ana sayfa kahraman başlığı."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Bölüm başlıkları."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Araç ve il kartı başlıkları."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Açıklamalar ve genel metin."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Üst yazı ve küçük etiketler."
+      }
+    },
+    "shadows": [
+      {
+        "name": "acilir-katman",
+        "value": "0 8px 24px #0003",
+        "purpose": "Giriş menüsü."
+      },
+      {
+        "name": "oneri-listesi",
+        "value": "0 10px 26px #0002",
+        "purpose": "Arama sonuç listesi."
+      },
+      {
+        "name": "kart-hover",
+        "value": "0 6px 18px #0002",
+        "purpose": "Tıklanabilir araç ve bulgu kartı üzerine gelince."
+      },
+      {
+        "name": "arama-parilti",
+        "value": "0 6px 20px #72153020",
+        "purpose": "Arama kutusu bordo tonlu parıltı."
+      }
+    ],
+    "motion": [
+      {
+        "name": "harita-dolgu",
+        "value": "fill .15s",
+        "purpose": "Harita il rengi geçişi."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "genis",
+        "value": "1000px"
+      },
+      {
+        "name": "dar",
+        "value": "560px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Birincil düğme",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ana eylem (Giriş yap). Bordo hap, üzerine gelince kırmızı.",
+      "html": "<button class=\"ds-btn\">Giriş yap ▾</button>",
+      "css": ".ds-btn{background:#721530;color:#fff;border:1.5px solid #721530;padding:8px 18px;border-radius:30px;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer}.ds-btn:hover,.ds-btn:focus-visible{background:#d1181e;border-color:#d1181e}"
+    },
+    {
+      "name": "Çizgili düğme",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "İkincil eylem (Veri portalına git). Beyaz zemin, bordo çizgi.",
+      "html": "<a class=\"ds-btn-outline\" href=\"#\">Veri portalına git →</a>",
+      "css": ".ds-btn-outline{display:inline-block;background:#fff;color:#721530;border:1.5px solid #721530;padding:8px 18px;border-radius:30px;font-weight:700;font-size:14px;text-decoration:none}.ds-btn-outline:hover,.ds-btn-outline:focus-visible{background:#f6efe8}"
+    },
+    {
+      "name": "Araç kartı",
+      "kind": "card",
+      "refersTo": "tool-card",
+      "description": "Bir aracı sunar; ince çerçeve, üzerine gelince hafif gölge.",
+      "html": "<a class=\"ds-arac\" href=\"#\"><h3>Kırılım Gezgini</h3><p>Seç, çaprazla, çıktıyı değiştir</p></a>",
+      "css": ".ds-arac{display:block;background:#fff;border:1px solid #e6e4d8;border-radius:14px;padding:16px;text-decoration:none;max-width:260px}.ds-arac h3{margin:6px 0 4px;font-size:16px;font-weight:600;color:#721530}.ds-arac p{margin:0;font-size:13px;color:#62626a}.ds-arac:hover,.ds-arac:focus-visible{box-shadow:0 6px 18px #0002}"
+    },
+    {
+      "name": "Öne çıkan araç kartı",
+      "kind": "card",
+      "refersTo": "tool-card-featured",
+      "description": "En önemli araç (Veri portalı): bordo dolgulu, beyaz metin.",
+      "html": "<a class=\"ds-arac-ana\" href=\"#\"><h3>Veri portalı</h3><p>Harita ve gösterge. Ara, filtrele, karşılaştır</p></a>",
+      "css": ".ds-arac-ana{display:block;background:#721530;border:1px solid #721530;border-radius:14px;padding:16px;text-decoration:none;max-width:260px}.ds-arac-ana h3{margin:6px 0 4px;font-size:16px;font-weight:600;color:#fff}.ds-arac-ana p{margin:0;font-size:13px;color:#fff}"
+    },
+    {
+      "name": "Arama kutusu",
+      "kind": "input",
+      "refersTo": "search-field",
+      "description": "Gösterge, il ya da araç arar. Bordo kenarlıklı hap.",
+      "html": "<div class=\"ds-ara\"><input type=\"search\" placeholder=\"Gösterge, il ya da araç arayın…\" aria-label=\"Ara\"></div>",
+      "css": ".ds-ara{display:flex;align-items:center;background:#fff;border:2px solid #721530;border-radius:34px;padding:4px 20px;box-shadow:0 6px 20px #72153020;max-width:420px}.ds-ara input{flex:1;border:0;outline:0;font:inherit;font-size:17px;padding:10px 0;background:transparent;min-width:0}.ds-ara:focus-within{box-shadow:0 6px 24px #72153038}"
+    },
+    {
+      "name": "Taslak etiketi",
+      "kind": "chip",
+      "refersTo": "tool-card",
+      "description": "Henüz taslak olan araçları işaretler.",
+      "html": "<span class=\"ds-etiket\">taslak</span>",
+      "css": ".ds-etiket{display:inline-block;font-size:11px;background:#f6e6e8;border-radius:8px;padding:1px 8px;color:#721530;font-weight:700}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Kamu Arşivi Atölyesi",
+    "overview": "Enstitü Sosyal'in portalı, bir kamu arşivinin çalışma masası gibi davranır: krem bir zeminde düzenli, ince çizgili kartlar ve tek bir bordo-kırmızı ses. Bilgi önde durur, süs geri planda kalır.",
+    "keyCharacteristics": [
+      "Krem kâğıt zemin, beyaz kartlar, ince sıcak gri kenarlık.",
+      "Bordo birincil eylem ve başlık rengi; kırmızı küçük vurgu ve etkileşim rengi.",
+      "Başlıkta ClashDisplay, gövdede Satoshi.",
+      "Yuvarlak ama gösterişsiz köşeler: düğme ve arama hap biçimli, kartlar 14 px.",
+      "Düz yüzeyler; gölge yalnız açılır katmanda ve üzerine gelinen kartta."
+    ],
+    "rules": [
+      {
+        "name": "Tek Ses Kuralı",
+        "body": "Bordo ve kırmızı sayfanın azınlığında kalır; bir ekranda yüzeyin büyük kısmı krem ve beyazdır.",
+        "section": "colors"
+      },
+      {
+        "name": "Bordo Eylemdir Kuralı",
+        "body": "Bordo dolgu yalnız bir eylemi ya da en önemli aracı işaretler.",
+        "section": "colors"
+      },
+      {
+        "name": "İki Aile Kuralı",
+        "body": "Başlıkta yalnız ClashDisplay, gövdede yalnız Satoshi; üçüncü bir aile eklenmez.",
+        "section": "typography"
+      },
+      {
+        "name": "Gölge Tepkidir Kuralı",
+        "body": "Yüzey sakin durumda gölgesizdir; gölge yalnız açılan bir katmanı ya da üzerine gelinen bir kartı ayırır.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do bordoyu (#721530) başlık ve birincil eylem için, kırmızıyı (#d1181e) küçük vurgu için kullan.",
+      "Do kartları beyaz zeminde 1 px sıcak çizgiyle ayır; derinlik için önce çizgi ve zemin farkı.",
+      "Do başlıkta ClashDisplay 600, gövdede Satoshi kullan.",
+      "Do düğmeleri hap biçiminde (30 px) tut.",
+      "Do henüz hazır olmayan şeyi soluk ve \"yakında\" etiketli göster; hazır gibi sunma.",
+      "Do haritada portaldaki beş sınıflı renk skalasını kullan."
+    ],
+    "donts": [
+      "Don't limon yeşili (#cfff45) kullanma.",
+      "Don't haritada seçili ile siyah çerçeve çizme; seçili il kendi tonunun koyusuna döner.",
+      "Don't sakin yüzeye gölge ekleme; gölge yalnız açılan katmanda ve üzerine gelinen kartta.",
+      "Don't üçüncü bir yazı tipi ailesi ekleme.",
+      "Don't emoji ya da Unicode karakterleri simge yerine kullanma; tek çizgi stilinde SVG simge kullan.",
+      "Don't başlığın üstüne küçük etiket (kicker) koyma; başlık tek başına taşır.",
+      "Don't yuvarlak kartın tek kenarına renkli çizgi çekme.",
+      "Don't hazır olmayan öğeyi yarı saydam kartla gösterme; \"Yakında\" listesine koy."
+    ]
+  }
+}

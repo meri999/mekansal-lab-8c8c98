@@ -3,28 +3,31 @@
   var V = window.VERI, C = window.GIRIS, H = window.GirisHesap, F = (window.HARITA_IL || {}).features;
   function $(i) { return document.getElementById(i); }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
-  if (!V || !C || !H || !F || !F.length) {
-    $("kahraman").innerHTML = '<p class="hata">Veri yüklenemedi. Sayfayı yenileyin; sorun sürerse veri dosyalarının (veri/*.js) yerinde olduğunu kontrol edin.</p>';
+  if (!C) {
+    $("kahraman").innerHTML = '<p class="hata">Sayfa ayarları yüklenemedi. Sayfayı yenileyin; araçlara aşağıdaki bağlantılardan ulaşabilirsiniz.</p>';
     return;
   }
+  var VERI_OK = !!(V && H && F && F.length), HERO_OK = false, CTX = {};
 
   /* ---- yardimcilar ---- */
   var ADLAR = {}, IL = [];
-  V.yerler.forEach(function (y) { ADLAR[y.kod] = y.ad_tr; if (y.duzey === "il") IL.push(y); });
+  if (V) V.yerler.forEach(function (y) { ADLAR[y.kod] = y.ad_tr; if (y.duzey === "il") IL.push(y); });
   function gOf(b) { for (var i = 0; i < V.gostergeler.length; i++) if (V.gostergeler[i].baslik === b) return V.gostergeler[i]; return null; }
   function sayi(v, o) { return v.toLocaleString("tr-TR", { minimumFractionDigits: o, maximumFractionDigits: o }); }
   function isaretli(v, o) { return (v > 0 ? "+" : v < 0 ? "−" : "") + sayi(Math.abs(v), o); }
   function kisalt(v, o) { return Math.abs(v) >= 1e6 ? sayi(v / 1e6, 1) + " mn" : sayi(v, o); }
   function sablon(t, d) { return String(t).replace(/\{(\w+)\}/g, function (_, k) { return d[k] === undefined ? "—" : d[k]; }); }
 
-  /* ---- ana gosterge (dogurganlik) hesaplari ---- */
+  /* ---- kahraman: soru, harita. Hata olursa yalniz bu bolum hata gosterir; konular, arama, alt bilgi kurulmaya devam eder ---- */
+  try {
+  if (!VERI_OK) throw new Error("Veri yüklenemedi. Sayfayı yenileyin; sorun sürerse veri dosyalarının (veri/*.js) yerinde olduğunu kontrol edin.");
   var gt = gOf(C.harita_gosterge);
-  if (!gt) { $("kahraman").innerHTML = '<p class="hata">Gösterge bulunamadı: ' + esc(C.harita_gosterge) + '</p>'; return; }
+  if (!gt) throw new Error("Gösterge bulunamadı: " + C.harita_gosterge);
   var oy = gt.ondalik, s = H.sonYil(gt), deg = H.ilDegerleri(gt, s.i), fk = H.fark(gt, s.i, C.fark_yil);
   var dusus = H.sirala(fk, ADLAR, 1, true)[0], dusuk = H.sirala(deg, ADLAR, 3, true), yuksek = H.sirala(deg, ADLAR, 1, false)[0];
   var tr = H.turkiye(gt, s.i);
   var fgercek = Math.max(1, s.i - Math.max(0, s.i - C.fark_yil)); /* verinin izin verdigi yil farki */
-  var CTX = {
+  CTX = {
     tr_son: tr === null ? "—" : sayi(tr, oy), tr_son_yil: s.yil, fark_yil: fgercek,
     en_cok_dusen: dusus ? dusus.ad : "—", en_cok_dusen_deger: dusus ? isaretli(dusus.deger, oy) : "—",
     en_dusuk: dusuk[0] ? dusuk[0].ad : "—", en_dusuk_deger: dusuk[0] ? sayi(dusuk[0].deger, oy) : "—",
@@ -41,9 +44,9 @@
 
   /* ---- kahraman ---- */
   $("kahraman").innerHTML =
-    '<div><div class="ey">Bu haftanın sorusu</div><h1>' + esc(C.soru) + '</h1>' +
+    '<div><h1>' + esc(C.soru) + '</h1>' +
     '<p class="lead">' + esc(sablon(C.cevap_sablonu, CTX)) + '</p>' +
-    '<p style="font-size:12.5px;color:var(--mut);margin-top:14px">Kaynak: TÜİK, ' + esc(gt.kaynak || "Doğum İstatistikleri") + '. Harita, ' + fgercek + ' yıllık değişimi gösterir (' + esc(String(gt.yillar[s.i - fgercek])) + '–' + esc(s.yil) + ').</p></div>' +
+    '<p style="font-size:13px;color:var(--mut);margin-top:14px">Kaynak: TÜİK, ' + esc(gt.kaynak || "Doğum İstatistikleri") + '. Harita, ' + fgercek + ' yıllık değişimi gösterir (' + esc(String(gt.yillar[s.i - fgercek])) + '–' + esc(s.yil) + ').</p></div>' +
     '<div class="harita-kutu">' +
     '<div id="ilKart" role="status"></div><svg id="harita" role="group" aria-label="İllere göre ' + esc(gt.baslik) + ' değişimi haritası"></svg>' +
     '<div class="lejant"' + (Object.keys(SN).some(function (k) { return SN[k] !== null; }) ? '' : ' hidden') + '>az düşüş' + PAL5.map(function (c) { return '<i style="background:' + c + '"></i>'; }).join('') + 'çok düşüş</div></div>';
@@ -62,6 +65,10 @@
     yol += '<path d="' + d + '" data-k="' + esc(kod) + '" fill="' + boya(kod) + '" tabindex="-1" role="button" aria-label="' + esc(ADLAR[kod] || f.properties.ad || kod) + '"></path>';
   });
   svg.innerHTML = yol;
+  var YOLLAR = Array.prototype.slice.call(svg.querySelectorAll("path")).sort(function (a, b) {
+    return (ADLAR[a.dataset.k] || "").localeCompare(ADLAR[b.dataset.k] || "", "tr");
+  });
+  if (YOLLAR.length) YOLLAR[0].setAttribute("tabindex", "0");
 
   /* ---- il secimi ---- */
   var sirali = H.sirala(deg, ADLAR, 200, true);
@@ -88,22 +95,47 @@
     ip.textContent = (ADLAR[p.dataset.k] || p.dataset.k) + " · " + (v === null || v === undefined ? "veri yok" : sayi(v, oy));
   });
   svg.addEventListener("mouseleave", function () { if (ip) ip.style.display = "none"; });
-  svg.addEventListener("keydown", function (e) { if ((e.key === "Enter" || e.key === " ") && e.target.dataset.k) { e.preventDefault(); sec(e.target.dataset.k); } });
+  svg.addEventListener("keydown", function (e) {
+    var p = e.target.closest("path"); if (!p || !p.dataset.k) return;
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); sec(p.dataset.k); return; }
+    var yon = (e.key === "ArrowRight" || e.key === "ArrowDown") ? 1 : (e.key === "ArrowLeft" || e.key === "ArrowUp") ? -1 : 0;
+    if (!yon) return;
+    e.preventDefault();
+    var j = (YOLLAR.indexOf(p) + yon + YOLLAR.length) % YOLLAR.length;
+    YOLLAR.forEach(function (q) { q.setAttribute("tabindex", "-1"); });
+    YOLLAR[j].setAttribute("tabindex", "0"); YOLLAR[j].focus();
+    var ad = ADLAR[YOLLAR[j].dataset.k] || YOLLAR[j].dataset.k, v = deg[YOLLAR[j].dataset.k];
+    YOLLAR[j].setAttribute("aria-label", ad + (v === null || v === undefined ? ", veri yok" : ", " + sayi(v, oy)));
+  });
+  HERO_OK = true;
+  } catch (hata) {
+    $("kahraman").innerHTML = '<p class="hata">' + esc(hata.message) + '</p>';
+  }
 
 
+  function tarihTr(t) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})(?: (\d{2}:\d{2}))?/.exec(String(t));
+    if (!m) return String(t);
+    var AY = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+    return parseInt(m[3], 10) + " " + AY[parseInt(m[2], 10) - 1] + " " + m[1] + (m[4] ? " " + m[4] : "");
+  }
   /* ---- araclar, konular, bulgular, alt bilgi ---- */
-  $("gSay").textContent = V.gostergeler.length;
+  if (V) $("gSay").textContent = V.gostergeler.length;
   $("konuIzgara").innerHTML = C.konular.map(function (k) {
     return '<a class="kart konu" href="veri-portali.html#konu=' + esc(k.kod) + '"><b>' + esc(k.ad) + '</b><span>' + esc(k.alt) + '</span></a>';
   }).join("");
-  $("bulguIzgara").innerHTML = C.bulgular.map(function (b) {
-    return '<a class="hik" href="' + esc(b.link) + '"><div class="g"></div><div class="t"><h3>' + esc(sablon(b.baslik, CTX)) + '</h3><p>' + esc(sablon(b.metin, CTX)) + '</p></div></a>';
-  }).join("");
+  if (HERO_OK) {
+    $("bulguIzgara").innerHTML = C.bulgular.map(function (b) {
+      return '<a class="hik" href="' + esc(b.link) + '"><div class="t"><h3>' + esc(sablon(b.baslik, CTX)) + '</h3><p>' + esc(sablon(b.metin, CTX)) + '</p></div></a>';
+    }).join("");
+  } else {
+    $("bulgular").hidden = true; /* bulgular hesaplanan veriye bagli: veri yoksa bos kart gostermek yerine gizlenir */
+  }
   $("alt").innerHTML = '<span><b>Kaynak:</b> <a href="https://veriportali.tuik.gov.tr" rel="noopener">TÜİK Veri Portalı</a> (SDMX API)</span>' +
-    '<span><b>Son güncelleme:</b> ' + esc(V.uretim) + '</span>' +
-    '<span>"Hesaplanmış" etiketli göstergeler TÜİK tarafından yayımlanmaz, ilgili tablolardan türetilir. İlişki nedensellik değildir.</span><span>Sınırlar: © EuroGeographics, <a href="https://ec.europa.eu/eurostat/web/gisco" rel="noopener">GISCO</a> (Eurostat)</span><span>Enstitü Sosyal</span>';
+    (V ? '<span><b>Son güncelleme:</b> ' + esc(tarihTr(V.uretim)) + '</span>' : '') +
+    '<span>Veri portalındaki "hesaplanmış" göstergeler TÜİK tarafından yayımlanmaz, ilgili tablolardan türetilir. İlişki nedensellik değildir.</span><span>Sınırlar: © EuroGeographics, <a href="https://ec.europa.eu/eurostat/web/gisco" rel="noopener">GISCO</a> (Eurostat)</span><span>Enstitü Sosyal</span>';
   /* ---- genel arama: gosterge, il, arac ---- */
-  (function () {
+  if (V && H) (function () {
     var gir = $("gAra"), lst = $("gListe"), ac = -1, bulunan = [];
     var araclar = Array.prototype.map.call(document.querySelectorAll("#araclar .arac"), function (k) {
       var h = k.querySelector("h3"), p = k.querySelector("p");
@@ -114,12 +146,12 @@
     function ciz() {
       var q = gir.value.trim();
       bulunan = q ? H.araBul(q, { gostergeler: V.gostergeler, yerler: V.yerler, araclar: araclar }) : []; ac = -1;
-      if (!q) { lst.hidden = true; gir.setAttribute("aria-expanded", "false"); return; }
+      if (!q) { lst.hidden = true; gir.setAttribute("aria-expanded", "false"); gir.removeAttribute("aria-activedescendant"); return; }
       lst.innerHTML = bulunan.length ? bulunan.map(function (b, i) {
-        return '<li role="option" data-i="' + i + '"' + (b.pasif ? ' class="pasif" aria-disabled="true"' : '') + '><b class="et">' + ETIKET[b.tur] + '</b><span>' + esc(b.ad) +
+        return '<li role="option" id="gO' + i + '" data-i="' + i + '"' + (b.pasif ? ' class="pasif" aria-disabled="true"' : '') + '><b class="et">' + ETIKET[b.tur] + '</b><span>' + esc(b.ad) +
           (b.pasif ? ' <em>yakında</em>' : '') + '</span></li>';
-      }).join("") : '<li class="yok">Sonuç bulunamadı</li>';
-      lst.hidden = false; gir.setAttribute("aria-expanded", "true");
+      }).join("") : '<li class="yok">Sonuç bulunamadı. Bir gösterge adı (ör. "işsizlik") ya da il adı deneyin.</li>';
+      lst.hidden = false; gir.setAttribute("aria-expanded", "true"); gir.removeAttribute("aria-activedescendant");
     }
     function git(i) { var b = bulunan[i]; if (b && !b.pasif) location.href = b.href; }
     function sonraki(yon) {
@@ -127,7 +159,8 @@
         var j = (ac + yon * n + bulunan.length * 2) % bulunan.length;
         if (!bulunan[j].pasif) { ac = j; break; }
       }
-      Array.prototype.forEach.call(lst.children, function (li, i) { li.classList.toggle("on", i === ac); });
+      Array.prototype.forEach.call(lst.children, function (li, i) { li.classList.toggle("on", i === ac); li.setAttribute("aria-selected", i === ac ? "true" : "false"); });
+      if (ac >= 0) gir.setAttribute("aria-activedescendant", "gO" + ac);
     }
     gir.addEventListener("input", ciz);
     gir.addEventListener("focus", ciz);
