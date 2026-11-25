@@ -2,7 +2,7 @@
 (function () {
   var D = window.KIRILIM_DIZIN, H = window.KirilimHesap;
   var $ = function (id) { return document.getElementById(id); };
-  var durum = { sutun: "_T", konu: 0, tablo: null, roller: null, yer: "TR", donem: 0, cikti: "matris", deger: "sayi", kars: false, sabit: {} };
+  var durum = { sutun: "_T", konu: 0, tablo: null, roller: null, yer: "TR", donem: 0, cikti: "matris", deger: "sayi", kars: false, sabit: {}, oncekiK1: null };
   var tablo = null;
   // Adres: ?tablo=<kod> o tabloyu açar; &gomulu=1 başka sayfanın içine gömülür (üst bar ve tablo seçimi gizli)
   var Q = new URLSearchParams(location.search), GOMULU = Q.get("gomulu") === "1";
@@ -10,7 +10,9 @@
   function yukseklikBildir() {
     if (GOMULU && window.parent !== window) setTimeout(function () { window.parent.postMessage({ kirilimYukseklik: document.documentElement.scrollHeight }, "*"); }, 0);
   }
-  window.__kirilim = { durum: durum, hatalar: 0, konuSec: function (i) { konuSec(i); } };
+  window.__kirilim = { durum: durum, hatalar: 0, konuSec: function (i) { konuSec(i); }, tabloSec: function (kod) { tabloSec(kod); } };
+  // Tablo kodu yalnız harf, rakam ve alt çizgi: dizinde olmayan tablo veri/kirilim/<kod>.js'ten yüklenir (#t=<kod>)
+  var KOD_RE = /^[A-Za-z0-9_]+$/;
   window.addEventListener("error", function () { window.__kirilim.hatalar++; });
 
   function kacis(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;"); }
@@ -42,8 +44,10 @@
   function tabloYukle(kod) {
     return new Promise(function (coz, red) {
       if (window.KIRILIM_TABLO && window.KIRILIM_TABLO[kod]) return coz(window.KIRILIM_TABLO[kod]);
+      var dt = dizinTablo(kod);
+      if (!dt && !KOD_RE.test(kod)) return red(new Error("geçersiz tablo kodu"));
       var s = document.createElement("script");
-      s.src = dizinTablo(kod).dosya;
+      s.src = dt ? dt.dosya : "veri/kirilim/" + kod + ".js";
       s.onload = function () { window.KIRILIM_TABLO && window.KIRILIM_TABLO[kod] ? coz(window.KIRILIM_TABLO[kod]) : red(new Error("boş dosya")); };
       s.onerror = function () { red(new Error("dosya yüklenemedi")); };
       document.head.appendChild(s);
@@ -59,6 +63,11 @@
       if (sira !== son) return;
       tablo = t;
       durum.tablo = kod;
+      // Dizinde olmayan tablo (#t=<kod> ile açılan) seçicide de görünsün
+      if (!$("tablo").querySelector('option[value="' + kacis(kod) + '"]')) {
+        $("tablo").insertAdjacentHTML("beforeend", secenekler([[kod, (t.baslik || kod) + " (dizinde yok)"]]));
+        $("tablo").value = kod;
+      }
       roller();
       menuKur();
       yerSecenekleri();
@@ -71,10 +80,9 @@
 
   // Eski seçimler yeni tabloda geçerliyse korunur, değilse tablonun varsayılanı gelir
   function roller() {
-    var kollar = tablo.kirilimlar.map(function (k) { return k.kol; }), e = durum.roller;
-    var gecerli = e && (kollar.indexOf(e.k1) >= 0 || (e.k1 === H.IL && tablo.yerler.length > 1)) && kollar.indexOf(e.k2) >= 0 && e.k1 !== e.k2 &&
-      (e.k3 === "-" || (kollar.length > 2 && kollar.indexOf(e.k3) >= 0 && e.k3 !== e.k1 && e.k3 !== e.k2));
-    durum.roller = gecerli ? e : H.varsayilanRoller(tablo);
+    var e = durum.roller;
+    durum.roller = H.rollerGecerli(tablo, e) ? e : H.varsayilanRoller(tablo);
+    if (durum.roller !== e) durum.oncekiK1 = null;
     durum.sabit = {};
     durum.donem = tablo.donemler.length - 1;
     if (tablo.yerler.indexOf(durum.yer) < 0) durum.yer = "TR";
@@ -83,7 +91,8 @@
   function menuKur() {
     var n = tablo.kirilimlar.length;
     var liste = tablo.kirilimlar.map(function (k) { return [k.kol, k.ad]; });
-    $("k1").innerHTML = secenekler((tablo.yerler.length > 1 ? [[H.IL, "İl"]] : []).concat(liste));
+    var yr = H.yerRolu(tablo);
+    $("k1").innerHTML = secenekler((yr === H.IL ? [[H.IL, "İl"]] : yr === H.BOLGE ? [[H.BOLGE, "Bölge (İBBS-2)"]] : []).concat(liste));
     $("k2").innerHTML = secenekler(liste);
     $("k3").innerHTML = secenekler(liste.concat([["-", "Yok (toplamı al)"]]));
     $("k2w").hidden = n < 2;
@@ -100,6 +109,7 @@
   }
 
   function rolDegisti(rol, kol) {
+    if (rol === "k1" && kol === H.BOLGE && durum.roller.k1 !== H.BOLGE) durum.oncekiK1 = durum.roller.k1;
     durum.roller = H.rolDuzelt(tablo, durum.roller, rol, kol);
     esitle();
     ciz();
@@ -123,6 +133,7 @@
   function toplamMetni(v) { return v === null ? "–" : (oranMi() ? ond(v, 1) : say(v)); }
   function kir(kol) {
     if (kol === H.IL) return { kol: H.IL, ad: "İl", kodlar: [], etiketler: [], ortusen: false };
+    if (kol === H.BOLGE) return { kol: H.BOLGE, ad: "Bölge", kodlar: [], etiketler: [], ortusen: false };
     for (var i = 0; i < tablo.kirilimlar.length; i++) if (tablo.kirilimlar[i].kol === kol) return tablo.kirilimlar[i];
     return null;
   }
@@ -212,15 +223,20 @@
   /* --- seçici durumları --------------------------------------------------- */
   function yerAdi(kod) {
     for (var i = 0; i < D.yerler.length; i++) if (D.yerler[i].kod === kod) return D.yerler[i].ad_tr;
+    // İBBS-2 adları dizinde yoksa veri/ibbs2.js'ten
+    if (window.IBBS2 && window.IBBS2[kod]) return window.IBBS2[kod].ad;
     return kod;
   }
   function kontrolleriKur() {
-    var oran = oranMi(), k2 = kir(durum.roller.k2), ilMod = durum.roller.k1 === H.IL;
+    var oran = oranMi(), k2 = kir(durum.roller.k2), bolgeMod = durum.roller.k1 === H.BOLGE, ilMod = durum.roller.k1 === H.IL || bolgeMod;
+    var bolgeTablo = H.yerRolu(tablo) === H.BOLGE;
+    $("bolgew").hidden = !bolgeTablo;
+    $("bolge").setAttribute("aria-pressed", String(bolgeMod));
     var k2n = k2 ? k2.kodlar.filter(function (k) { return k !== "_T"; }).length : 0;
     var secenek = [["matris", "Isı matrisi", false], ["cubuk", "Yığılmış çubuk", oran || (k2 && k2.ortusen)],
       ["piramit", "Karşılıklı çubuk", oran || (k2 && k2.ortusen) || k2n !== 2], ["tablo", "Tablo", false],
-      ["zaman", "Zaman serisi", ilMod || tablo.donemler.length < 2, ilMod ? "İl kırılımında zaman serisi yoktur" : "Tek dönemli tabloda zaman serisi yoktur"],
-      ["harita", "Harita", !ilMod, "İl kırılımı seçilince açılır"]];
+      ["zaman", "Zaman serisi", ilMod || tablo.donemler.length < 2, ilMod ? (bolgeMod ? "Bölge" : "İl") + " kırılımında zaman serisi yoktur" : "Tek dönemli tabloda zaman serisi yoktur"],
+      ["harita", "Harita", !ilMod, bolgeTablo ? "Bölge seçilince açılır" : "İl kırılımı seçilince açılır"]];
     var gecerli = secenek.filter(function (x) { return x[0] === durum.cikti && !x[2]; }).length;
     if (!gecerli) durum.cikti = "matris";
     $("cikti").innerHTML = secenek.map(function (x) {
@@ -316,20 +332,36 @@
     var esik = [0.2, 0.4, 0.6, 0.8].map(function (q) { return liste[Math.floor(q * liste.length)]; });
     var renk = ["#fbeaea", "#f1b9bc", "#e5767b", "#d8232a", "#7b0828"];
     function sinif(x) { var i = 0; while (i < 4 && x >= esik[i]) i++; return i; }
-    var k = Math.cos(39 * Math.PI / 180);
+    var k = Math.cos(39 * Math.PI / 180), bolgeMod = durum.roller.k1 === H.BOLGE;
+    // Bölge kipinde il poligonları bağlı oldukları İBBS-2 bölgesinin değeriyle boyanır
+    var ilV = bolgeMod ? H.bolgeIlDegerleri(v, window.HARITA_IL.features.map(function (f) { return f.properties.kod; })) : v;
     var yol = window.HARITA_IL.features.map(function (f) {
       var g = f.geometry, poli = g.type === "Polygon" ? [g.coordinates] : g.coordinates, d = "";
       poli.forEach(function (halka) { halka.forEach(function (r) {
         r.forEach(function (c, i) { d += (i ? "L" : "M") + ((c[0] - 25.5) * k * 60).toFixed(1) + " " + ((42.4 - c[1]) * 60).toFixed(1); });
         d += "Z";
       }); });
-      var x = v[f.properties.kod];
-      return '<path class="il" d="' + d + '" fill="' + (x === undefined || x === null ? "#eee" : renk[sinif(x)]) + '" stroke="#fff" stroke-width=".6"><title>' +
+      var x = ilV[f.properties.kod], dolgu = x === undefined || x === null ? "#eee" : renk[sinif(x)];
+      if (bolgeMod) {
+        var b = H.ilBolgesi(f.properties.kod), etk = yerAdi(b) + " (" + b + "): " + degerMetni(x === undefined ? null : x);
+        return '<path class="il" d="' + d + '" fill="' + dolgu + '" stroke="#fff" stroke-width=".6" data-bolge="' + kacis(b) + '" data-etk="' + kacis(etk) + '"><title>' +
+          kacis(etk + " · " + f.properties.ad) + "</title></path>";
+      }
+      return '<path class="il" d="' + d + '" fill="' + dolgu + '" stroke="#fff" stroke-width=".6"><title>' +
         kacis(f.properties.ad + ": " + degerMetni(x === undefined ? null : x)) + "</title></path>";
     }).join("");
     var lej = renk.map(function (r) { return '<i style="display:inline-block;width:40px;height:10px;background:' + r + '"></i>'; }).join("");
-    return '<svg viewBox="0 0 ' + ((44.9 - 25.5) * k * 60).toFixed(0) + " " + ((42.4 - 35.7) * 60).toFixed(0) + '" class="hsvg" role="img" aria-label="İllere göre harita">' + yol + "</svg>" +
+    return '<svg viewBox="0 0 ' + ((44.9 - 25.5) * k * 60).toFixed(0) + " " + ((42.4 - 35.7) * 60).toFixed(0) + '" class="hsvg' + (bolgeMod ? " bolgeli" : "") +
+      '" role="img" aria-label="' + (bolgeMod ? "Bölgelere göre harita" : "İllere göre harita") + '">' + yol + "</svg>" +
+      (bolgeMod ? '<p class="hsecim" aria-live="polite">Bölge adı ve değeri için haritada bir bölgenin üzerine gelin ya da tıklayın.</p>' : "") +
       '<div class="lejant"><span>' + degerMetni(liste[0]) + "</span>" + lej + "<span>" + degerMetni(liste[liste.length - 1]) + "</span></div>";
+  }
+
+  // Bölge haritası: üzerine gelince bölgenin bütün illeri vurgulanır, tıklayınca adı ve değeri yazılır
+  function bolgeVurgula(yol, sinif) {
+    var svg = yol.ownerSVGElement;
+    Array.prototype.forEach.call(svg.querySelectorAll("path." + sinif), function (p) { p.classList.remove(sinif); });
+    Array.prototype.forEach.call(svg.querySelectorAll('path[data-bolge="' + yol.getAttribute("data-bolge") + '"]'), function (p) { p.classList.add(sinif); });
   }
 
   /* --- çizim -------------------------------------------------------------- */
@@ -364,11 +396,12 @@
     $("ipucu").textContent = "Satır: " + kir(r.k1).ad + " · Sütun: " + kir(r.k2).ad +
       (r.k3 === "-" ? (k.length > 2 ? " · Üçüncü kırılım toplamı alınıyor" : "") : " · " + kir(r.k3).ad + " paneller olarak ayrıldı");
     var donem = tablo.donemler[durum.donem];
-    var ilMod = r.k1 === H.IL, yerMap = {};
+    var bolgeMod = r.k1 === H.BOLGE, ilMod = r.k1 === H.IL || bolgeMod, yerMap = {};
     tablo.yerler.forEach(function (y) { yerMap[y] = yerAdi(y); });
     var tum = ilMod ? H.ilKesit(tablo, donem, r, durum.sabit, yerMap) : H.kesit(tablo, donem, durum.yer, r, durum.sabit);
     $("lejant").innerHTML = "";
-    $("kaynak").textContent = "Kaynak: TÜİK (" + tablo.df_id + "). Birim: " + tablo.birim + ". Yer: " + (ilMod ? "81 il" : yerAdi(durum.yer)) +
+    var yerYazi = bolgeMod ? tablo.yerler.filter(H.bolgeKoduMu).length + " bölge (İBBS-2)" : ilMod ? "81 il" : yerAdi(durum.yer);
+    $("kaynak").textContent = "Kaynak: TÜİK (" + tablo.df_id + "). Birim: " + tablo.birim + ". Yer: " + yerYazi +
       ", dönem: " + H.donemEtiketi(tablo.donemEtiket[durum.donem]) + ".";
     if (!tum.length) {
       $("sonuc").innerHTML = '<div class="bos">Bu seçim için veri yok. Başka bir yer ya da dönem deneyin.</div>';
@@ -431,6 +464,28 @@
   });
   $("tablo").addEventListener("change", function () { tabloSec(this.value); });
   $("k1").addEventListener("change", function () { rolDegisti("k1", this.value); });
+  $("bolge").addEventListener("click", function () {
+    if (!tablo || H.yerRolu(tablo) !== H.BOLGE) return;
+    if (durum.roller.k1 !== H.BOLGE) durum.oncekiK1 = durum.roller.k1;
+    durum.roller = H.duzeyGecis(tablo, durum.roller, durum.oncekiK1);
+    esitle();
+    ciz();
+  });
+  $("sonuc").addEventListener("mouseover", function (e) {
+    var p = e.target.closest && e.target.closest("svg.bolgeli path[data-bolge]");
+    if (p) bolgeVurgula(p, "vurgu");
+  });
+  $("sonuc").addEventListener("mouseout", function (e) {
+    var p = e.target.closest && e.target.closest("svg.bolgeli path[data-bolge]");
+    if (p) Array.prototype.forEach.call(p.ownerSVGElement.querySelectorAll("path.vurgu"), function (x) { x.classList.remove("vurgu"); });
+  });
+  $("sonuc").addEventListener("click", function (e) {
+    var p = e.target.closest && e.target.closest("svg.bolgeli path[data-bolge]");
+    if (!p) return;
+    bolgeVurgula(p, "secili");
+    var yaz = p.closest(".panelkutu").querySelector(".hsecim");
+    if (yaz) yaz.textContent = p.getAttribute("data-etk");
+  });
   $("k2").addEventListener("change", function () { rolDegisti("k2", this.value); });
   $("k3").addEventListener("change", function () { rolDegisti("k3", this.value); });
   $("cikti").addEventListener("click", function (e) {
@@ -450,8 +505,10 @@
     if (kol) { durum.sabit[kol] = e.target.value; ciz(); }
   });
 
-  var ilk = Q.get("tablo"), ilkKonu = 0;
+  // #t=<kod>: ?tablo= gibi; ayrıca dizinde henüz olmayan bir tabloyu veri/kirilim/<kod>.js'ten açar (önizleme)
+  var ht = (location.hash.match(/^#t=([A-Za-z0-9_]+)$/) || [])[1] || null;
+  var ilk = ht || Q.get("tablo"), ilkKonu = 0;
   D.konular.forEach(function (k, i) { k.tablolar.forEach(function (x) { if (x.kod === ilk) ilkKonu = i; }); });
-  konuSec(ilkKonu, ilk && dizinTablo(ilk) ? ilk : null);
+  konuSec(ilkKonu, ilk && (dizinTablo(ilk) || ilk === ht) ? ilk : null);
   window.addEventListener("resize", yukseklikBildir);
 })();

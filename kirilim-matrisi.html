@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#d8232a">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&family=Roboto+Slab:wght@700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="kirilim.css?v=20261124231500">
+<link rel="stylesheet" href="kirilim.css?v=20261125180000">
 </head>
 <body>
 <header class="ust"><div class="ust-ic">
@@ -28,6 +28,7 @@
     <div class="kontrol">
       <div id="tablow"><label for="tablo">Tablo</label><select id="tablo"></select></div>
       <div id="k1w"><label for="k1">Kırılım 1 (satır)</label><select id="k1"></select></div>
+      <div id="bolgew" hidden><span class="etk" id="bolgeEtk">Düzey</span><div class="seg" role="group" aria-labelledby="bolgeEtk"><button type="button" id="bolge" aria-pressed="false" aria-label="Bölge (İBBS-2): 26 bölgeyi satırlara al" title="İBBS-2 bölgelerini satırlara alır; yeniden basınca önceki kırılıma döner">Bölge (İBBS-2)</button></div></div>
       <div id="k2w"><label for="k2">Kırılım 2 (sütun)</label><select id="k2"></select></div>
       <div id="k3w"><label for="k3">Kırılım 3 (paneller)</label><select id="k3"></select></div>
       <div id="yerw" hidden><label for="yer">Yer</label><select id="yer"></select></div>
@@ -49,8 +50,9 @@
 <footer class="altbilgi" id="kaynak"></footer>
 <div class="ipucu" id="balon"></div>
 
-<script src="veri/kirilim_dizin.js?v=20261125155725"></script>
-<script src="kirilim-hesap.js?v=20261124231500"></script>
-<script src="kirilim.js?v=20261124231500"></script>
+<script src="veri/kirilim_dizin.js?v=20261125193223"></script>
+<script src="veri/ibbs2.js?v=20261125180000"></script>
+<script src="kirilim-hesap.js?v=20261125180000"></script>
+<script src="kirilim.js?v=20261125180000"></script>
 </body>
 </html>

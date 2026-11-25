@@ -125,6 +125,63 @@ t("zamanSerisi: yerde veri yoksa null değerler", function () {
   var z = H.zamanSerisi(TZ, "TR999", { k1: "A", k2: "B", k3: "-" }, {}, "_T", false);
   return eq(z, []);
 });
+// --- bölge (İBBS-2) düzeyi ---
+var TBL = { olcu: "sayi", donemler: ["2024"], yerler: ["TR", "TR10", "TRC3"], kirilimlar: [kir("A", ["a0", "a1"]), kir("B", ["b0", "b1"])],
+  v: { "2024": { TR: [11, 22, 33, 44], TR10: [1, 2, 3, 4], TRC3: [10, 20, 30, 40] } } };
+var TBL1 = { olcu: "sayi", donemler: ["2024"], yerler: ["TR", "TR10", "TR21"], kirilimlar: [kir("A", ["a0", "a1", "_T"])],
+  v: { "2024": { TR: [5, 6, 11], TR10: [1, 2, 3], TR21: [4, 4, 8] } } };
+t("BOLGE sabiti", function () { return eq(H.BOLGE, "__BOLGE"); });
+t("bolgeKoduMu: 4 karakterli İBBS-2 kodları", function () {
+  return eq(["TR10", "TR21", "TRA1", "TRC3", "TR90", "TR", "TR1", "TR100", "TRC34", "TRD1", "XX10", null].map(H.bolgeKoduMu),
+    [true, true, true, true, true, false, false, false, false, false, false, false]);
+});
+t("ilBolgesi: il kodunun ilk 4 karakteri", function () {
+  return eq(["TR100", "TRC34", "TR211", "TRA12", "TR10", "TR", "XX"].map(H.ilBolgesi), ["TR10", "TRC3", "TR21", "TRA1", null, null, null]);
+});
+t("yerDuzeyi: bolge / il / tr", function () { return eq([H.yerDuzeyi(TBL), H.yerDuzeyi(TI), H.yerDuzeyi(T)], ["bolge", "il", "tr"]); });
+t("yerRolu: bölge tablosunda BOLGE, il tablosunda IL, Türkiye tablosunda null", function () {
+  return eq([H.yerRolu(TBL), H.yerRolu(TI), H.yerRolu(T)], ["__BOLGE", "__IL", null]);
+});
+t("rolDuzelt: bölge tablosunda Bölge k1'e girer, İl girmez", function () {
+  var r = { k1: "A", k2: "B", k3: "-" };
+  return eq([H.rolDuzelt(TBL, r, "k1", "__BOLGE"), H.rolDuzelt(TBL, r, "k1", "__IL"), H.rolDuzelt(TBL, r, "k2", "__BOLGE")],
+    [{ k1: "__BOLGE", k2: "B", k3: "-" }, r, r]);
+});
+t("rolDuzelt: il tablosunda Bölge girmez", function () { var r = { k1: "A", k2: "B", k3: "-" }; return eq(H.rolDuzelt(TI, r, "k1", "__BOLGE"), r); });
+t("rolDuzelt: Bölge'den çıkınca çakışan k2 boştaki kırılıma gider", function () {
+  return eq(H.rolDuzelt(TBL, { k1: "__BOLGE", k2: "A", k3: "-" }, "k1", "A"), { k1: "A", k2: "B", k3: "-" });
+});
+t("rollerGecerli: il/bölge rolü yalnız uygun tabloda", function () {
+  return eq([H.rollerGecerli(TBL, { k1: "__BOLGE", k2: "A", k3: "-" }), H.rollerGecerli(TBL, { k1: "__IL", k2: "A", k3: "-" }),
+    H.rollerGecerli(TI, { k1: "__IL", k2: "A", k3: "-" }), H.rollerGecerli(TI, { k1: "__BOLGE", k2: "A", k3: "-" }),
+    H.rollerGecerli(TBL, { k1: "A", k2: "B", k3: "-" }), H.rollerGecerli(TBL, { k1: "A", k2: "A", k3: "-" }), H.rollerGecerli(TBL, null)],
+    [true, false, true, false, true, false, false]);
+});
+t("duzeyGecis: Bölge'ye geçer, geri dönünce önceki k1 gelir", function () {
+  var a = H.duzeyGecis(TBL, { k1: "B", k2: "A", k3: "-" }, null), b = H.duzeyGecis(TBL, a, "B");
+  return eq([a, b], [{ k1: "__BOLGE", k2: "A", k3: "-" }, { k1: "B", k2: "A", k3: "-" }]);
+});
+t("duzeyGecis: önceki yoksa ya da geçersizse k2 dışındaki ilk kırılım", function () {
+  return eq([H.duzeyGecis(TBL, { k1: "__BOLGE", k2: "A", k3: "-" }, null), H.duzeyGecis(TBL, { k1: "__BOLGE", k2: "A", k3: "-" }, "ZZ")],
+    [{ k1: "B", k2: "A", k3: "-" }, { k1: "B", k2: "A", k3: "-" }]);
+});
+t("duzeyGecis: tek kırılımlı bölge tablosu", function () {
+  var a = H.duzeyGecis(TBL1, { k1: "A", k2: null, k3: "-" }, null);
+  return eq([a, H.duzeyGecis(TBL1, a, "A")], [{ k1: "__BOLGE", k2: null, k3: "-" }, { k1: "A", k2: null, k3: "-" }]);
+});
+t("duzeyGecis: bölge verisi olmayan tabloda değişmez", function () { var r = { k1: "A", k2: "B", k3: "-" }; return eq([H.duzeyGecis(TI, r, null), H.duzeyGecis(T, R2, null)], [r, R2]); });
+t("ilKesit bölge tablosunda: satırlar bölgeler, sütun toplamı Türkiye", function () {
+  var p = H.ilKesit(TBL, "2024", { k1: "__BOLGE", k2: "A", k3: "-" }, {}, { TR10: "İstanbul" })[0];
+  return eq([p.satirKodlar, p.satirEtiket, p.m, p.satirT, p.sutunT, p.toplam], [["TR10", "TRC3"], ["İstanbul", "TRC3"], [[3, 7], [30, 70]], [10, 100], [33, 77], 110]);
+});
+t("ilKesit tek kırılımlı bölge tablosu", function () {
+  var p = H.ilKesit(TBL1, "2024", { k1: "__BOLGE", k2: null, k3: "-" }, {}, {})[0];
+  return eq([p.m, p.satirT, p.toplam], [[[3], [8]], [3, 8], 11]);
+});
+t("bolgeIlDegerleri: her il bölgesinin değerini alır, bilinmeyen null", function () {
+  return eq(H.bolgeIlDegerleri({ TR10: 5, TR21: null, TRC3: 7 }, ["TR100", "TR211", "TR212", "TRC31", "TRC34", "TRA11"]),
+    { TR100: 5, TR211: null, TR212: null, TRC31: 7, TRC34: 7, TRA11: null });
+});
 document.getElementById("o").textContent = out.join("\n") + "\n" + (bad ? bad + " BASARISIZ" : "HEPSI GECTI");
 document.title = bad ? "KALDI" : "GEÇTİ";
 </script></body></html>

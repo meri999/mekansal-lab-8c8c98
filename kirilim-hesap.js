@@ -3,6 +3,28 @@
    v[donem][yer] yoğun düz dizidir; en soldaki kırılım en yavaş değişir. */
 (function (global) {
   var IL = "__IL";   // "İl" sanal kırılımı: satırlar iller olur (yalnız Kırılım 1)
+  var BOLGE = "__BOLGE";   // "Bölge" sanal kırılımı: satırlar İBBS-2 bölgeleri (yalnız Kırılım 1)
+
+  /* Yer kodları: TR (Türkiye), TRxx (İBBS-2, 4 karakter), TRxxx (il, 5 karakter) */
+  function bolgeKoduMu(kod) { return typeof kod === "string" && /^TR[0-9A-C][0-9]$/.test(kod); }
+  function ilBolgesi(kod) { return typeof kod === "string" && /^TR[0-9A-C][0-9][0-9]$/.test(kod) ? kod.slice(0, 4) : null; }
+  // Tablonun coğrafi düzeyi: bir tablo il ya da bölge verisi taşır (karışık değil)
+  function yerDuzeyi(tablo) {
+    var y = tablo.yerler || [];
+    if (y.some(bolgeKoduMu)) return "bolge";
+    return y.some(function (k) { return k !== "TR"; }) ? "il" : "tr";
+  }
+  // Kırılım 1'e girebilecek sanal yer kırılımı (yoksa null)
+  function yerRolu(tablo) { var d = yerDuzeyi(tablo); return d === "bolge" ? BOLGE : d === "il" ? IL : null; }
+  /* Bölge değerlerinden il haritası için il -> değer: her il bağlı olduğu bölgenin değerini alır */
+  function bolgeIlDegerleri(bolgeDeger, ilKodlari) {
+    var s = {};
+    ilKodlari.forEach(function (il) {
+      var x = bolgeDeger[ilBolgesi(il)];
+      s[il] = x === undefined ? null : x;
+    });
+    return s;
+  }
   function kirKodlari(tablo) { return tablo.kirilimlar.map(function (k) { return k.kol; }); }
   function kirBul(tablo, kol) {
     for (var i = 0; i < tablo.kirilimlar.length; i++) if (tablo.kirilimlar[i].kol === kol) return i;
@@ -42,19 +64,36 @@
 
   /* Aynı kırılım iki rolde olmasın: çakışan eski rol boşta kalan kırılıma geçer */
   function rolDuzelt(tablo, roller, rol, kol) {
-    var kollar = kirKodlari(tablo), yeni = { k1: roller.k1, k2: roller.k2, k3: roller.k3 };
-    if (tablo.yerler && tablo.yerler.length > 1) kollar.push(IL);
-    if (kol === IL && rol !== "k1") return yeni;
+    var kollar = kirKodlari(tablo), yeni = { k1: roller.k1, k2: roller.k2, k3: roller.k3 }, yr = yerRolu(tablo);
+    if (yr) kollar.push(yr);
+    if ((kol === IL || kol === BOLGE) && rol !== "k1") return yeni;
     if (kol !== "-" && kollar.indexOf(kol) < 0) return yeni;
     if (kol === "-" && rol !== "k3") return yeni;
     yeni[rol] = kol;
     ["k1", "k2", "k3"].forEach(function (r) {
       if (r === rol || kol === "-" || yeni[r] !== kol) return;
       var kullanilan = ["k1", "k2", "k3"].filter(function (x) { return x !== r; }).map(function (x) { return yeni[x]; });
-      var bos = kollar.filter(function (k) { return k !== IL && kullanilan.indexOf(k) < 0; })[0];
+      var bos = kollar.filter(function (k) { return k !== IL && k !== BOLGE && kullanilan.indexOf(k) < 0; })[0];
       yeni[r] = bos || (r === "k3" ? "-" : yeni[r]);
     });
     return yeni;
+  }
+
+  /* Eski seçim yeni tabloda geçerli mi (il/bölge rolü yalnız uygun tabloda) */
+  function rollerGecerli(tablo, e) {
+    var kollar = kirKodlari(tablo), yr = yerRolu(tablo);
+    return !!(e && (kollar.indexOf(e.k1) >= 0 || (yr && e.k1 === yr)) && kollar.indexOf(e.k2) >= 0 && e.k1 !== e.k2 &&
+      (e.k3 === "-" || (kollar.length > 2 && kollar.indexOf(e.k3) >= 0 && e.k3 !== e.k1 && e.k3 !== e.k2)));
+  }
+
+  /* "Bölge" düğmesi: Kırılım 1'i bölgelere çevirir; yeniden basınca önceki kırılım (onceki) ya da
+     sütunda olmayan ilk kırılım döner. Bölge verisi olmayan tabloda roller değişmez. */
+  function duzeyGecis(tablo, roller, onceki) {
+    if (yerRolu(tablo) !== BOLGE) return { k1: roller.k1, k2: roller.k2, k3: roller.k3 };
+    if (roller.k1 !== BOLGE) return rolDuzelt(tablo, roller, "k1", BOLGE);
+    var kollar = kirKodlari(tablo);
+    var kol = kollar.indexOf(onceki) >= 0 ? onceki : (kollar.filter(function (k) { return k !== roller.k2; })[0] || kollar[0]);
+    return rolDuzelt(tablo, roller, "k1", kol);
   }
 
   /* Seçilen dönem ve yer için panel listesi. Boş dizi: bu seçim için veri yok. */
@@ -130,7 +169,7 @@
     });
   }
 
-  /* İl kırılımı: satırlar iller (Türkiye hariç), sütunlar roller.k2 (yoksa tek "Toplam" sütunu).
+  /* İl (ya da Bölge) kırılımı: satırlar tablonun iller ya da İBBS-2 bölgeleri (Türkiye hariç), sütunlar roller.k2 (yoksa tek "Toplam" sütunu).
      Sütun toplamları Türkiye satırından gelir. yerAd: {kod: ad}. Boş dizi: Türkiye verisi yok. */
   function ilKesit(tablo, donem, roller, sabit, yerAd) {
     yerAd = yerAd || {};
@@ -220,6 +259,8 @@
 
   global.KirilimHesap = {
     varsayilanRoller: varsayilanRoller, rolDuzelt: rolDuzelt, kesit: kesit, pay: pay, fark: fark,
-    bosCizgi: bosCizgi, ilKesit: ilKesit, zamanSerisi: zamanSerisi, IL: IL, kucukUyari: kucukUyari, donemEtiketi: donemEtiketi, ilkAlti: ilkAlti
+    bosCizgi: bosCizgi, ilKesit: ilKesit, zamanSerisi: zamanSerisi, IL: IL, BOLGE: BOLGE,
+    bolgeKoduMu: bolgeKoduMu, ilBolgesi: ilBolgesi, yerDuzeyi: yerDuzeyi, yerRolu: yerRolu, bolgeIlDegerleri: bolgeIlDegerleri,
+    rollerGecerli: rollerGecerli, duzeyGecis: duzeyGecis, kucukUyari: kucukUyari, donemEtiketi: donemEtiketi, ilkAlti: ilkAlti
   };
 })(window);

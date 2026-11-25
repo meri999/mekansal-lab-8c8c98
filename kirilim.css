@@ -109,3 +109,9 @@ html.gomulu .ana{padding:0}
 
 .panelkutu svg.zsvg{max-height:340px}
 .panelkutu svg.hsvg{max-height:400px}
+
+/* bölge (İBBS-2) haritası: il çizgileri korunur, üzerine gelinen/seçilen bölgenin illeri çerçevelenir */
+svg.bolgeli path.il{cursor:pointer}
+svg.bolgeli path.il.secili{stroke:var(--bordo);stroke-width:1.4}
+svg.bolgeli path.il.vurgu{stroke:var(--yazi);stroke-width:1.4}
+.hsecim{margin:6px 0 0;font-size:13px;color:var(--yazi);min-height:1.45em}

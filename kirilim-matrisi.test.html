@@ -81,7 +81,75 @@ function ilHarita() {
       t("harita: 81 il yolu", function () { return eq(W.document.querySelectorAll("#sonuc svg path.il").length, 81); });
       t("harita: sütun seçici görünür", function () { return eq($("sutunw").hidden, false); });
       t("konsolda hata yok (il/harita)", function () { return eq(W.__kirilim.hatalar, 0); });
-      bitir();
+      t("il tablosunda Bölge düğmesi gizli", function () { return eq($("bolgew").hidden, true); });
+      bolgeGorunum();
+    });
+  });
+}
+/* İBBS-2 tablosu: bellekte sahte tablo (26 bölge + TR), dizinde yok */
+function bolgeGorunum() {
+  var B = W.IBBS2 ? Object.keys(W.IBBS2) : [];
+  t("ibbs2.js yüklü: 26 bölge", function () { return eq(B.length, 26); });
+  var kr = function (kol, ad, kodlar) { return { kol: kol, ad: ad, kodlar: kodlar, etiketler: kodlar.map(function (k) { return k === "_T" ? "Toplam" : kol + k; }), toplam: true, ortusen: false, toplamAnlamsiz: false }; };
+  var v = {}, tr = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+  B.forEach(function (b, i) {
+    var x = [i + 1, 2 * (i + 1), 3 * (i + 1), 10, 20, 30];
+    v[b] = [x[0], x[1], x[0] + x[1], x[3], x[4], x[3] + x[4], x[0] + x[3], x[1] + x[4], x[0] + x[1] + x[3] + x[4]];
+    v[b].forEach(function (y, j) { tr[j] += y; });
+  });
+  v.TR = tr;
+  W.KIRILIM_TABLO._test_bolge = { kod: "_test_bolge", baslik: "Deneme: bölge tablosu", df_id: "DENEME", konu: "Deneme", birim: "kişi", olcu: "sayi", aciklama: "Deneme",
+    donemler: ["2025"], donemEtiket: ["2025"], yerler: ["TR"].concat(B), kirilimlar: [kr("A", "Eksen A", ["1", "2", "_T"]), kr("C", "Eksen C", ["1", "2", "_T"])], v: { "2025": v } };
+  W.__kirilim.tabloSec("_test_bolge");
+  sonra(function () {
+    t("bölge tablosunda Bölge düğmesi görünür ve basılı değil", function () { return eq($("bolgew").hidden === false && $("bolge").getAttribute("aria-pressed"), "false"); });
+    t("bölge tablosunda Kırılım 1'de Bölge var, İl yok", function () {
+      var o = [].map.call($("k1").options, function (x) { return x.value; });
+      return (o.indexOf("__BOLGE") >= 0 && o.indexOf("__IL") < 0) || o.join();
+    });
+    t("yer seçicide bölge adı", function () { var o = $("yer").querySelector('option[value="TR10"]'); return eq(o && o.textContent, W.IBBS2.TR10.ad); });
+    sec("yer", "TRC3");
+    var k = $("kars"); k.checked = true; k.dispatchEvent(new W.Event("change", { bubbles: true }));
+    t("seçili bölge ile Türkiye karşılaştırması: data-fark", function () { return W.document.querySelectorAll("#sonuc td[data-fark]").length > 0 || "yok"; });
+    k.checked = false; k.dispatchEvent(new W.Event("change", { bubbles: true }));
+    $("bolge").click();
+    t("Bölge düğmesi basılı, k1 Bölge", function () { return eq([$("bolge").getAttribute("aria-pressed"), $("k1").value].join(), "true,__BOLGE"); });
+    t("Bölge satırlı matris: 26 bölge + toplam", function () { return eq(W.document.querySelectorAll("#sonuc tbody tr").length, 27); });
+    t("Bölge satır etiketi adlı", function () { return eq(W.document.querySelector("#sonuc tbody tr th.sol").textContent, W.IBBS2[B[0]].ad); });
+    t("Bölge kipinde yer seçici gizli", function () { return eq($("yerw").hidden, true); });
+    tikla('#cikti [data-c="tablo"]');
+    t("tablo çıktısı: 26 bölge satırı + toplam", function () { return eq(W.document.querySelectorAll("#sonuc table.duz tbody tr").length, 27); });
+    tikla('#cikti [data-c="cubuk"]');
+    t("çubuk çıktısı: 26 bölge", function () { return eq(W.document.querySelectorAll("#sonuc .cubuk").length, 26); });
+    tikla('#cikti [data-c="harita"]');
+    sonra(function () {
+      var yollar = W.document.querySelectorAll("#sonuc svg path.il");
+      t("bölge haritası: 81 il yolu", function () { return eq(yollar.length, 81); });
+      t("bölge haritası: aynı bölgedeki iller aynı renk", function () {
+        var renk = {}, ok = true;
+        [].forEach.call(yollar, function (p) { var b = p.getAttribute("data-bolge"); if (!b) ok = false; if (renk[b] && renk[b] !== p.getAttribute("fill")) ok = false; renk[b] = p.getAttribute("fill"); });
+        return (ok && Object.keys(renk).length === 26) || ("bölge sayısı " + Object.keys(renk).length);
+      });
+      t("bölge haritası: iki uç bölge farklı renk", function () {
+        var a = W.document.querySelector('#sonuc path.il[data-bolge="' + B[0] + '"]'), z = W.document.querySelector('#sonuc path.il[data-bolge="' + B[25] + '"]');
+        return (a.getAttribute("fill") !== z.getAttribute("fill")) || "aynı";
+      });
+      t("bölge haritası: başlıkta bölge adı ve değer", function () {
+        var p = W.document.querySelector('#sonuc path.il[data-bolge="TR21"] title');
+        return (p && p.textContent.indexOf(W.IBBS2.TR21.ad) >= 0 && /\d/.test(p.textContent)) || (p && p.textContent);
+      });
+      W.document.querySelector('#sonuc path.il[data-bolge="TR21"]').dispatchEvent(new W.MouseEvent("click", { bubbles: true }));
+      t("bölge haritası: tıklayınca bölge adı ve değeri yazılır", function () { var e = W.document.querySelector("#sonuc .hsecim"); return (e && e.textContent.indexOf(W.IBBS2.TR21.ad) >= 0) || (e && e.textContent); });
+      t("bölge haritası aria etiketi", function () { return eq(W.document.querySelector("#sonuc svg.hsvg").getAttribute("aria-label"), "Bölgelere göre harita"); });
+      $("bolge").click();
+      t("Bölge düğmesi yeniden basılınca önceki kırılım döner", function () { return eq([$("bolge").getAttribute("aria-pressed"), $("k1").value].join(), "false,A"); });
+      t("konsolda hata yok (bölge)", function () { return eq(W.__kirilim.hatalar, 0); });
+      tabloGit("adnks_t16", function () {
+        t("bölge tablosundan il tablosuna dönünce Bölge düğmesi gizli, İl seçeneği var", function () {
+          return ($("bolgew").hidden === true && [].some.call($("k1").options, function (o) { return o.value === "__IL"; })) || "yanlış";
+        });
+        bitir();
+      });
     });
   });
 }
