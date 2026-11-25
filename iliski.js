@@ -165,13 +165,15 @@
   }
 
   function indir(ad, blob) { var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = ad; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000); }
-  function dosyaAdi() { return "iliski-" + SON.gx.id + "-" + SON.gy.id + "-" + SON.yil; }
+  function dosyaAdi() { return SON.zaman ? "zaman-" + SON.kod + "-" + SON.gx.id + "-" + SON.gy.id : "iliski-" + SON.gx.id + "-" + SON.gy.id + "-" + SON.yil; }
   function pngIndir() {
-    if (!SON) return; var svg = serpilme(SON.k, SON.gx, SON.gy, SON.yil, true), im = new Image();
+    if (!SON) return; var svg, Hh = 520, ad = dosyaAdi(), im = new Image();
+    if (SON.zaman) { var z = SON.z; Hh = 420; svg = cizgiGrafik(SON.gx, SON.gy, SON.kod, S.b, S.s, true, { ust: SON.yerAd + ": " + SON.gx.baslik + " ve " + SON.gy.baslik, alt: "Yıllık değişim ilişkisi ρ = " + isr(z.rho) + " (" + z.n + " yıllık değişim, " + z.yillar[0] + "–" + z.yillar[z.yillar.length - 1] + ")" }); }
+    else svg = serpilme(SON.k, SON.gx, SON.gy, SON.yil, true);
     im.onload = function () {
-      var c = document.createElement("canvas"); c.width = 1440; c.height = 1040; var x = c.getContext("2d");
+      var c = document.createElement("canvas"); c.width = 1440; c.height = Math.round(1440 * Hh / 720); var x = c.getContext("2d");
       x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height);
-      c.toBlob(function (b) { if (b) indir(dosyaAdi() + ".png", b); }, "image/png");
+      c.toBlob(function (b) { if (b) indir(ad + ".png", b); }, "image/png");
     };
     im.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
   }
@@ -194,7 +196,7 @@
   }
   function xesc(t) { return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
   function sayfa(satirlar) {
-    var o = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols><col min="1" max="3" width="42" customWidth="1"/></cols><sheetData>';
+    var o = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols><col min="1" max="5" width="36" customWidth="1"/></cols><sheetData>';
     satirlar.forEach(function (r, i) {
       o += '<row r="' + (i + 1) + '">';
       r.forEach(function (h, j) {
@@ -206,12 +208,24 @@
     return o + "</sheetData></worksheet>";
   }
   function excelIndir() {
-    if (!SON) return; var k = SON.k, gx = SON.gx, gy = SON.gy, il = [];
-    ilAd.forEach(function (c) { var i = k.kodlar.indexOf(c); if (i >= 0) il.push([ADI[c], k.x[i], k.y[i]]); });
-    var deger = [["İl", birimli(gx), birimli(gy)]].concat(il);
-    var ozet = [["Gösterge 1", gx.baslik, birimli(gx)], ["Gösterge 2", gy.baslik, birimli(gy)], ["Yıl", SON.yil, ""], ["İl sayısı", k.n, ""],
-      ["Sıra ilişkisi (Spearman ρ)", k.rho, ""], ["Doğrusal ilişki (Pearson r)", k.pearson === null ? "" : k.pearson, ""],
-      ["Kaynak 1", gx.kaynak || "", ""], ["Kaynak 2", gy.kaynak || "", ""]];
+    if (!SON) return; var gx = SON.gx, gy = SON.gy, deger, ozet;
+    if (SON.zaman) {
+      var z = SON.z, dx = H.yillikDegisim(gx, SON.kod), dy = H.yillikDegisim(gy, SON.kod), ix = {}, iy = {}, ysat = [];
+      gx.yillar.forEach(function (t, i) { ix[t] = gx.veri[SON.kod] && gx.veri[SON.kod][i]; });
+      gy.yillar.forEach(function (t, i) { iy[t] = gy.veri[SON.kod] && gy.veri[SON.kod][i]; });
+      var h = function (v) { return typeof v === "number" && isFinite(v) ? v : ""; };
+      SON.aralik.forEach(function (t) { if (+t < +S.b || +t > +S.s) return; if (h(ix[t]) === "" && h(iy[t]) === "") return; ysat.push([+t, h(ix[t]), h(iy[t]), h(dx[t]), h(dy[t])]); });
+      deger = [["Yıl", birimli(gx), birimli(gy), gx.baslik + " yıllık değişim", gy.baslik + " yıllık değişim"]].concat(ysat);
+      ozet = [["Yer", SON.yerAd, ""], ["Gösterge 1", gx.baslik, birimli(gx)], ["Gösterge 2", gy.baslik, birimli(gy)], ["Dönem", S.b + "–" + S.s, ""], ["Gecikme (yıl)", S.g, ""], ["Yıllık değişim sayısı", z.n, ""],
+        ["Yıllık değişim ilişkisi (Spearman ρ)", z.rho, ""], ["Tesadüf sınırı |ρ|", SON.kr, ""], ["Kaynak 1", gx.kaynak || "", ""], ["Kaynak 2", gy.kaynak || "", ""]];
+    } else {
+      var k = SON.k, il = [];
+      ilAd.forEach(function (c) { var i = k.kodlar.indexOf(c); if (i >= 0) il.push([ADI[c], k.x[i], k.y[i]]); });
+      deger = [["İl", birimli(gx), birimli(gy)]].concat(il);
+      ozet = [["Gösterge 1", gx.baslik, birimli(gx)], ["Gösterge 2", gy.baslik, birimli(gy)], ["Yıl", SON.yil, ""], ["İl sayısı", k.n, ""],
+        ["Sıra ilişkisi (Spearman ρ)", k.rho, ""], ["Doğrusal ilişki (Pearson r)", k.pearson === null ? "" : k.pearson, ""],
+        ["Kaynak 1", gx.kaynak || "", ""], ["Kaynak 2", gy.kaynak || "", ""]];
+    }
     var ns = "http://schemas.openxmlformats.org/", ctx = "application/vnd.openxmlformats-officedocument.spreadsheetml.";
     var dosyalar = [
       ["[Content_Types].xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="' + ctx + 'sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="' + ctx + 'worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="' + ctx + 'worksheet+xml"/></Types>'],
@@ -227,7 +241,7 @@
   });
   $("sonuc").addEventListener("keydown", function (e) { if ((e.key === "Enter" || e.key === " ") && e.target.matches("tr.tik")) { e.preventDefault(); e.target.click(); } });
   $("sonuc").addEventListener("mouseover", function (e) {
-    var c = e.target.closest && e.target.closest("circle.nokta"); if (!c || !SON) return; var i = +c.dataset.i, k = SON.k;
+    var c = e.target.closest && e.target.closest("circle.nokta"); if (!c || !SON || !SON.k) return; var i = +c.dataset.i, k = SON.k;
     ipucuGoster(e, "<b>" + esc(ADI[k.kodlar[i]]) + "</b><br>" + esc(SON.gx.baslik) + ": " + say(k.x[i], SON.gx) + "<br>" + esc(SON.gy.baslik) + ": " + say(k.y[i], SON.gy));
   });
   $("sonuc").addEventListener("mousemove", function (e) { if (balon.style.display === "block") ipucuGoster(e, balon.innerHTML); });
@@ -272,22 +286,17 @@
   function moduEn() {
     var g = gos(S.x), s = $("sonuc"); SON = null;
     if (!g) { s.innerHTML = '<p class="bos">Bir gösterge seçin.</p>'; return; }
-    var r = H.enGuclu(g, L, iller, { esik: S.e }), gizli = 0, tabanBuyuk = buyuk(g);
-    var liste = r.liste.filter(function (q) { if (!S.u && !tabanBuyuk && buyuk(q.g)) { gizli++; return false; } return true; });
-    var goster = liste.slice(0, 25);
-    var n = [];
-    if (tabanBuyuk) n.push("<li class=\"onemli\"><b>" + esc(g.baslik) + "</b> nüfusla birlikte büyüyen bir gösterge; sonuçlar büyük illerle küçük iller farkını yansıtır.</li>");
-    if (gizli) n.push("<li>" + gizli + " gösterge nüfusla birlikte büyüdüğü için gizlendi (yalnızca büyüklük farkını ölçerler). Göstermek için kutuyu işaretleyin.</li>");
-    n.push("<li>" + r.denenen + " gösterge denendi. 81 ilde |ρ| ≈ " + f(H.kritikR(81), 2) + " ve üstü tesadüf sayılmaz, ama çok sayıda gösterge denendiğinde ortak nedenlerden gelen (gelişmişlik, kentleşme) ilişkiler çok olur: sıralamayı keşif için kullanın, kanıt olarak değil.</li>");
+    var r = H.enGuclu(g, L, iller, { esik: S.e }), tabanBuyuk = buyuk(g);
+    var liste = r.liste.filter(function (q) { return S.u || tabanBuyuk || !buyuk(q.g); });
+    var goster = liste;
     var satir = goster.map(function (q) {
       var w = Math.round(Math.abs(q.rho) * 90);
       return '<tr class="tik" tabindex="0" data-y="' + q.g.id + '" data-yil="' + q.yil + '"><td><button type="button" class="gor" tabindex="-1">' + esc(q.g.baslik) + '</button><span class="grup">' + esc(KONU[q.g.konu] || q.g.konu) + (buyuk(q.g) ? " · nüfusla büyür" : "") + '</span></td><td class="sa">' + q.yil + '</td><td class="sa">' + isr(q.rho) + '</td><td><span class="cubuk ' + (q.rho > 0 ? "p" : "n") + '" style="width:' + w + 'px"></span></td><td class="sa">' + q.n + "</td></tr>";
     }).join("");
     s.innerHTML = '<h2 class="sonuc-baslik">' + esc(g.baslik) + " ile en güçlü ilişkiler</h2>" +
       (goster.length ? '<div class="kaydir liste"><table class="siralama"><thead><tr><th>Gösterge</th><th class="sa">Yıl</th><th class="sa">ρ</th><th><span class="sr">Güç</span></th><th class="sa">İl</th></tr></thead><tbody>' + satir + "</tbody></table></div>" +
-        (liste.length > 25 ? '<p class="alt" style="margin-top:8px">' + liste.length + " ilişkiden ilk 25'i gösteriliyor. Daha fazlası için alt sınırı yükseltin.</p>" : "")
-        : '<p class="bos">Alt sınır |ρ| ≥ ' + f(S.e, 1) + " için ilişki bulunamadı. Sınırı düşürmeyi deneyin.</p>") +
-      notlar(n);
+        '<p class="not"><b>Not:</b> Kırmızı çubuk aynı yönde (pozitif), mavi çubuk ters yönde (negatif) ilişkiyi gösterir. ρ, seçilen göstergeyle ortak en son yılda 81 ilin sıra ilişkisidir (Spearman).</p>'
+        : '<p class="bos">Alt sınır |ρ| ≥ ' + f(S.e, 1) + " için ilişki bulunamadı. Sınırı düşürmeyi deneyin.</p>");
     $("kaynak").innerHTML = "Kaynak: TÜİK; il düzeyli " + L.length + " gösterge. Her gösterge için, seçilen göstergeyle ortak en son yılda 81 ilin sıra ilişkisi (Spearman).";
   }
 
@@ -297,8 +306,8 @@
     var y = {}; [a, b].forEach(function (g) { g.yillar.forEach(function (t) { if (/^\d{4}$/.test(t)) y[t] = 1; }); });
     return Object.keys(y).sort();
   }
-  function cizgiGrafik(gx, gy, kod, bas, son) {
-    var W = 720, Hh = 280, sol = 50, sag = 16, ust = 16, alt = 42, seri = [];
+  function cizgiGrafik(gx, gy, kod, bas, son, dis, baslik) {
+    var W = 720, Hh = dis ? 420 : 280, sol = 50, sag = 16, ust = dis ? 86 : 16, alt = dis ? 70 : 42, seri = [];
     [gx, gy].forEach(function (g, j) {
       var p = [], mn = Infinity, mx = -Infinity;
       g.yillar.forEach(function (t, i) { var v = g.veri[kod] && g.veri[kod][i]; if (/^\d{4}$/.test(t) && +t >= +bas && +t <= +son && typeof v === "number" && isFinite(v)) { p.push([+t, v]); if (v < mn) mn = v; if (v > mx) mx = v; } });
@@ -309,16 +318,21 @@
     var y0 = Math.min.apply(null, ty), y1 = Math.max.apply(null, ty);
     function sx(t) { return sol + (t - y0) / ((y1 - y0) || 1) * (W - sol - sag); }
     function sy(v) { return Hh - alt - v / 100 * (Hh - alt - ust); }
-    var o = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + " " + Hh + '" role="img" aria-label="' + esc(gx.baslik + " ve " + gy.baslik + " zaman serisi (her seri kendi aralığında 0-100)") + '">';
-    [0, 25, 50, 75, 100].forEach(function (t) { o += '<line x1="' + sol + '" y1="' + sy(t) + '" x2="' + (W - sag) + '" y2="' + sy(t) + '" stroke="#eee"/><text class="tikyazi" x="' + (sol - 6) + '" y="' + (sy(t) + 3.5) + '" text-anchor="end">' + t + "</text>"; });
-    for (var t = y0; t <= y1; t++) if ((y1 - y0) <= 14 || t % 2 === (y1 % 2) || t === y0) o += '<text class="tikyazi" x="' + sx(t).toFixed(1) + '" y="' + (Hh - alt + 15) + '" text-anchor="middle">' + t + "</text>";
+    var o = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + " " + Hh + '" role="img" aria-label="' + esc(gx.baslik + " ve " + gy.baslik + " zaman serisi (her seri kendi aralığında 0-100)") + '" font-family="Montserrat,Segoe UI,Arial,sans-serif">';
+    if (dis) {
+      var l1 = sol + 20 + birimli(gx).length * 6.6 + 24;
+      o += '<rect width="' + W + '" height="' + Hh + '" fill="#fff"/><text x="' + sol + '" y="28" font-size="18" font-weight="700" fill="#7b0828">' + esc(baslik.ust) + '</text><text x="' + sol + '" y="50" font-size="13" fill="#555">' + esc(baslik.alt) + '</text>'
+        + '<rect x="' + sol + '" y="61" width="14" height="4" fill="' + ZAMAN_RENK[0] + '"/><text x="' + (sol + 20) + '" y="67" font-size="12" fill="#333">' + esc(birimli(gx)) + '</text><rect x="' + l1 + '" y="61" width="14" height="4" fill="' + ZAMAN_RENK[1] + '"/><text x="' + (l1 + 20) + '" y="67" font-size="12" fill="#333">' + esc(birimli(gy)) + '</text>';
+    }
+    [0, 25, 50, 75, 100].forEach(function (t) { o += '<line x1="' + sol + '" y1="' + sy(t) + '" x2="' + (W - sag) + '" y2="' + sy(t) + '" stroke="#eee"/><text class="tikyazi" font-size="10.5" fill="#777" x="' + (sol - 6) + '" y="' + (sy(t) + 3.5) + '" text-anchor="end">' + t + "</text>"; });
+    for (var t = y0; t <= y1; t++) if ((y1 - y0) <= 14 || t % 2 === (y1 % 2) || t === y0) o += '<text class="tikyazi" font-size="10.5" fill="#777" x="' + sx(t).toFixed(1) + '" y="' + (Hh - alt + 15) + '" text-anchor="middle">' + t + "</text>";
     seri.forEach(function (q) {
       if (!q.p.length) return;
       var d = q.p.map(function (a, i) { var v = q.mx > q.mn ? (a[1] - q.mn) / (q.mx - q.mn) * 100 : 50; return (i ? "L" : "M") + sx(a[0]).toFixed(1) + " " + sy(v).toFixed(1); }).join(" ");
       o += '<path d="' + d + '" fill="none" stroke="' + q.c + '" stroke-width="2.4" stroke-linejoin="round"/>';
       q.p.forEach(function (a) { var v = q.mx > q.mn ? (a[1] - q.mn) / (q.mx - q.mn) * 100 : 50; o += '<circle cx="' + sx(a[0]).toFixed(1) + '" cy="' + sy(v).toFixed(1) + '" r="3" fill="' + q.c + '"/>'; });
     });
-    o += '<text class="eksenyazi" transform="translate(13,' + ((ust + Hh - alt) / 2) + ') rotate(-90)" text-anchor="middle">kendi aralığında (0–100)</text></svg>';
+    o += '<text class="eksenyazi" font-size="12" fill="#444" transform="translate(13,' + ((ust + Hh - alt) / 2) + ') rotate(-90)" text-anchor="middle">kendi aralığında (0–100)</text>' + (dis ? '<text x="' + sol + '" y="' + (Hh - 12) + '" font-size="11" fill="#777">Kaynak: TÜİK; Enstitü Portal · Seviyeler değil yıllık değişimler karşılaştırıldı.</text>' : "") + '</svg>';
     return o;
   }
   var teyitSay = 0;
@@ -343,17 +357,15 @@
     }
     var kr = H.kritikR(z.n), etkin = H.etkinEsik(S.e, z.n), a = Math.abs(z.rho);
     var guvenli = a < kr ? "tesadüf düzeyinde" : a < S.e ? "zayıf" : (z.n >= 12 && a >= 0.7) ? "güçlü" : "orta";
-    var n = ["<li>Seviyeler değil <b>yıllık değişimler</b> karşılaştırıldı: yıllar içinde her şeyin birlikte yükselmesinden doğan sahte birliktelik böylece ayıklanır. Yine de " + z.n + " gözlem kısa bir seridir.</li>"];
-    if (a < kr) n.push("<li>İlişki, " + z.n + " gözlem için tesadüf sınırının (|ρ| ≈ " + f(kr, 2) + ") altında; yön hakkında bir şey söylemek zor.</li>");
-    else if (a < S.e) n.push("<li>İlişki tesadüf sınırının (|ρ| ≈ " + f(kr, 2) + ") üstünde ama seçtiğiniz alt sınırın (" + f(S.e, 1) + ") altında; zayıf bir işaret olarak okuyun.</li>");
-    n.push("<li>Çok sayıda gösterge çifti denendiğinde bazıları tesadüfen yüksek çıkar; bu aracı keşif için kullanın.</li>");
     s.innerHTML = ust + '<div class="izgara-iki"><div>' + cizgi + lej + '</div><div class="yan">' +
       '<div class="ozet iki">' +
       kart("Yıllık değişim ilişkisi (ρ)", isr(z.rho), (z.rho > 0 ? "birlikte" : "ters yönde") + " hareket", z.rho > 0 ? "pozitif" : "negatif") +
       kart("Yıllık değişim sayısı", String(z.n), z.yillar[0] + "–" + z.yillar[z.yillar.length - 1]) +
       kart("Güven", guvenli, "tesadüf sınırı |ρ| ≈ " + f(kr, 2)) +
       '<div id="teyit"><small>Başka illerde</small><b>…</b><em>hesaplanıyor</em></div></div>' +
-      notlar(n) + "</div></div>";
+      '<div class="cikti-dugme"><button type="button" class="dugme cizgi" data-is="png">Görsel olarak indir</button><button type="button" class="dugme cizgi" data-is="xlsx">Excel olarak indir</button></div>' +
+      '<p class="not"><b>Not:</b> Seviyeler değil yıllık değişimler karşılaştırıldı.</p></div></div>';
+    SON = { zaman: true, gx: gx, gy: gy, kod: kod, yerAd: yerAd, z: z, sec: sec, kr: kr, aralik: aralik };
     $("kaynak").innerHTML = "Kaynak: TÜİK. " + esc(gx.baslik) + ": " + esc(gx.kaynak || "") + ". " + esc(gy.baslik) + ": " + esc(gy.kaynak || "") + ".";
     var id = ++teyitSay;
     setTimeout(function () { /* 81 il icin tembel teyit */
@@ -361,8 +373,6 @@
       var t = H.teyit(gx, gy, iller, z.rho, etkin, sec), el = $("teyit"); if (!el) return;
       var oran = t.pay ? t.say / t.pay : 0;
       el.innerHTML = "<small>Başka illerde aynı yönde</small><b>" + t.say + " / " + t.pay + "</b><em>il (|ρ| ≥ " + f(etkin, 2) + ", aynı işaret)</em><div class=\"teyit" + (oran < 1 / 3 ? " zayif" : "") + '"><i style="width:' + Math.round(oran * 100) + '%"></i></div>';
-      if (t.pay && oran < 1 / 3) { var ul = $("sonuc").querySelector(".notlar"); if (ul) ul.insertAdjacentHTML("beforeend", "<li>Aynı ilişki illerin üçte birinden azında görülüyor: bu yerel bir örüntü olabilir.</li>"); }
-      else if (t.pay && oran >= 0.5) { var u2 = $("sonuc").querySelector(".notlar"); if (u2) u2.insertAdjacentHTML("beforeend", "<li>Aynı ilişki illerin yarısından fazlasında da görülüyor: yaygın bir örüntü.</li>"); }
     }, 30);
   }
 

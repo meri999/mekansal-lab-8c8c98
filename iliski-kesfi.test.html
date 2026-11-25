@@ -27,7 +27,8 @@ function adim1(){
    t("iki: ayni gosterge uyarisi",function(){return /Aynı göstergeyi/.test($("sonuc").textContent)||"yok"});
    W.document.querySelector('#modlar [data-m="en"]').click();
    sonra(function(){
-    t("en: tablo satirlari",function(){var n=q("#sonuc tr.tik").length;return (n>=5&&n<=25)||n});
+    t("en: tablo satirlari",function(){var n=q("#sonuc tr.tik").length;return (n>25)||n});
+    t("en: tum iliskiler gosterilir, 25 siniri ve alt notlar yok",function(){return (!/ilk 25/.test($("sonuc").textContent)&&!q("#sonuc .notlar").length&&/Not:/.test($("sonuc").textContent))||"var"});
     t("en: ilk satir en guclu",function(){var r=[].map.call(q("#sonuc tr.tik td:nth-child(3)"),function(c){return Math.abs(parseFloat(c.textContent.replace("−","-").replace(",",".")))});return r.every(function(v,i){return i===0||r[i-1]>=v-1e-9})||r.join()});
     t("en: yatay kaydirma yok (sayfa)",function(){return W.document.documentElement.scrollWidth<=W.innerWidth+2||W.document.documentElement.scrollWidth});
     q("#sonuc tr.tik")[0].click();
@@ -36,6 +37,9 @@ function adim1(){
      W.document.querySelector('#modlar [data-m="zaman"]').click();
      sonra(function(){
       t("zaman: rho ve cizgi grafik",function(){return (/ρ/.test($("sonuc").textContent)&&q("#sonuc svg path").length===2)||"eksik"});
+      t("zaman: yalniz yillik degisim notu + iki indirme dugmesi",function(){var d=[].map.call(q("#sonuc [data-is]"),function(b){return b.textContent});return (/Not:.*yıllık değişim/.test($("sonuc").textContent)&&!q("#sonuc .notlar").length&&d.length===2&&/Görsel/.test(d[0])&&/Excel/.test(d[1]))||d.join()});
+      var yk2=null;W.URL.createObjectURL=function(b){yk2=b;return "blob:y"};q('#sonuc [data-is="xlsx"]')[0].click();
+      t("zaman: excel uretir",function(){return (yk2&&yk2.size>1200)||"yok"});
       t("zaman: teyit sonradan dolar",function(){return /\d+ \/ \d+/.test($("teyit").textContent)||$("teyit").textContent});
       sec("yer","TR100");sec("bas","2020");sec("son","2023");
       sonra(function(){
