@@ -1,0 +1,53 @@
+<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><title>test</title></head><body><pre id="o"></pre>
+<script src="veri/veri.js"></script><script src="iliski-hesap.js"></script>
+<script>
+var out=[],bad=0;
+function t(ad,f){try{var r=f();out.push((r===true?"OK   ":"FAIL ")+ad+(r===true?"":" -> "+r));if(r!==true)bad++}catch(e){out.push("FAIL "+ad+" -> "+e.message);bad++}}
+function yak(a,b,e){return Math.abs(a-b)<=(e||0.005)||a+" != "+b}
+var H=window.IliskiHesap,Y=VERI.yerler,iller=H.ilKodlari(Y),G=VERI.gostergeler;
+function bul(b){return G.filter(function(g){return g.baslik===b&&!g.sadece_tr})[0]}
+t("81 il",function(){return iller.length===81||iller.length});
+t("sirala esit degerler",function(){return JSON.stringify(H.sirala([5,1,5,3]))==="[3.5,1,3.5,2]"||JSON.stringify(H.sirala([5,1,5,3]))});
+t("pearson tam dogrusal",function(){return yak(H.pearson([1,2,3,4],[2,4,6,8]),1)});
+t("pearson ters",function(){return yak(H.pearson([1,2,3,4],[8,6,4,2]),-1)});
+t("pearson sabit seri null",function(){return H.pearson([1,1,1,1],[1,2,3,4])===null||"null degil"});
+t("spearman monoton dogrusal degil",function(){return yak(H.spearman([1,2,3,4,5],[1,4,9,16,25]),1)});
+t("spearman 3 nokta altinda null",function(){return H.spearman([1,2],[1,2])===null||"null degil"});
+t("kritikR n=10",function(){return yak(H.kritikR(10),0.632,0.003)});
+t("kritikR n=8",function(){return yak(H.kritikR(8),0.707,0.004)});
+t("kritikR n=15",function(){return yak(H.kritikR(15),0.514,0.003)});
+t("kritikR n=81",function(){return yak(H.kritikR(81),0.2185,0.003)});
+t("dogru",function(){var d=H.dogru([1,2,3],[3,5,7]);return (yak(d.a,1)===true&&yak(d.b,2)===true)||JSON.stringify(d)});
+t("dogru sabit x null",function(){return H.dogru([2,2,2],[1,2,3])===null||"null degil"});
+t("guc",function(){return H.guc(-0.8)==="güçlü"&&H.guc(0.5)==="orta"&&H.guc(0.1)==="zayıf"||"guc"});
+var nuf=bul("Nüfus"),dog=bul("Kaba doğum hızı"),han=bul("Ortalama hanehalkı büyüklüğü");
+t("gostergeler bulundu",function(){return !!(nuf&&dog&&han)||"yok"});
+t("ilDuzeyli nufus",function(){return H.ilDuzeyli(nuf,iller)});
+t("ilDuzeyli sadece_tr degil",function(){var g=G.filter(function(x){return x.sadece_tr})[0];return H.ilDuzeyli(g,iller)===false||"tr gostergesi il duzeyli"});
+t("ortakYillar yillar nufus-dogum",function(){var o=H.ortakYillar(nuf,dog,iller);return (o.length>5&&o.every(function(y){return nuf.yillar.indexOf(y)>=0&&dog.yillar.indexOf(y)>=0}))||o.length});
+t("kesit n<=81",function(){var y=H.sonOrtakYil(han,dog,iller),k=H.kesit(han,dog,y,iller);return (k.n>=70&&k.n<=81&&k.x.length===k.n&&k.kodlar.length===k.n)||k.n});
+t("hanehalki-dogum guclu pozitif",function(){var y=H.sonOrtakYil(han,dog,iller),k=H.kesit(han,dog,y,iller);return k.rho>0.8||k.rho});
+t("kesit olmayan yil bos",function(){return H.kesit(han,dog,"1800",iller).n===0||"dolu"});
+t("kesit yer degisince rho ayni",function(){var y=H.sonOrtakYil(han,dog,iller);return yak(H.kesit(han,dog,y,iller).rho,H.kesit(dog,han,y,iller).rho,1e-9)});
+t("aykirilar 4",function(){var y=H.sonOrtakYil(han,dog,iller),a=H.aykirilar(H.kesit(han,dog,y,iller),4);return (a.length===4&&a.every(function(k){return iller.indexOf(k)>=0}))||JSON.stringify(a)});
+t("nufus ile kendi rho=1",function(){return yak(H.buyuklukRho(nuf,nuf,iller),1,1e-9)});
+t("yillikDegisim yuzde",function(){var g={yillar:["2000","2001","2002"],birim:"kişi",veri:{A:[100,110,99]}},d=H.yillikDegisim(g,"A");return (yak(d["2001"],10,1e-9)===true&&yak(d["2002"],-10,1e-9)===true)||JSON.stringify(d)});
+t("yillikDegisim fark (oran birimi)",function(){var g={yillar:["2000","2001"],birim:"%",veri:{A:[10,12.5]}},d=H.yillikDegisim(g,"A");return yak(d["2001"],2.5,1e-9)});
+t("yillikDegisim sifir icerince fark",function(){var g={yillar:["2000","2001"],birim:"kişi",veri:{A:[0,5]}};return H.degisimTuru(g,g.veri.A)==="fark"||"yuzde"});
+t("yillikDegisim yil boslugu atlanir",function(){var g={yillar:["2000","2002"],birim:"kişi",veri:{A:[1,2]}};return Object.keys(H.yillikDegisim(g,"A")).length===0||"bosluk gecti"});
+t("yillikDegisim eksik deger atlanir",function(){var g={yillar:["2000","2001","2002"],birim:"kişi",veri:{A:[1,null,3]}};return Object.keys(H.yillikDegisim(g,"A")).length===0||"null gecti"});
+t("zamanIliski kendisi ile rho=1",function(){var z=H.zamanIliski(nuf,nuf,"TR100");return (z.n>=8&&yak(z.rho,1,1e-9)===true)||JSON.stringify([z.n,z.rho])});
+t("zamanIliski az yil null",function(){var g={yillar:["2000","2001","2002"],birim:"kişi",veri:{A:[1,2,3]}};return H.zamanIliski(g,g,"A").rho===null||"null degil"});
+t("zamanIliski gecikme kaydirir",function(){var yl=[],a=[],b=[],i;for(i=0;i<14;i++){yl.push(String(2000+i));a.push(100+i*i%7*3+i);b.push(0)}
+  var gA={yillar:yl,birim:"kişi",veri:{K:a}},da=H.yillikDegisim(gA,"K"),bb=[1];for(i=1;i<14;i++)bb.push(bb[i-1]*(1+(da[String(1999+i)]||0)/100));
+  var gB={yillar:yl,birim:"kişi",veri:{K:bb}},z=H.zamanIliski(gA,gB,"K",{gecikme:1});return (z.n>=8&&z.rho>0.95)||JSON.stringify([z.n,z.rho])});
+t("zamanIliski donem sinirli",function(){var z=H.zamanIliski(nuf,nuf,"TR100",{bas:"2015",son:"2020"});return (z.n===6&&z.yillar[0]===2015)||JSON.stringify([z.n,z.yillar])});
+t("teyit kendisi: hepsi ayni yonde",function(){var r=H.teyit(nuf,nuf,iller,1,0.6);return (r.pay>=70&&r.say===r.pay)||JSON.stringify([r.pay,r.say])});
+t("teyit ters yon sayilmaz",function(){var r=H.teyit(nuf,nuf,iller,-1,0.6);return r.say===0||r.say});
+t("etkinEsik kritik rden kucukse kritik",function(){return yak(H.etkinEsik(0.3,8),H.kritikR(8),1e-9)&&H.etkinEsik(0.9,8)===0.9||"esik"});
+var adaylar=G.filter(function(g){return H.ilDuzeyli(g,iller)});
+t("enGuclu dogum icin hanehalki ust sirada",function(){var r=H.enGuclu(dog,adaylar,iller,{esik:0.6});return (r.liste.length>0&&r.denenen>50&&Math.abs(r.liste[0].rho)>=0.6&&r.liste.every(function(q,i,a){return i===0||Math.abs(a[i-1].rho)>=Math.abs(q.rho)}))||JSON.stringify([r.liste.length,r.denenen])});
+t("enGuclu kendini icermez",function(){var r=H.enGuclu(dog,adaylar,iller,{esik:0});return r.liste.every(function(q){return q.g.baslik!==dog.baslik})||"kendisi var"});
+t("enGuclu tesadufBeklenen = denenen/20",function(){var r=H.enGuclu(dog,adaylar,iller,{esik:0.9});return yak(r.tesadufBeklenen,r.denenen*0.05,1e-9)});
+document.title="test "+(bad?"KALDI "+bad:"GEÇTİ");document.getElementById("o").textContent=out.join("\n");
+</script></body></html>

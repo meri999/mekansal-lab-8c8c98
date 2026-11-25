@@ -1,0 +1,42 @@
+/* Iliski kesfi: kirilim.css'in ustune ek stiller */
+.ornekler{display:flex;flex-wrap:wrap;gap:6px 8px;margin-top:8px;align-items:center}
+.ornekler:empty{display:none}
+.ornekler span{font-size:12.5px;color:var(--soluk)}
+.ornekler button{border:1px solid var(--cizgi);background:var(--kart);border-radius:16px;padding:4px 11px;font-size:12.5px;cursor:pointer;color:var(--yazi)}
+.ornekler button:hover{border-color:var(--vurgu);background:var(--vurgu-acik)}
+.kontrol select{min-width:210px;max-width:340px}
+.dugme{border:1px solid var(--vurgu);background:var(--vurgu);color:#fff;border-radius:18px;padding:7px 16px;font:600 13px var(--mont);cursor:pointer}
+.dugme.cizgi{background:var(--kart);color:var(--vurgu-koyu)}
+.dugme:disabled{opacity:.45;cursor:default}
+.ozet{margin-bottom:12px}
+.ozet .pozitif{color:var(--bordo)}.ozet .negatif{color:var(--eksi)}
+.sonuc-baslik{font:700 15px var(--mont);color:var(--bordo);margin:0 0 8px}
+.cikti-dugme{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.notlar{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:6px}
+.notlar li{font-size:13px;color:var(--soluk);border-left:3px solid var(--cizgi);padding:2px 0 2px 10px}
+.notlar li.onemli{border-left-color:var(--vurgu);color:var(--yazi)}
+.nokta{fill:var(--vurgu);fill-opacity:.5;stroke:#fff;stroke-width:1}
+.nokta:hover,.nokta:focus{fill-opacity:1;stroke:var(--bordo)}
+.nokta.vur{fill:var(--bordo);fill-opacity:1;stroke:#fff;stroke-width:2}
+.eksenyazi{font-size:12px;fill:#444}
+.tikyazi{font-size:10.5px;fill:#777}
+.ilyazi{font-size:11px;fill:var(--yazi);paint-order:stroke;stroke:#fff;stroke-width:3px}
+details.tablo{margin-top:12px}
+details.tablo summary{cursor:pointer;font-size:13.5px;color:var(--vurgu-koyu)}
+.siralama{border-collapse:collapse;width:100%;font-size:13.5px;margin-top:8px}
+.siralama th{text-align:left;font-size:12px;color:var(--soluk);font-weight:600;padding:5px 8px;border-bottom:2px solid var(--cizgi);white-space:nowrap}
+.siralama td{padding:7px 8px;border-bottom:1px solid var(--cizgi);vertical-align:middle}
+.siralama td.sa{text-align:right;font-variant-numeric:tabular-nums}
+.siralama tr.tik{cursor:pointer}.siralama tr.tik:hover{background:var(--vurgu-acik)}
+.siralama .cubuk{display:inline-block;height:9px;border-radius:5px;vertical-align:middle;min-width:2px}
+.siralama .cubuk.p{background:var(--vurgu)}.siralama .cubuk.n{background:var(--eksi)}
+.siralama .grup{display:block;font-size:11.5px;color:var(--soluk)}
+.siralama button.gor{border:0;background:none;color:var(--vurgu-koyu);cursor:pointer;font-size:13px;padding:0;text-align:left}
+.siralama button.gor:hover{text-decoration:underline}
+.izgara-iki{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px}
+@media(max-width:860px){.izgara-iki{grid-template-columns:minmax(0,1fr)}}
+.cizgi-ad{display:inline-block;width:12px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+.teyit{height:9px;background:#eee;border-radius:5px;overflow:hidden;margin-top:6px}
+.teyit i{display:block;height:100%;background:var(--vurgu)}
+.teyit.zayif i{background:repeating-linear-gradient(45deg,var(--vurgu) 0 4px,#f2b9bc 4px 8px)}
+.siralama th.sa{text-align:right}

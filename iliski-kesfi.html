@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>İlişki Keşfi · Enstitü Portal</title>
+<meta name="description" content="İki göstergeyi 81 ilde karşılaştırın, bir göstergenin en güçlü ilişkilerini bulun, bir yerde zaman içinde birlikte hareketi inceleyin.">
+<meta name="theme-color" content="#d8232a">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&family=Roboto+Slab:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="kirilim.css?v=20261125180000">
+<link rel="stylesheet" href="iliski.css?v=20261125210000">
+</head>
+<body>
+<header class="ust"><div class="ust-ic">
+  <a class="marka" href="./"><span class="kare" aria-hidden="true"><i></i><i class="b"></i></span>Enstitü Portal</a>
+  <span class="sayfa">İlişki Keşfi</span>
+  <a class="geri" href="./">← Portala dön</a>
+</div></header>
+
+<main class="ana">
+  <section class="panel">
+    <h1>İlişki Keşfi</h1>
+    <p class="alt">Hangi göstergeler birlikte hareket ediyor? İki göstergeyi illerde karşılaştırın, bir göstergenin en güçlü ilişkilerini bulun ya da bir yerde zaman içinde birlikte değişimi inceleyin.</p>
+  </section>
+
+  <section class="panel" aria-label="Seçimler">
+    <div class="konular" id="modlar" role="tablist" aria-label="Çözümleme türü">
+      <button type="button" role="tab" data-m="iki" aria-selected="true">İki gösterge, 81 il</button>
+      <button type="button" role="tab" data-m="en" aria-selected="false">Bir göstergenin ilişkileri</button>
+      <button type="button" role="tab" data-m="zaman" aria-selected="false">Bir yerde zaman içinde</button>
+    </div>
+    <div class="kontrol">
+      <div id="xw"><label for="gx" id="gxEtk">Gösterge 1 (yatay eksen)</label><select id="gx"></select></div>
+      <div id="yw"><label for="gy">Gösterge 2 (dikey eksen)</label><select id="gy"></select></div>
+      <div id="degw"><span class="etk">&nbsp;</span><button type="button" class="dugme cizgi" id="degis" title="Eksenleri değiştir">⇄ Eksenleri değiştir</button></div>
+      <div id="yilw"><label for="yil">Yıl</label><select id="yil"></select></div>
+      <div id="vurw"><label for="vur">İl vurgula</label><select id="vur"></select></div>
+      <div id="yerw" hidden><label for="yer">Yer</label><select id="yer"></select></div>
+      <div id="basw" hidden><label for="bas">Dönem başı</label><select id="bas"></select></div>
+      <div id="sonw" hidden><label for="son">Dönem sonu</label><select id="son"></select></div>
+      <div id="gecw" hidden><span class="etk" id="gecEtk">Gecikme</span><div class="seg" id="gec" role="group" aria-labelledby="gecEtk"><button type="button" data-g="0" aria-pressed="true">Aynı yıl</button><button type="button" data-g="1" aria-pressed="false">1 yıl sonra</button></div></div>
+      <div id="esikw" hidden><label for="esik">Alt sınır |ρ|</label><select id="esik"><option value="0.4">0,4</option><option value="0.5" selected>0,5</option><option value="0.6">0,6</option><option value="0.7">0,7</option><option value="0.8">0,8</option></select></div>
+      <label class="onay" id="buyw" hidden><input type="checkbox" id="buy"> Nüfusla birlikte büyüyen göstergeleri de göster</label>
+      <label class="onay" id="dogw"><input type="checkbox" id="dog" checked> Doğrusal eğilim çizgisi</label>
+    </div>
+    <p class="alt" id="ipucu" style="margin-top:10px"></p>
+    <div id="ornek" class="ornekler"></div>
+  </section>
+
+  <section class="panel" aria-live="polite">
+    <div id="sonuc"><p class="yukleniyor">Yükleniyor…</p></div>
+  </section>
+</main>
+<footer class="altbilgi" id="kaynak"></footer>
+<div class="ipucu" id="balon"></div>
+
+<script src="veri/veri.js?v=20261125203655"></script>
+<script src="iliski-hesap.js?v=20261125210000"></script>
+<script src="iliski.js?v=20261125210000"></script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><title>test</title></head><body><pre id="o"></pre>
+<iframe id="f" src="iliski-kesfi.html#m=iki" style="width:1100px;height:900px"></iframe>
+<script>
+var out=[],bad=0,W;
+function t(ad,f){try{var r=f();out.push((r===true?"OK   ":"FAIL ")+ad+(r===true?"":" -> "+r));if(r!==true)bad++}catch(e){out.push("FAIL "+ad+" -> "+e.message);bad++}}
+function $(i){return W.document.getElementById(i)}
+function sec(i,v){var e=$(i);e.value=v;e.dispatchEvent(new W.Event("change",{bubbles:true}))}
+function q(s){return W.document.querySelectorAll(s)}
+function sonra(f,ms){setTimeout(f,ms||400)}
+function bitir(){document.getElementById("o").textContent=out.join("\n")+"\n"+(bad?bad+" BASARISIZ":"HEPSI GECTI");document.title=bad?"KALDI":"GEÇTİ"}
+document.getElementById("f").onload=function(){W=this.contentWindow;sonra(adim1)};
+function adim1(){
+ t("iki: 81 nokta",function(){return q("#sonuc circle.nokta").length===81||q("#sonuc circle.nokta").length});
+ t("iki: rho gosterilir",function(){return /[+−]0,\d\d/.test($("sonuc").textContent)||"yok"});
+ t("iki: nedensellik uyarisi",function(){return /nedensellik değildir/.test($("sonuc").textContent)||"yok"});
+ t("iki: tablo 81 satir",function(){return q("#sonuc details.tablo tbody tr").length===81||q("#sonuc details.tablo tbody tr").length});
+ t("iki: baglanti hash'e yazildi",function(){return /m=iki&x=g\d+&y=g\d+&yil=\d{4}/.test(W.location.hash)||W.location.hash});
+ sec("vur",q("#vur option")[5].value);
+ sonra(function(){
+  t("iki: vurgulanan il isaretli",function(){return q("#sonuc circle.nokta.vur").length===1||q("#sonuc circle.nokta.vur").length});
+  var x=$("gx").value;sec("gy",x);
+  sonra(function(){
+   t("iki: ayni gosterge uyarisi",function(){return /Aynı göstergeyi/.test($("sonuc").textContent)||"yok"});
+   W.document.querySelector('#modlar [data-m="en"]').click();
+   sonra(function(){
+    t("en: tablo satirlari",function(){var n=q("#sonuc tr.tik").length;return (n>=5&&n<=25)||n});
+    t("en: ilk satir en guclu",function(){var r=[].map.call(q("#sonuc tr.tik td:nth-child(3)"),function(c){return Math.abs(parseFloat(c.textContent.replace("−","-").replace(",",".")))});return r.every(function(v,i){return i===0||r[i-1]>=v-1e-9})||r.join()});
+    t("en: yatay kaydirma yok (sayfa)",function(){return W.document.documentElement.scrollWidth<=W.innerWidth+2||W.document.documentElement.scrollWidth});
+    q("#sonuc tr.tik")[0].click();
+    sonra(function(){
+     t("en: satira tiklayinca iki moduna gecer",function(){return (W.document.querySelector('#modlar [aria-selected="true"]').dataset.m==="iki"&&q("#sonuc circle.nokta").length>=70)||"gecmedi"});
+     W.document.querySelector('#modlar [data-m="zaman"]').click();
+     sonra(function(){
+      t("zaman: rho ve cizgi grafik",function(){return (/ρ/.test($("sonuc").textContent)&&q("#sonuc svg path").length===2)||"eksik"});
+      t("zaman: teyit sonradan dolar",function(){return /\d+ \/ \d+/.test($("teyit").textContent)||$("teyit").textContent});
+      sec("yer","TR100");sec("bas","2020");sec("son","2023");
+      sonra(function(){
+       t("zaman: kisa donem (4 degisim) uyari verir",function(){return /en az 8/.test($("sonuc").textContent)||$("sonuc").textContent.slice(0,150)});
+       bitir();
+      },500);
+     });
+    });
+   });
+  });
+ });
+}
+</script></body></html>
