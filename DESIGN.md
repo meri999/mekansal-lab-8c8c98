@@ -176,8 +176,8 @@ Köşe dili yuvarlak ama ölçülü: düğmeler hap (30 px), arama kutusu daha y
 - **Outline:** Beyaz zemin, bordo yazı ve kenarlık; üzerine gelince #f6efe8 zemin.
 
 ### Cards / Containers
-- **Tool card (Araç kartı):** Beyaz zemin, 1 px sıcak çizgi, 14 px köşe, 16 px iç boşluk. En üstte 26 px kırmızı çizgi simge, altında bordo ClashDisplay başlık, 13 px sönük gri açıklama. Öne çıkan kart (Veri portalı) bordo dolgulu, beyaz metin ve beyaz simge. Hazır olan araçlar dört sütunda tek satırdır.
-- **Yakında listesi:** Hazır olmayan araçlar kart değil, "Yakında" başlıklı düz bir listedir (çerçevesiz, sönük gri, tıklanamaz). Yarı saydamlık kullanılmaz; kontrast tam kalır. Taslak araçlar kartta "taslak" etiketi taşır (8 px köşe, açık bordo zemin).
+- **Tool card (Araç kartı):** Beyaz zemin, 1 px sıcak çizgi, 14 px köşe, 16 px iç boşluk. En üstte 26 px kırmızı çizgi simge, altında bordo ClashDisplay başlık, 13 px sönük gri açıklama. Öne çıkan kart (Veri portalı) bordo dolgulu, beyaz metin ve beyaz simge. Araçlar dört sütunlu ızgaradadır; hazır olanlar önce gelir.
+- **Yakında kartı:** Hazır olmayan araçlar aynı ızgarada, canlı araçlardan sonra durur: şeffaf zemin, kesikli çerçeve, sönük gri başlık ve simge, "yakında" etiketi, tıklanamaz. Yarı saydamlık kullanılmaz; kontrast tam kalır. Taslak araçlar "taslak" etiketi taşır (8 px köşe, açık bordo zemin).
 - **Bulgu kartı:** Beyaz kart, bordo ClashDisplay başlık ve açıklama; üstte görsel bant yoktur (veri taşımayan süs kullanılmaz).
 - **İl kartı:** Haritanın üstünde açılır, beyaz, 14 px köşe, hafif gölge.
 
@@ -196,8 +196,8 @@ Köşe dili yuvarlak ama ölçülü: düğmeler hap (30 px), arama kutusu daha y
 - **Do** bordoyu (#721530) başlık ve birincil eylem için, kırmızıyı (#d1181e) küçük vurgu için kullan.
 - **Do** kartları beyaz zeminde 1 px sıcak çizgiyle ayır; derinlik için önce çizgi ve zemin farkı.
 - **Do** başlıkta ClashDisplay 600, gövdede Satoshi kullan.
-- **Do** düğmeleri hap biçiminde (30 px) tut; sayfadaki tek dolgulu bordo düğme asıl eylemdir (Veri portalına git), "Giriş yap" metin düğmesidir.
-- **Do** henüz hazır olmayan şeyi soluk ve "yakında" etiketli göster; hazır gibi sunma.
+- **Do** düğmeleri hap biçiminde (30 px) tut. Üst çubukta "Veri portalına git" çizgili, "Giriş yap" dolgulu bordodur.
+- **Do** henüz hazır olmayan şeyi kesikli çerçeve ve "yakında" etiketiyle göster; hazır gibi sunma.
 - **Do** haritada portaldaki beş sınıflı renk skalasını kullan.
 
 ### Don't:
@@ -207,5 +207,5 @@ Köşe dili yuvarlak ama ölçülü: düğmeler hap (30 px), arama kutusu daha y
 - **Don't** emoji ya da Unicode karakterleri simge yerine kullanma; tek çizgi stilinde SVG simge kullan.
 - **Don't** başlığın üstüne küçük etiket (kicker) koyma; başlık tek başına taşır.
 - **Don't** yuvarlak kartın tek kenarına renkli çizgi çekme.
-- **Don't** hazır olmayan öğeyi yarı saydam kartla gösterme; "Yakında" listesine koy.
+- **Don't** hazır olmayan öğeyi yarı saydam gösterme; kesikli çerçeveli, tam kontrastlı kartla ve "yakında" etiketiyle belirt.
 - **Don't** üçüncü bir yazı tipi ailesi ekleme.
