@@ -40,3 +40,18 @@ details.tablo summary{cursor:pointer;font-size:13.5px;color:var(--vurgu-koyu)}
 .teyit i{display:block;height:100%;background:var(--vurgu)}
 .teyit.zayif i{background:repeating-linear-gradient(45deg,var(--vurgu) 0 4px,#f2b9bc 4px 8px)}
 .siralama th.sa{text-align:right}
+.izgara-iki{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);align-items:start}
+.izgara-iki .ozet{grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:0}
+.izgara-iki .ozet b{font-size:17px}
+.izgara-iki .notlar{margin-top:10px}
+@media(max-width:860px){.izgara-iki{grid-template-columns:minmax(0,1fr)}}
+h1.kucuk{font-size:19px;margin:0 0 6px}
+.ana{gap:10px;padding-top:10px}
+.panel{padding:10px 14px}
+.konular{margin-bottom:8px}
+.kontrol{gap:8px 16px}
+.kontrol select{padding:5px 8px}
+#dogw{padding-bottom:4px}
+#ipucu{display:none}
+.ornekler{margin-top:6px}
+.sonuc-baslik{font-size:14px;margin-bottom:6px}

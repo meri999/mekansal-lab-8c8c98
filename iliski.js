@@ -135,7 +135,7 @@
 
   var SON = null; /* son kesit: indirme icin */
   function serpilme(k, gx, gy, yil, dis) {
-    var W = 720, Hh = dis ? 520 : 440, sol = 64, sag = 18, ust = dis ? 74 : 14, alt = dis ? 92 : 54;
+    var W = 720, Hh = dis ? 520 : 380, sol = 64, sag = 18, ust = dis ? 74 : 14, alt = dis ? 92 : 54;
     var mnx = Math.min.apply(null, k.x), mxx = Math.max.apply(null, k.x), mny = Math.min.apply(null, k.y), mxy = Math.max.apply(null, k.y);
     var px = (mxx - mnx) * 0.04 || 1, py = (mxy - mny) * 0.06 || 1; mnx -= px; mxx += px; mny -= py; mxy += py;
     function sx(v) { return sol + (v - mnx) / (mxx - mnx) * (W - sol - sag); }
@@ -221,13 +221,12 @@
     var tablo = ilAd.filter(function (c) { return k.kodlar.indexOf(c) >= 0; }).map(function (c) { var i = k.kodlar.indexOf(c); return "<tr><th scope=\"row\" class=\"t\">" + esc(ADI[c]) + "</th><td>" + say(k.x[i], gx) + "</td><td>" + say(k.y[i], gy) + "</td></tr>"; }).join("");
     s.innerHTML =
       '<h2 class="sonuc-baslik">' + esc(gx.baslik) + " ve " + esc(gy.baslik) + " · " + S.yil + "</h2>" +
-      '<div class="ozet">' +
+      '<div class="izgara-iki"><div>' + serpilme(k, gx, gy, S.yil, false) + '</div><div class="yan"><div class="ozet">' +
       kart("Sıra ilişkisi (Spearman ρ)", isr(k.rho), H.guc(k.rho) + (k.rho > 0 ? " pozitif" : " negatif") + " ilişki", k.rho > 0 ? "pozitif" : "negatif") +
       kart("Doğrusal ilişki (Pearson r)", k.pearson === null ? "—" : isr(k.pearson), k.pearson === null ? "" : "ρ ile karşılaştırın") +
       kart("İl sayısı", String(k.n), "81 il içinde, " + S.yil) + "</div>" +
-      serpilme(k, gx, gy, S.yil, false) +
       '<div class="cikti-dugme"><button type="button" class="dugme cizgi" data-is="png">Görseli indir (PNG)</button><button type="button" class="dugme cizgi" data-is="svg">SVG indir</button><button type="button" class="dugme cizgi" data-is="bag">Bağlantıyı kopyala</button></div>' +
-      notlar(n) +
+      notlar(n) + "</div></div>" +
       '<details class="tablo"><summary>Değerleri tablo olarak göster (' + k.n + " il)</summary><div class=\"kaydir\"><table class=\"siralama\"><thead><tr><th>İl</th><th class=\"sa\">" + esc(gx.baslik) + "</th><th class=\"sa\">" + esc(gy.baslik) + "</th></tr></thead><tbody>" + tablo + "</tbody></table></div></details>";
     $("kaynak").innerHTML = "Kaynak: TÜİK. " + esc(gx.baslik) + ": " + esc(gx.kaynak || "") + ". " + esc(gy.baslik) + ": " + esc(gy.kaynak || "") + ".";
   }
