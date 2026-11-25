@@ -49,5 +49,24 @@ var adaylar=G.filter(function(g){return H.ilDuzeyli(g,iller)});
 t("enGuclu dogum icin hanehalki ust sirada",function(){var r=H.enGuclu(dog,adaylar,iller,{esik:0.6});return (r.liste.length>0&&r.denenen>50&&Math.abs(r.liste[0].rho)>=0.6&&r.liste.every(function(q,i,a){return i===0||Math.abs(a[i-1].rho)>=Math.abs(q.rho)}))||JSON.stringify([r.liste.length,r.denenen])});
 t("enGuclu kendini icermez",function(){var r=H.enGuclu(dog,adaylar,iller,{esik:0});return r.liste.every(function(q){return q.g.baslik!==dog.baslik})||"kendisi var"});
 t("enGuclu tesadufBeklenen = denenen/20",function(){var r=H.enGuclu(dog,adaylar,iller,{esik:0.9});return yak(r.tesadufBeklenen,r.denenen*0.05,1e-9)});
+
+var U=[5,9,3,8,2,7,4,9,1,6,8,3,7,2];
+function kum(k,bas,gec){var v=[bas];for(var i=1;i<=13;i++){var u=U[(i-1-(gec||0)+14)%14];v.push(v[i-1]+k*(gec&&i-1-gec<0?4:u))}return v}
+function mk(id,v,df){var yl=[];for(var i=0;i<14;i++)yl.push(String(2000+i));return {id:id,df_id:df||id,birim:"kişi",yillar:yl,veri:{TR:v}}}
+var A=mk("a",kum(1,100)),B=mk("b",kum(2,200)),Cc=mk("c",kum(-1,900)),D=mk("d",kum(1,50,1));
+t("degisimHaritasi en az 8 degisimi olanlar",function(){var m=H.degisimHaritasi([A,mk("kisa",[1,2,3,4,5,null,null,null,null,null,null,null,null,null])],"TR");return (!!m.a&&!m.kisa)||JSON.stringify(Object.keys(m))});
+t("agBaglari birlikte ve ters bag bulur",function(){var r=H.agBaglari([A,B,Cc,D],"TR",{esik:0.7});var ab=r.baglar.filter(function(q){return q.a==="a"&&q.b==="b"})[0],ac=r.baglar.filter(function(q){return q.a==="a"&&q.b==="c"})[0];return (ab&&ab.rho>0.5&&ac&&ac.rho<-0.5&&r.denenen===6)||JSON.stringify([ab,ac,r.denenen])});
+t("agBaglari siralama |rho| azalan",function(){var r=H.agBaglari([A,B,Cc,D],"TR",{esik:0.3});return r.baglar.every(function(q,i,a){return i===0||Math.abs(a[i-1].rho)>=Math.abs(q.rho)})||"sirasiz"});
+t("agBaglari ayni df_id ciftini atlar",function(){var B2=mk("b",kum(2,200),"ortak"),A2=mk("a",kum(1,100),"ortak");var r=H.agBaglari([A2,B2],"TR",{esik:0.5,disla:function(x,y){return x.df_id===y.df_id}});return (r.baglar.length===0&&r.denenen===0)||r.baglar.length});
+t("agBaglari merkez yalniz onunla baglar",function(){var r=H.agBaglari([A,B,Cc,D],"TR",{esik:0.3,merkez:"a"});return r.baglar.every(function(q){return q.a==="a"||q.b==="a"})||"merkez disi"});
+t("agBaglari gecikme yonlu bag uretir",function(){var r=H.agBaglari([A,B,Cc,D],"TR",{esik:0.5,gecikme:true});return r.baglar.some(function(q){return q.gec===1})||"gecikmeli yok"});
+t("agBaglari donem siniri",function(){var r=H.agBaglari([A,B],"TR",{esik:0.3,bas:"2010",son:"2013"});return (r.baglar.length===0&&r.denenen===0)||"kisa donem gecti"});
+t("agSec dugum ve bag limitine uyar",function(){var bl=[];for(var i=0;i<10;i++)for(var j=i+1;j<10;j++)bl.push({a:"n"+i,b:"n"+j,rho:0.9-(i+j)/100,n:10,gec:0});var s=H.agSec(bl,5,6);return (s.baglar.length<=6&&s.dugumler.length<=5&&s.baglar.length>0)||JSON.stringify([s.baglar.length,s.dugumler.length])});
+t("agSec en guclu baglari once alir",function(){var bl=[{a:"x",b:"y",rho:0.95,n:10,gec:0},{a:"y",b:"z",rho:0.9,n:10,gec:0}];var s=H.agSec(bl,10,1);return (s.baglar.length===1&&s.baglar[0].a==="x")||"sira"});
+t("pTesadufi: n=10, r=kritikR -> yaklasik 0,05",function(){return yak(H.pTesadufi(H.kritikR(10),10),0.05,0.02)});
+t("pTesadufi: guclu r ve cok gozlem -> 0'a yakin; zayif r -> 1'e yakin",function(){return (H.pTesadufi(0.9,20)<0.001&&H.pTesadufi(0.05,20)>0.8)||[H.pTesadufi(0.9,20),H.pTesadufi(0.05,20)]});
+t("agBaglari beklenen tesadufi bag 0..denenen*0,05",function(){var r=H.agBaglari([A,B,Cc,D],"TR",{esik:0.5});return (r.beklenen>0&&r.beklenen<=r.denenen*0.06)||r.beklenen});
+var KG=G.filter(function(g){return !g.sik&&H.ilDuzeyli(g,iller)});
+t("gercek veri: Turkiye icin ag baglari bulunur",function(){var r=H.agBaglari(KG,"TR",{esik:0.8});return (r.denenen>1000&&r.baglar.length>0)||JSON.stringify([r.denenen,r.baglar.length])});
 document.title="test "+(bad?"KALDI "+bad:"GEÇTİ");document.getElementById("o").textContent=out.join("\n");
 </script></body></html>

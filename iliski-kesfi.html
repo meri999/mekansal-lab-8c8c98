@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&family=Roboto+Slab:wght@700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="kirilim.css?v=20261125180000">
-<link rel="stylesheet" href="iliski.css?v=20261125210000">
+<link rel="stylesheet" href="iliski.css?v=20261125233000">
 </head>
 <body>
 <header class="ust"><div class="ust-ic">
@@ -25,18 +25,20 @@
       <button type="button" role="tab" data-m="iki" aria-selected="true">İki göstergenin ilişkisi</button>
       <button type="button" role="tab" data-m="en" aria-selected="false">İlişkili göstergeler</button>
       <button type="button" role="tab" data-m="zaman" aria-selected="false">Zaman içinde birlikte değişim</button>
+      <button type="button" role="tab" data-m="ag" aria-selected="false">Gösterge ağı</button>
     </div>
     <div class="kontrol">
       <div id="xw"><label for="gx" id="gxEtk">Gösterge 1 (yatay eksen)</label><select id="gx"></select></div>
       <div id="yw"><label for="gy">Gösterge 2 (dikey eksen)</label><select id="gy"></select></div>
       <div id="degw"><span class="etk">&nbsp;</span><button type="button" class="dugme cizgi" id="degis" title="Eksenleri değiştir">⇄ Eksenleri değiştir</button></div>
+      <div id="cw" hidden><label for="gc">Merkez gösterge</label><select id="gc"></select></div>
       <div id="yilw"><label for="yil">Yıl</label><select id="yil"></select></div>
       <div id="vurw"><label for="vur">İl vurgula</label><select id="vur"></select></div>
       <div id="yerw" hidden><label for="yer">Yer</label><select id="yer"></select></div>
       <div id="basw" hidden><label for="bas">Dönem başı</label><select id="bas"></select></div>
       <div id="sonw" hidden><label for="son">Dönem sonu</label><select id="son"></select></div>
       <div id="gecw" hidden><span class="etk" id="gecEtk">Gecikme</span><div class="seg" id="gec" role="group" aria-labelledby="gecEtk"><button type="button" data-g="0" aria-pressed="true">Aynı yıl</button><button type="button" data-g="1" aria-pressed="false">1 yıl sonra</button></div></div>
-      <div id="esikw" hidden><label for="esik">Alt sınır |ρ|</label><select id="esik"><option value="0.4">0,4</option><option value="0.5" selected>0,5</option><option value="0.6">0,6</option><option value="0.7">0,7</option><option value="0.8">0,8</option></select></div>
+      <div id="esikw" hidden><label for="esik">Alt sınır |ρ|</label><select id="esik"><option value="0.4">0,4</option><option value="0.5" selected>0,5</option><option value="0.6">0,6</option><option value="0.7">0,7</option><option value="0.8">0,8</option><option value="0.9">0,9</option></select></div>
       <label class="onay" id="buyw" hidden><input type="checkbox" id="buy"> Nüfusla birlikte büyüyen göstergeleri de göster</label>
       <label class="onay" id="dogw"><input type="checkbox" id="dog" checked> Doğrusal eğilim çizgisi</label>
     </div>
@@ -53,7 +55,7 @@
 
 <script src="veri/veri.js?v=20261125203655"></script>
 <script src="cikti.js?v=20261125230000"></script>
-<script src="iliski-hesap.js?v=20261125210000"></script>
-<script src="iliski.js?v=20261125210000"></script>
+<script src="iliski-hesap.js?v=20261125233000"></script>
+<script src="iliski.js?v=20261125233000"></script>
 </body>
 </html>

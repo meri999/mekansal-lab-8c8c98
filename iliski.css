@@ -64,3 +64,8 @@ h1.kucuk{font-size:19px;margin:0 0 6px}
 .sonuc-baslik+.kaydir.liste{margin-top:0}
 .not{margin:10px 0 0;font-size:13px;color:var(--soluk);border-left:3px solid var(--cizgi);padding:2px 0 2px 10px}
 .kaydir.liste{max-height:calc(100vh - 360px)}
+.izgara-iki.ag{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}
+.izgara-iki.ag svg#agsvg{max-height:calc(100vh - 300px)}
+.izgara-iki.ag .yan svg{max-height:170px}
+.izgara-iki.ag .cikti-dugme{margin-top:4px}
+.izgara-iki.ag .ozet.iki{margin-bottom:6px}

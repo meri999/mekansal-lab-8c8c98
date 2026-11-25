@@ -35,8 +35,8 @@
   }
 
   /* ---- durum ve baglanti ---- */
-  var S = { m: "iki", x: "", y: "", yil: "", v: "", yer: "TR", b: "", s: "", g: 0, e: 0.5, u: 0, d: 1 };
-  var ESIK_VARS = { iki: 0.5, en: 0.5, zaman: 0.6 };
+  var S = { n: 1, c: "", m: "iki", x: "", y: "", yil: "", v: "", yer: "TR", b: "", s: "", g: 0, e: 0.5, u: 0, d: 1 };
+  var ESIK_VARS = { iki: 0.5, en: 0.5, zaman: 0.6, ag: 0.7 };
   function oku() {
     var h = location.hash.replace(/^#/, ""); if (!h) return;
     h.split("&").forEach(function (p) {
@@ -46,15 +46,16 @@
       else if (k === "e") S.e = +v || 0.5;
       else if (k in S) S[k] = v;
     });
-    if (["iki", "en", "zaman"].indexOf(S.m) < 0) S.m = "iki";
+    if (["iki", "en", "zaman", "ag"].indexOf(S.m) < 0) S.m = "iki";
   }
   function yaz() {
     var p = ["m=" + S.m, "x=" + S.x];
     if (S.m !== "en") p.push("y=" + S.y);
     if (S.m === "iki") { p.push("yil=" + S.yil); if (S.v) p.push("v=" + S.v); if (!S.d) p.push("d=0"); }
     if (S.m === "zaman") { p.push("yer=" + S.yer, "b=" + S.b, "s=" + S.s, "g=" + S.g); }
+    if (S.m === "ag") { p = ["m=ag", "yer=" + S.yer, "b=" + S.b, "s=" + S.s, "g=" + S.g]; if (S.c) p.push("c=" + S.c); }
     if (S.m !== "iki") p.push("e=" + S.e);
-    if (S.m === "en" && S.u) p.push("u=1");
+    if ((S.m === "en" || S.m === "ag") && S.u) p.push("u=1");
     try { history.replaceState(null, "", "#" + p.join("&")); } catch (e) { }
   }
   function gos(id) { return byId[id] || null; }
@@ -78,12 +79,14 @@
   $("yer").innerHTML = yerler.map(function (y) { return '<option value="' + y.kod + '">' + esc(y.ad) + "</option>"; }).join("");
 
   var GORUNUR = {
+    ag: ["cw", "yerw", "basw", "sonw", "gecw", "esikw", "buyw"],
     iki: ["xw", "yw", "degw", "yilw", "vurw", "dogw"],
     en: ["xw", "esikw", "buyw"],
     zaman: ["xw", "yw", "degw", "yerw", "basw", "sonw", "gecw", "esikw"]
   };
-  var TUM = ["xw", "yw", "degw", "yilw", "vurw", "dogw", "yerw", "basw", "sonw", "gecw", "esikw", "buyw"];
+  var TUM = ["cw", "xw", "yw", "degw", "yilw", "vurw", "dogw", "yerw", "basw", "sonw", "gecw", "esikw", "buyw"];
   var IPUCU = {
+    ag: "",
     iki: "İki göstergenin son ortak yılında 81 ili karşılaştırın. Bir noktanın üzerine gelin; il adı ve değerleri görünür.",
     en: "Seçtiğiniz göstergeyle illerde en güçlü ilişkiyi veren diğer göstergeler, güce göre sıralanır. Bir satıra tıklayınca dağılım açılır.",
     zaman: "Bir ilin (ya da Türkiye'nin) iki serisinin yıllık değişimleri birlikte mi, ters yönde mi? Aynı ilişki 81 ilin kaçında görülüyor?"
@@ -100,6 +103,9 @@
     } else if (S.m === "en") {
       bas = "Örnekler:";
       ["Toplam doğurganlık hızı", "Kişi başına GSYH (TL)", "Kaba ölüm hızı", "İşsizlik oranı"].forEach(function (c) { var a = ara(c); if (a) o.push({ t: a.baslik, x: a.id }); });
+    } else if (S.m === "ag") {
+      bas = "Örnekler:";
+      [["Türkiye", "TR"], ["İstanbul", "TR100"], ["Şanlıurfa", ilAd.filter(function (k) { return ADI[k] === "Şanlıurfa"; })[0]]].forEach(function (c) { if (c[1]) o.push({ t: c[0], yer: c[1] }); });
     } else {
       bas = "Örnekler:";
       [["Kaba doğum hızı", "Kaba evlenme hızı", "TR"], ["Kaba doğum hızı", "Kaba ölüm hızı", "TR"], ["Kaba evlenme hızı", "Kaba boşanma hızı", "TR"]].forEach(function (c) {
@@ -116,7 +122,7 @@
   }
   $("ornek").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return; var q = $("ornek")._o[+b.dataset.i];
-    S.x = q.x; if (q.y) S.y = q.y; if (q.yer) S.yer = q.yer; S.yil = ""; S.b = ""; S.s = ""; render();
+    if (q.x) S.x = q.x; if (q.y) S.y = q.y; if (q.yer) S.yer = q.yer; if (S.m === "ag") S.c = ""; S.yil = ""; S.b = ""; S.s = ""; S.n = 1; render();
   });
 
   /* ---- ciktilar ---- */
@@ -334,6 +340,125 @@
     }, 30);
   }
 
+
+  /* ---- mod 4: gosterge agi ---- */
+  var KRENK = { nufus: "#7b0828", goc: "#d8232a", egitim: "#2b6f8a", isgucu: "#6a8f2a", kalkinma: "#c98a1b", yasam: "#8a5fa8", konut: "#a0522d", girisim: "#2f9e8f", uretim: "#556b2f", finans: "#b8860b", fiyat: "#cd5c5c", dis: "#4682b4", guven: "#777777" };
+  var AGC = null, AGS = null, AGTEY = {}, agSay = 0, agSecili = 0;
+  function agAd(g, n) { var m = g.baslik; return m.length > (n || 30) ? m.slice(0, (n || 30) - 1) + "…" : m; }
+  function agBaglari() {
+    var anahtar = [S.yer, S.b, S.s, S.e, S.g ? 1 : 0, S.u ? 1 : 0, S.c].join("|");
+    if (AGC && AGC.anahtar === anahtar) return AGC;
+    var gost = L.filter(function (g) { return S.u || !buyuk(g); });
+    var r = H.agBaglari(gost, S.yer || "TR", { bas: S.b, son: S.s, esik: S.e, gecikme: !!S.g, merkez: S.c, disla: function (a, b) { return (a.df_id && a.df_id === b.df_id) || (a.grup && a.grup === b.grup); } });
+    r.anahtar = anahtar; AGC = r; return r;
+  }
+  function agCiz(sec, dis) {
+    var W = 760, Hh = dis ? 580 : 380, cx = W / 2, cy = (dis ? 60 : 0) + (Hh - (dis ? 60 : 0)) / 2 - (dis ? 10 : 0), R = Math.min(150, (Hh - (dis ? 160 : 90)) / 2);
+    var ids = sec.dugumler.slice(), poz = {}, ders = {};
+    sec.baglar.forEach(function (q) { ders[q.a] = (ders[q.a] || 0) + 1; ders[q.b] = (ders[q.b] || 0) + 1; });
+    var dis_ = S.c && ids.indexOf(S.c) >= 0 ? ids.filter(function (i) { return i !== S.c; }) : ids;
+    dis_.sort(function (a, b) { var ga = byId[a], gb = byId[b]; return (KSIRA.indexOf(ga.konu) - KSIRA.indexOf(gb.konu)) || (ders[b] - ders[a]); });
+    dis_.forEach(function (id, i) { var t = -Math.PI / 2 + 2 * Math.PI * i / dis_.length; poz[id] = { x: cx + R * Math.cos(t), y: cy + R * Math.sin(t), t: t }; });
+    if (S.c && ids.indexOf(S.c) >= 0) poz[S.c] = { x: cx, y: cy, t: 0, merkez: true };
+    var o = '<svg xmlns="http://www.w3.org/2000/svg" id="agsvg" viewBox="0 0 ' + W + " " + Hh + '" role="img" aria-label="Gösterge ağı" font-family="Montserrat,Segoe UI,Arial,sans-serif">';
+    o += '<defs><marker id="okK" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#d8232a"/></marker><marker id="okM" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#2b6f8a"/></marker></defs>';
+    if (dis) o += '<rect width="' + W + '" height="' + Hh + '" fill="#fff"/><text x="28" y="34" font-size="20" font-weight="700" fill="#7b0828">' + esc((S.yer === "TR" ? "Türkiye" : ADI[S.yer]) + ": gösterge ağı") + '</text><text x="28" y="56" font-size="13" fill="#555">' + esc(S.b + "–" + S.s + " yıllık değişimleri · |ρ| ≥ " + f(S.e, 1) + (S.g ? " · 1 yıl gecikmeli bağlar dahil" : "") + (S.c ? " · merkez: " + byId[S.c].baslik : "")) + "</text>";
+    sec.baglar.forEach(function (q, i) {
+      var A = poz[q.a], B = poz[q.b]; if (!A || !B) return;
+      var kal = 1.2 + (Math.abs(q.rho) - S.e) / (1 - S.e + 1e-9) * 4.5, renk = q.rho > 0 ? "#d8232a" : "#2b6f8a", tey = AGTEY[i];
+      var mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2, kx = cx + (mx - cx) * 0.45, ky = cy + (my - cy) * 0.45;
+      var dx = B.x - kx, dy = B.y - ky, dl = Math.sqrt(dx * dx + dy * dy) || 1, ex = B.x - dx / dl * 9, ey = B.y - dy / dl * 9;
+      var d = "M" + A.x.toFixed(1) + " " + A.y.toFixed(1) + " Q" + kx.toFixed(1) + " " + ky.toFixed(1) + " " + (q.gec ? ex.toFixed(1) + " " + ey.toFixed(1) : B.x.toFixed(1) + " " + B.y.toFixed(1));
+      var zayif = tey && tey.pay && tey.say / tey.pay < 1 / 3;
+      if (!dis && i === agSecili) o += '<path d="' + d + '" fill="none" stroke="#17171a" stroke-width="' + (kal + 3.5).toFixed(1) + '" opacity=".25"/>';
+      o += '<path class="bag" data-i="' + i + '" d="' + d + '" fill="none" stroke="' + renk + '" stroke-width="' + kal.toFixed(1) + '" opacity="' + (i === agSecili || dis ? 0.85 : 0.6) + '"' + (zayif ? ' stroke-dasharray="6 4"' : "") + (q.gec ? ' marker-end="url(#' + (q.rho > 0 ? "okK" : "okM") + ')"' : "") + "/>";
+      if (!dis) o += '<path class="bag-tik" data-i="' + i + '" d="' + d + '" fill="none" stroke="transparent" stroke-width="12" style="cursor:pointer"/>';
+    });
+    ids.forEach(function (id) {
+      var P = poz[id], g = byId[id], r = 5 + Math.min(7, (ders[id] || 0) * 0.9), sag = Math.cos(P.t) >= 0, renk = KRENK[g.konu] || "#777";
+      o += '<circle class="dugum" data-id="' + id + '" cx="' + P.x.toFixed(1) + '" cy="' + P.y.toFixed(1) + '" r="' + r.toFixed(1) + '" fill="' + renk + '" stroke="#fff" stroke-width="1.5" style="cursor:pointer"/>';
+      var tx = P.merkez ? P.x : P.x + Math.cos(P.t) * (r + 6), ty = P.merkez ? P.y - r - 7 : P.y + Math.sin(P.t) * (r + 6) + 4;
+      o += '<text class="dugum-ad" font-size="11" fill="#17171a" stroke="#fff" stroke-width="3" paint-order="stroke" x="' + tx.toFixed(1) + '" y="' + ty.toFixed(1) + '" text-anchor="' + (P.merkez ? "middle" : sag ? "start" : "end") + '"' + (P.merkez ? ' font-weight="700"' : "") + ">" + esc(agAd(g, 32)) + "</text>";
+    });
+    var lk = {}; ids.forEach(function (id) { lk[byId[id].konu] = 1; });
+    var lj = Object.keys(lk), ly = Hh - (dis ? 44 : 14);
+    lj.forEach(function (k, j) { var x = 24 + j * 142; o += '<circle cx="' + (x + 4) + '" cy="' + (ly - 4) + '" r="4.5" fill="' + (KRENK[k] || "#777") + '"/><text x="' + (x + 12) + '" y="' + ly + '" font-size="10.5" fill="#555">' + esc(KONU[k] || k) + "</text>"; });
+    if (dis) o += '<text x="28" y="' + (Hh - 14) + '" font-size="11" fill="#777">Kaynak: TÜİK; Enstitü Portal · Kırmızı: birlikte, mavi: ters yönde hareket; kalınlık ilişkinin gücü.</text>';
+    return o + "</svg>";
+  }
+  function agTeyitHesapla(sec, bas) {
+    var yer = S.yer, id = ++teyitSay, i = bas || 0;
+    function adim() {
+      if (id !== teyitSay) return;
+      var t0 = Date.now();
+      while (i < sec.baglar.length && Date.now() - t0 < 40) {
+        var q = sec.baglar[i], a = byId[q.a], b = byId[q.b], opt = { gecikme: q.gec, bas: S.b, son: S.s };
+        AGTEY[i] = H.teyit(a, b, iller, q.rho, H.etkinEsik(S.e, q.n), opt); i++;
+      }
+      var sv = $("agsvg"); if (sv) { Array.prototype.forEach.call(sv.querySelectorAll("path.bag"), function (p) { var t = AGTEY[+p.dataset.i]; if (t && t.pay && t.say / t.pay < 1 / 3) p.setAttribute("stroke-dasharray", "6 4"); }); }
+      agPanel();
+      if (i < sec.baglar.length) setTimeout(adim, 5);
+    }
+    setTimeout(adim, 20);
+  }
+  function agPanel() {
+    var el = $("agpanel"), sec = AGS; if (!el || !sec || !sec.baglar.length) return;
+    var q = sec.baglar[agSecili], a = byId[q.a], b = byId[q.b], t = AGTEY[agSecili], kod = S.yer || "TR";
+    var yon = q.gec ? esc(agAd(a, 40)) + " → " + esc(agAd(b, 40)) + " (1 yıl sonra)" : "aynı yıl";
+    var tr = kod !== "TR" ? H.zamanIliski(a, b, "TR", { gecikme: q.gec, bas: S.b, son: S.s }) : null;
+    var trYazi = kod === "TR" ? "—" : (tr && tr.rho !== null ? isr(tr.rho) : "veri yok");
+    el.innerHTML = '<h3 class="sonuc-baslik" style="font-size:13.5px">' + esc(agAd(a, 46)) + (q.gec ? " → " : " ↔ ") + esc(agAd(b, 46)) + "</h3>" +
+      '<div class="ozet iki">' + kart("Yıllık değişim ilişkisi (ρ)", isr(q.rho), (q.rho > 0 ? "birlikte" : "ters yönde") + " · " + yon, q.rho > 0 ? "pozitif" : "negatif") +
+      kart("Yıllık değişim sayısı", String(q.n), "tesadüf sınırı |ρ| ≈ " + f(H.kritikR(q.n), 2)) +
+      kart("Başka illerde aynı yönde", t ? t.say + " / " + t.pay : "…", t ? "il (|ρ| ≥ " + f(H.etkinEsik(S.e, q.n), 2) + ", aynı işaret)" : "hesaplanıyor") +
+      kart("Türkiye'de", trYazi, kod === "TR" ? "seçili yer Türkiye" : "aynı dönem") + "</div>" + cizgiGrafik(a, b, kod, S.b, S.s, false);
+  }
+  function moduAg() {
+    var s = $("sonuc"); SON = null;
+    var yil = {}; L.forEach(function (g) { g.yillar.forEach(function (y) { if (/^\d{4}$/.test(y)) yil[y] = 1; }); });
+    var yl = Object.keys(yil).sort(), op = yl.map(function (y) { return '<option value="' + y + '">' + y + "</option>"; }).join("");
+    $("bas").innerHTML = op; $("son").innerHTML = op;
+    if (yl.indexOf(S.b) < 0) S.b = yl[0]; if (yl.indexOf(S.s) < 0) S.s = yl[yl.length - 1];
+    if (+S.b > +S.s) { var t0 = S.b; S.b = S.s; S.s = t0; }
+    $("bas").value = S.b; $("son").value = S.s;
+    if (S.c && !gos(S.c)) S.c = "";
+    var r = agBaglari(), n = S.n || 1, sec = H.agSec(r.baglar, 12 + 6 * (n - 1), 25 + 12 * (n - 1)), yerAd = S.yer === "TR" ? "Türkiye" : (ADI[S.yer] || S.yer);
+    if (!sec.baglar.length) { s.innerHTML = '<p class="bos">' + esc(yerAd) + " için |ρ| ≥ " + f(S.e, 1) + " olan bağ bulunamadı. Alt sınırı düşürün, dönemi genişletin ya da merkez göstergeyi değiştirin.</p>"; AGS = null; return; }
+    if (agSecili >= sec.baglar.length) agSecili = 0;
+    AGS = sec; AGTEY = {};
+    var daha = r.baglar.length > sec.baglar.length ? '<button type="button" class="dugme cizgi" data-is="daha">Daha fazla göster</button>' : "", az = n > 1 ? '<button type="button" class="dugme cizgi" data-is="az">Daha az göster</button>' : "";
+    s.innerHTML = '<h2 class="sonuc-baslik">' + esc(yerAd) + ": " + sec.dugumler.length + " gösterge, " + sec.baglar.length + " bağ" + (S.c ? " · merkez: " + esc(byId[S.c].baslik) : "") + "</h2>" +
+      '<div class="izgara-iki ag"><div>' + agCiz(sec, false) + '<div class="cikti-dugme">' + daha + az + '<button type="button" class="dugme cizgi" data-is="png">Görsel olarak indir</button><button type="button" class="dugme cizgi" data-is="xlsx">Excel olarak indir</button></div></div>' +
+      '<div class="yan"><div id="agpanel"></div></div></div>' +
+      '<p class="not"><b>Not:</b> Kırmızı çizgi birlikte, mavi çizgi ters yönde hareketi; kalınlık gücü gösterir. Ok bir yıl gecikmeyi, kesikli çizgi aynı ilişkinin illerin üçte birinden azında görüldüğünü belirtir. ' + r.denenen.toLocaleString("tr-TR") + " çift denendi; yalnızca tesadüfle yaklaşık " + Math.round(r.beklenen).toLocaleString("tr-TR") + " tanesi eşiği geçer. Aynı gruptaki göstergeler arasında bağ çizilmez. Bir düğüme tıklayınca o gösterge merkez olur.</p>";
+    SON = { ag: true, sec: sec, r: r, ad: "gosterge-agi-" + S.yer + (S.c ? "-" + S.c : "") };
+    $("kaynak").textContent = "Kaynak: TÜİK; " + L.length + " il düzeyli gösterge, " + S.b + "–" + S.s + " yıllık değişimleri (Spearman).";
+    agPanel(); agTeyitHesapla(sec, 0);
+  }
+  function agIndir(tur) {
+    if (!SON || !SON.ag) return; var sec = SON.sec;
+    if (tur === "png") { window.Cikti.png(agCiz(sec, true), 760, 580, SON.ad); return; }
+    var satir = [["Gösterge 1", "Gösterge 2", "Gecikme (yıl)", "ρ (yıllık değişim)", "Yıllık değişim sayısı", "Aynı yönde il sayısı", "Karşılaştırılan il sayısı"]];
+    sec.baglar.forEach(function (q, i) {
+      var t = AGTEY[i] || H.teyit(byId[q.a], byId[q.b], iller, q.rho, H.etkinEsik(S.e, q.n), { gecikme: q.gec, bas: S.b, son: S.s });
+      satir.push([byId[q.a].baslik, byId[q.b].baslik, q.gec, q.rho, q.n, t.say, t.pay]);
+    });
+    window.Cikti.xlsx([{ ad: "Bağlar", satirlar: satir }, { ad: "Özet", satirlar: [["Yer", S.yer === "TR" ? "Türkiye" : ADI[S.yer]], ["Dönem", S.b + "–" + S.s], ["Alt sınır |ρ|", S.e], ["Gecikmeli bağlar dahil", S.g ? "evet" : "hayır"], ["Merkez", S.c ? byId[S.c].baslik : "yok"], ["Denenen çift", SON.r.denenen], ["Tesadüfen beklenen bağ", SON.r.beklenen]] }], SON.ad);
+  }
+  $("sonuc").addEventListener("click", function (e) {
+    if (S.m !== "ag") return;
+    var d = e.target.closest("[data-is]");
+    if (d) { var i = d.dataset.is; if (i === "png" || i === "xlsx") agIndir(i); else if (i === "daha") { S.n = (S.n || 1) + 1; render(); } else if (i === "az") { S.n = Math.max(1, (S.n || 1) - 1); render(); } return; }
+    var b = e.target.closest(".bag-tik"); if (b) { agSecili = +b.dataset.i; var sv = $("agsvg"); if (sv && AGS) sv.outerHTML = agCiz(AGS, false); agPanel(); return; }
+    var n = e.target.closest(".dugum, .dugum-ad"); if (n) { var id = n.dataset.id; if (id) { S.c = S.c === id ? "" : id; agSecili = 0; S.n = 1; render(); } }
+  });
+  $("sonuc").addEventListener("mouseover", function (e) {
+    if (S.m !== "ag" || !AGS) return; var b = e.target.closest && e.target.closest(".bag-tik"), n = e.target.closest && e.target.closest(".dugum");
+    if (b) { var q = AGS.baglar[+b.dataset.i]; ipucuGoster(e, esc(byId[q.a].baslik) + (q.gec ? " → " : " ↔ ") + esc(byId[q.b].baslik) + "<br>ρ = " + isr(q.rho)); }
+    else if (n) ipucuGoster(e, esc(byId[n.dataset.id].baslik) + "<br>tıklayınca merkez olur");
+  });
+  $("sonuc").addEventListener("mouseout", function (e) { if (S.m === "ag" && e.target.closest && e.target.closest(".bag-tik, .dugum")) ipucuGizle(); });
+
   /* ---- ana cizim ---- */
   function render() {
     ipucuGizle();
@@ -345,11 +470,13 @@
     TUM.forEach(function (id) { $(id).hidden = GORUNUR[S.m].indexOf(id) < 0; });
     $("gxEtk").textContent = S.m === "iki" ? "Gösterge 1 (yatay eksen)" : S.m === "en" ? "Gösterge" : "Gösterge 1 (önce değişen)";
     $("ipucu").textContent = IPUCU[S.m];
-    $("gx").value = S.x; $("gy").value = S.y; $("vur").value = S.v || ""; $("yer").value = S.yer; $("esik").value = String(S.e);
+    $("gx").value = S.x; $("gy").value = S.y; $("gc").value = S.c; $("vur").value = S.v || ""; $("yer").value = S.yer; $("esik").value = String(S.e);
     $("buy").checked = !!S.u; $("dog").checked = !!S.d;
     document.querySelectorAll("#gec button").forEach(function (b) { b.setAttribute("aria-pressed", String(+b.dataset.g === +S.g)); });
+    document.querySelectorAll("#gec button").forEach(function (b) { b.textContent = +b.dataset.g ? (S.m === "ag" ? "Gecikmeli de" : "1 yıl sonra") : "Aynı yıl"; });
+    $("ipucu").textContent = IPUCU[S.m] || "";
     ornekler();
-    if (S.m === "iki") moduIki(); else if (S.m === "en") moduEn(); else moduZaman();
+    if (S.m === "iki") moduIki(); else if (S.m === "en") moduEn(); else if (S.m === "ag") moduAg(); else moduZaman();
     yaz();
   }
 
@@ -357,18 +484,20 @@
     var b = e.target.closest("button"); if (!b || b.dataset.m === S.m) return;
     S.m = b.dataset.m; S.e = ESIK_VARS[S.m]; render();
   });
+  $("gc").innerHTML = '<option value="">(yok: en güçlü bağlar)</option>' + GH;
+  $("gc").addEventListener("change", function () { S.c = this.value; agSecili = 0; S.n = 1; render(); });
   $("gx").addEventListener("change", function () { S.x = this.value; S.yil = ""; S.b = ""; S.s = ""; render(); });
   $("gy").addEventListener("change", function () { S.y = this.value; S.yil = ""; S.b = ""; S.s = ""; render(); });
   $("degis").addEventListener("click", function () { var t = S.x; S.x = S.y; S.y = t; render(); });
   $("yil").addEventListener("change", function () { S.yil = this.value; render(); });
   $("vur").addEventListener("change", function () { S.v = this.value; render(); });
-  $("yer").addEventListener("change", function () { S.yer = this.value; render(); });
+  $("yer").addEventListener("change", function () { S.yer = this.value; agSecili = 0; S.n = 1; render(); });
   $("bas").addEventListener("change", function () { S.b = this.value; render(); });
   $("son").addEventListener("change", function () { S.s = this.value; render(); });
-  $("esik").addEventListener("change", function () { S.e = +this.value; render(); });
+  $("esik").addEventListener("change", function () { S.e = +this.value; agSecili = 0; S.n = 1; render(); });
   $("buy").addEventListener("change", function () { S.u = this.checked ? 1 : 0; render(); });
   $("dog").addEventListener("change", function () { S.d = this.checked ? 1 : 0; render(); });
-  $("gec").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; S.g = +b.dataset.g; render(); });
+  $("gec").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; S.g = +b.dataset.g; agSecili = 0; S.n = 1; render(); });
 
   oku();
   if (S.m === "zaman" && !/[?&]e=|#.*\be=/.test(location.hash)) S.e = ESIK_VARS.zaman;
