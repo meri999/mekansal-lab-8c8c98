@@ -166,7 +166,6 @@
 
   function indir(ad, blob) { var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = ad; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000); }
   function dosyaAdi() { return "iliski-" + SON.gx.id + "-" + SON.gy.id + "-" + SON.yil; }
-  function svgIndir() { if (SON) indir(dosyaAdi() + ".svg", new Blob([serpilme(SON.k, SON.gx, SON.gy, SON.yil, true)], { type: "image/svg+xml" })); }
   function pngIndir() {
     if (!SON) return; var svg = serpilme(SON.k, SON.gx, SON.gy, SON.yil, true), im = new Image();
     im.onload = function () {
@@ -176,13 +175,54 @@
     };
     im.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
   }
-  function baglantiKopyala(btn) {
-    var u = location.href, ok = function () { var t = btn.textContent; btn.textContent = "Kopyalandı"; setTimeout(function () { btn.textContent = t; }, 1600); };
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(ok, function () { btn.textContent = "Adres çubuğundan kopyalayın"; });
-    else btn.textContent = "Adres çubuğundan kopyalayın";
+  /* ---- Excel (.xlsx): kutuphanesiz, sikistirmasiz zip ---- */
+  var CRC = (function () { var t = [], c, n, k; for (n = 0; n < 256; n++) { c = n; for (k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  function crc32(b) { var c = 0xFFFFFFFF; for (var i = 0; i < b.length; i++) c = CRC[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+  function zip(dosyalar) {
+    var enc = new TextEncoder(), parcalar = [], merkez = [], ofs = 0;
+    function u16(v) { return [v & 255, (v >>> 8) & 255]; } function u32(v) { return [v & 255, (v >>> 8) & 255, (v >>> 16) & 255, (v >>> 24) & 255]; }
+    dosyalar.forEach(function (d) {
+      var ad = enc.encode(d[0]), v = enc.encode(d[1]), c = crc32(v);
+      var yer = [].concat(u32(0x04034b50), u16(20), u16(0x0800), u16(0), u16(0), u16(0x21), u32(c), u32(v.length), u32(v.length), u16(ad.length), u16(0));
+      parcalar.push(new Uint8Array(yer), ad, v);
+      merkez.push(new Uint8Array([].concat(u32(0x02014b50), u16(20), u16(20), u16(0x0800), u16(0), u16(0), u16(0x21), u32(c), u32(v.length), u32(v.length), u16(ad.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(ofs))), ad);
+      ofs += yer.length + ad.length + v.length;
+    });
+    var mb = 0; merkez.forEach(function (m) { mb += m.length; });
+    var son = new Uint8Array([].concat(u32(0x06054b50), u16(0), u16(0), u16(dosyalar.length), u16(dosyalar.length), u32(mb), u32(ofs), u16(0)));
+    return new Blob(parcalar.concat(merkez, [son]), { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  }
+  function xesc(t) { return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function sayfa(satirlar) {
+    var o = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols><col min="1" max="3" width="42" customWidth="1"/></cols><sheetData>';
+    satirlar.forEach(function (r, i) {
+      o += '<row r="' + (i + 1) + '">';
+      r.forEach(function (h, j) {
+        var ref = String.fromCharCode(65 + j) + (i + 1);
+        o += typeof h === "number" ? '<c r="' + ref + '"><v>' + h + "</v></c>" : '<c r="' + ref + '" t="inlineStr"><is><t>' + xesc(h) + "</t></is></c>";
+      });
+      o += "</row>";
+    });
+    return o + "</sheetData></worksheet>";
+  }
+  function excelIndir() {
+    if (!SON) return; var k = SON.k, gx = SON.gx, gy = SON.gy, il = [];
+    ilAd.forEach(function (c) { var i = k.kodlar.indexOf(c); if (i >= 0) il.push([ADI[c], k.x[i], k.y[i]]); });
+    var deger = [["İl", birimli(gx), birimli(gy)]].concat(il);
+    var ozet = [["Gösterge 1", gx.baslik, birimli(gx)], ["Gösterge 2", gy.baslik, birimli(gy)], ["Yıl", SON.yil, ""], ["İl sayısı", k.n, ""],
+      ["Sıra ilişkisi (Spearman ρ)", k.rho, ""], ["Doğrusal ilişki (Pearson r)", k.pearson === null ? "" : k.pearson, ""],
+      ["Kaynak 1", gx.kaynak || "", ""], ["Kaynak 2", gy.kaynak || "", ""]];
+    var ns = "http://schemas.openxmlformats.org/", ctx = "application/vnd.openxmlformats-officedocument.spreadsheetml.";
+    var dosyalar = [
+      ["[Content_Types].xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="' + ctx + 'sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="' + ctx + 'worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="' + ctx + 'worksheet+xml"/></Types>'],
+      ["_rels/.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="' + ns + 'officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
+      ["xl/workbook.xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="' + ns + 'officeDocument/2006/relationships"><sheets><sheet name="Değerler" sheetId="1" r:id="rId1"/><sheet name="Özet" sheetId="2" r:id="rId2"/></sheets></workbook>'],
+      ["xl/_rels/workbook.xml.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="' + ns + 'officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="' + ns + 'officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/></Relationships>'],
+      ["xl/worksheets/sheet1.xml", sayfa(deger)], ["xl/worksheets/sheet2.xml", sayfa(ozet)]];
+    indir(dosyaAdi() + ".xlsx", zip(dosyalar));
   }
   $("sonuc").addEventListener("click", function (e) {
-    var b = e.target.closest("[data-is]"); if (b) { var i = b.dataset.is; if (i === "svg") svgIndir(); else if (i === "png") pngIndir(); else if (i === "bag") baglantiKopyala(b); return; }
+    var b = e.target.closest("[data-is]"); if (b) { var i = b.dataset.is; if (i === "xlsx") excelIndir(); else if (i === "png") pngIndir(); return; }
     var r = e.target.closest("tr.tik"); if (r) { S.m = "iki"; S.y = r.dataset.y; S.yil = r.dataset.yil; render(); window.scrollTo(0, 0); }
   });
   $("sonuc").addEventListener("keydown", function (e) { if ((e.key === "Enter" || e.key === " ") && e.target.matches("tr.tik")) { e.preventDefault(); e.target.click(); } });
@@ -193,8 +233,7 @@
   $("sonuc").addEventListener("mousemove", function (e) { if (balon.style.display === "block") ipucuGoster(e, balon.innerHTML); });
   $("sonuc").addEventListener("mouseout", function (e) { if (e.target.closest && e.target.closest("circle.nokta")) ipucuGizle(); });
 
-  var NEDENSELLIK = "<li class=\"onemli\"><b>İlişki nedensellik değildir.</b> Yalnızca birlikte hareketi gösterir; ikisini birden etkileyen üçüncü bir neden (gelişmişlik, kentleşme, nüfus) olabilir.</li>";
-  function notlar(l) { return '<ul class="notlar">' + l.join("") + "</ul>"; }
+    function notlar(l) { return l.length ? '<ul class="notlar">' + l.join("") + "</ul>" : ""; }
   function kart(b, d, a, sin) { return "<div><small>" + b + '</small><b class="' + (sin || "") + '">' + d + "</b><em>" + a + "</em></div>"; }
 
   /* ---- mod 1: iki gosterge ---- */
@@ -210,7 +249,7 @@
     var k = H.kesit(gx, gy, S.yil, iller);
     if (k.rho === null) { s.innerHTML = '<p class="bos">Bu yılda iki gösterge de sabit ya da yetersiz; ilişki hesaplanamadı.</p>'; return; }
     SON = { k: k, gx: gx, gy: gy, yil: S.yil };
-    var n = [NEDENSELLIK];
+    var n = [];
     [gx, gy].forEach(function (g) { if (g !== NUF && buyuk(g)) n.push("<li class=\"onemli\"><b>" + esc(g.baslik) + "</b> nüfusla birlikte büyüyor (ρ = " + isr(BUY[g.id]) + "). Büyük illerde değeri her zaman yüksek çıkar; ilişki yalnızca büyüklükten gelebilir. Kişi başı ya da oran göstergelerini deneyin.</li>"); });
     if (gx === NUF || gy === NUF) n.push("<li>Nüfus bir büyüklük göstergesidir; yüksek ρ çoğu zaman \"büyük ilde her şey çok\" demektir.</li>");
     if (k.pearson !== null && Math.abs(k.rho - k.pearson) > 0.25) n.push("<li>Sıra ilişkisi (ρ) ile doğrusal ilişki (r) birbirinden ayrışıyor: ilişkiyi birkaç aşırı il belirliyor olabilir.</li>");
@@ -218,16 +257,14 @@
     if (yillar.length === 1) n.push("<li>Ortak tek yıl var: " + yillar[0] + ".</li>");
     var vurgu = S.v && k.kodlar.indexOf(S.v) >= 0 ? k.kodlar.indexOf(S.v) : -1;
     if (S.v && vurgu < 0) n.push("<li>" + esc(ADI[S.v]) + " için bu yılda veri yok.</li>");
-    var tablo = ilAd.filter(function (c) { return k.kodlar.indexOf(c) >= 0; }).map(function (c) { var i = k.kodlar.indexOf(c); return "<tr><th scope=\"row\" class=\"t\">" + esc(ADI[c]) + "</th><td>" + say(k.x[i], gx) + "</td><td>" + say(k.y[i], gy) + "</td></tr>"; }).join("");
     s.innerHTML =
       '<h2 class="sonuc-baslik">' + esc(gx.baslik) + " ve " + esc(gy.baslik) + " · " + S.yil + "</h2>" +
       '<div class="izgara-iki"><div>' + serpilme(k, gx, gy, S.yil, false) + '</div><div class="yan"><div class="ozet">' +
       kart("Sıra ilişkisi (Spearman ρ)", isr(k.rho), H.guc(k.rho) + (k.rho > 0 ? " pozitif" : " negatif") + " ilişki", k.rho > 0 ? "pozitif" : "negatif") +
       kart("Doğrusal ilişki (Pearson r)", k.pearson === null ? "—" : isr(k.pearson), k.pearson === null ? "" : "ρ ile karşılaştırın") +
       kart("İl sayısı", String(k.n), "81 il içinde, " + S.yil) + "</div>" +
-      '<div class="cikti-dugme"><button type="button" class="dugme cizgi" data-is="png">Görseli indir (PNG)</button><button type="button" class="dugme cizgi" data-is="svg">SVG indir</button><button type="button" class="dugme cizgi" data-is="bag">Bağlantıyı kopyala</button></div>' +
-      notlar(n) + "</div></div>" +
-      '<details class="tablo"><summary>Değerleri tablo olarak göster (' + k.n + " il)</summary><div class=\"kaydir\"><table class=\"siralama\"><thead><tr><th>İl</th><th class=\"sa\">" + esc(gx.baslik) + "</th><th class=\"sa\">" + esc(gy.baslik) + "</th></tr></thead><tbody>" + tablo + "</tbody></table></div></details>";
+      '<div class="cikti-dugme"><button type="button" class="dugme cizgi" data-is="png">Görsel olarak indir</button><button type="button" class="dugme cizgi" data-is="xlsx">Excel olarak indir</button></div>' +
+      notlar(n) + "</div></div>" ;
     $("kaynak").innerHTML = "Kaynak: TÜİK. " + esc(gx.baslik) + ": " + esc(gx.kaynak || "") + ". " + esc(gy.baslik) + ": " + esc(gy.kaynak || "") + ".";
   }
 
@@ -238,7 +275,7 @@
     var r = H.enGuclu(g, L, iller, { esik: S.e }), gizli = 0, tabanBuyuk = buyuk(g);
     var liste = r.liste.filter(function (q) { if (!S.u && !tabanBuyuk && buyuk(q.g)) { gizli++; return false; } return true; });
     var goster = liste.slice(0, 25);
-    var n = [NEDENSELLIK];
+    var n = [];
     if (tabanBuyuk) n.push("<li class=\"onemli\"><b>" + esc(g.baslik) + "</b> nüfusla birlikte büyüyen bir gösterge; sonuçlar büyük illerle küçük iller farkını yansıtır.</li>");
     if (gizli) n.push("<li>" + gizli + " gösterge nüfusla birlikte büyüdüğü için gizlendi (yalnızca büyüklük farkını ölçerler). Göstermek için kutuyu işaretleyin.</li>");
     n.push("<li>" + r.denenen + " gösterge denendi. 81 ilde |ρ| ≈ " + f(H.kritikR(81), 2) + " ve üstü tesadüf sayılmaz, ama çok sayıda gösterge denendiğinde ortak nedenlerden gelen (gelişmişlik, kentleşme) ilişkiler çok olur: sıralamayı keşif için kullanın, kanıt olarak değil.</li>");
@@ -306,7 +343,7 @@
     }
     var kr = H.kritikR(z.n), etkin = H.etkinEsik(S.e, z.n), a = Math.abs(z.rho);
     var guvenli = a < kr ? "tesadüf düzeyinde" : a < S.e ? "zayıf" : (z.n >= 12 && a >= 0.7) ? "güçlü" : "orta";
-    var n = [NEDENSELLIK, "<li>Seviyeler değil <b>yıllık değişimler</b> karşılaştırıldı: yıllar içinde her şeyin birlikte yükselmesinden doğan sahte birliktelik böylece ayıklanır. Yine de " + z.n + " gözlem kısa bir seridir.</li>"];
+    var n = ["<li>Seviyeler değil <b>yıllık değişimler</b> karşılaştırıldı: yıllar içinde her şeyin birlikte yükselmesinden doğan sahte birliktelik böylece ayıklanır. Yine de " + z.n + " gözlem kısa bir seridir.</li>"];
     if (a < kr) n.push("<li>İlişki, " + z.n + " gözlem için tesadüf sınırının (|ρ| ≈ " + f(kr, 2) + ") altında; yön hakkında bir şey söylemek zor.</li>");
     else if (a < S.e) n.push("<li>İlişki tesadüf sınırının (|ρ| ≈ " + f(kr, 2) + ") üstünde ama seçtiğiniz alt sınırın (" + f(S.e, 1) + ") altında; zayıf bir işaret olarak okuyun.</li>");
     n.push("<li>Çok sayıda gösterge çifti denendiğinde bazıları tesadüfen yüksek çıkar; bu aracı keşif için kullanın.</li>");
@@ -317,7 +354,6 @@
       kart("Güven", guvenli, "tesadüf sınırı |ρ| ≈ " + f(kr, 2)) +
       '<div id="teyit"><small>Başka illerde</small><b>…</b><em>hesaplanıyor</em></div></div>' +
       cizgi + lej +
-      '<div class="cikti-dugme"><button type="button" class="dugme cizgi" data-is="bag">Bağlantıyı kopyala</button></div>' +
       notlar(n);
     $("kaynak").innerHTML = "Kaynak: TÜİK. " + esc(gx.baslik) + ": " + esc(gx.kaynak || "") + ". " + esc(gy.baslik) + ": " + esc(gy.kaynak || "") + ".";
     var id = ++teyitSay;

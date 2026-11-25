@@ -12,8 +12,12 @@ document.getElementById("f").onload=function(){W=this.contentWindow;sonra(adim1)
 function adim1(){
  t("iki: 81 nokta",function(){return q("#sonuc circle.nokta").length===81||q("#sonuc circle.nokta").length});
  t("iki: rho gosterilir",function(){return /[+−]0,\d\d/.test($("sonuc").textContent)||"yok"});
- t("iki: nedensellik uyarisi",function(){return /nedensellik değildir/.test($("sonuc").textContent)||"yok"});
- t("iki: tablo 81 satir",function(){return q("#sonuc details.tablo tbody tr").length===81||q("#sonuc details.tablo tbody tr").length});
+ t("iki: kaldirilan ogeler yok",function(){return (!q("#sonuc details").length&&!/nedensellik/.test($("sonuc").textContent)&&!q('[data-is="bag"]').length)||"var"});
+ var yakala=null;W.URL.createObjectURL=function(b){yakala=b;return "blob:x"};
+ t("iki: iki indirme dugmesi",function(){var d=[].map.call(q("#sonuc [data-is]"),function(b){return b.textContent});return (d.length===2&&/Görsel/.test(d[0])&&/Excel/.test(d[1]))||d.join()});
+ q('#sonuc [data-is="xlsx"]')[0].click();
+ t("iki: excel zip uretir (PK)",function(){return (yakala&&yakala.size>1500&&/xlsx|spreadsheet/.test(yakala.type))||"blob yok"});
+ if(yakala){var fr=new FileReader();fr.onload=function(){document.title="x";window.__b64=btoa(String.fromCharCode.apply(null,new Uint8Array(fr.result)))};fr.readAsArrayBuffer(yakala)}
  t("iki: baglanti hash'e yazildi",function(){return /m=iki&x=g\d+&y=g\d+&yil=\d{4}/.test(W.location.hash)||W.location.hash});
  sec("vur",q("#vur option")[5].value);
  sonra(function(){
