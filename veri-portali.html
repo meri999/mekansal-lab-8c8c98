@@ -141,6 +141,7 @@ button,select{font:inherit;color:inherit}
     <div class="yil"><span>Yıl</span><input type="range" id="yilKayar" min="0" max="0" step="1" aria-label="Yıl"><b id="yilYazi"></b></div>
     <div class="lejant" id="lejant"></div>
     <div class="not-harita" id="notHarita"></div>
+    <div id="kirBag"></div>
   </section>
   <section class="panel" aria-live="polite" aria-label="Seçili yer göstergeleri">
     <div class="baslik"><h1 id="yerAd"></h1><span id="yerAlt"></span><button class="geri" id="geri" hidden>Türkiye'ye dön</button>
@@ -222,10 +223,15 @@ function boya(){if(st.duzey==="tr")return;if(siraModu())siraCiz();var g=gOf(st.g
   var L=$("lejant");
   if(!vals.length){L.innerHTML="";$("notHarita").textContent="Bu gösterge "+(st.duzey==="il"?"il":"bölge")+" düzeyinde yayımlanmıyor. Diğer düzeye geçmeyi deneyin."}
   else{L.innerHTML='<span>'+fmt(vals[0],g.ondalik)+'</span><span class="kutu">'+RENK.map(function(c){return '<span style="background:'+c+'"></span>'}).join("")+'</span><span>'+fmt(vals[vals.length-1],g.ondalik)+' '+g.birim+'</span><span>· '+vals.length+' '+(st.duzey==="il"?"il":"bölge")+', beşli eşit sayılı sınıflar</span>';
-    $("notHarita").textContent=(g.not||"")+(g.sonraki?" Veri yılı "+g.yillar[g.yillar.length-1]+"; sonraki güncelleme "+g.sonraki+".":"")}}
+    $("notHarita").textContent=(g.not||"")+(g.sonraki?" Veri yılı "+g.yillar[g.yillar.length-1]+"; sonraki güncelleme "+g.sonraki+".":"")}kirBagYaz()}
 /* ---- Kırılımlarla incele: göstergenin tablosu kırılım aracında varsa kartta bağlantı çıkar ---- */
 var KT={};
 if(window.KIRILIM_DIZIN)KIRILIM_DIZIN.konular.forEach(function(k){k.tablolar.forEach(function(t){(t.df||[]).forEach(function(d){if(!KT[d])KT[d]=t})})});
+/* Seçili göstergenin (harita, grafik, sıralama) kırılım bağlantısı: tablosu kırılım aracında varsa görünür */
+function kirBagYaz(){var g=gOf(st.gid),t=g&&KT[g.df_id],e=$("kirBag");if(!e)return;
+  e.innerHTML=t?'<span class="k-kir" role="link" tabindex="0" data-t="'+t.kod+'">Kırılımlarla incele →</span>':""}
+document.addEventListener("click",function(e){var r=e.target.closest&&e.target.closest("#kirBag .k-kir");if(r)location.href="kirilim-matrisi.html?tablo="+r.dataset.t});
+document.addEventListener("keydown",function(e){var r=e.target.closest&&e.target.closest("#kirBag .k-kir");if(r&&(e.key==="Enter"||e.key===" ")){e.preventDefault();location.href="kirilim-matrisi.html?tablo="+r.dataset.t}});
 /* ---- kutular ---- */
 function sparkSvg(a,i){var y=a.slice(0,i+1).filter(function(x){return x!=null}).slice(-(a.length>60?36:15));if(y.length<2)return "";
   var mn=Math.min.apply(null,y),mx=Math.max.apply(null,y);if(mx===mn){mn-=1;mx+=1}
@@ -320,7 +326,7 @@ function grafikCiz(){var g=gOf(st.gid),a=g.veri.TR,n=a.length,L=lagOf(g),b=st.ar
   document.querySelectorAll("#aralik button").forEach(function(x){x.setAttribute("aria-pressed",(+x.dataset.a)===st.aralik)});
   $("grBaslik").textContent=g.baslik;var sn=son(g,"TR");
   $("grSon").innerHTML='<b>'+fmt(a[sn],g.ondalik)+'</b> '+g.birim+' · '+donemYaz(g,sn)+(L>1?degisim(g,a[sn],a[sn-L]):"");
-  $("notHarita").textContent=(g.not?g.not+". ":"")+"Kaynak: "+g.kaynak+".";
+  $("notHarita").textContent=(g.not?g.not+". ":"")+"Kaynak: "+g.kaynak+".";kirBagYaz();
   if(idx.length<2){$("grafik").innerHTML='<div class="bos">Bu aralıkta yeterli veri yok.</div>';return}
   var W=640,H=300,ml=48,mr=14,mt=12,mb=28,mn=1e18,mx=-1e18;
   idx.forEach(function(i){mn=Math.min(mn,a[i]);mx=Math.max(mx,a[i])});var pd=(mx-mn||1)*0.08;mn-=pd;mx+=pd;
