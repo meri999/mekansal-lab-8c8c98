@@ -150,10 +150,10 @@ button,select{font:inherit;color:inherit}
 </main>
 <footer class="alt" id="alt"></footer>
 <div class="ipucu" id="ipucu"></div>
-<script src="veri/veri.js?v=20261125155725"></script>
-<script src="veri/harita_il.js?v=20261125155725"></script>
-<script src="veri/kirilim_dizin.js?v=20261125155725"></script>
-<script src="veri/harita_bolge.js?v=20261125155725"></script>
+<script src="veri/veri.js?v=20261125190127"></script>
+<script src="veri/harita_il.js?v=20261125190127"></script>
+<script src="veri/kirilim_dizin.js?v=20261125190127"></script>
+<script src="veri/harita_bolge.js?v=20261125190127"></script>
 <script>
 (function(){
 var G=VERI.gostergeler, YER={}, KONULAR=[["nufus","Nüfus ve demografi"],["ekonomi","Ekonomi"],["egitim","Eğitim"],["kalkinma","Kalkınma"],["yasam","Yaşam koşulları"],["goc","Göç"]],
@@ -175,7 +175,7 @@ function konuG(k){return G.filter(function(g){return g.konu===k})}
 G.forEach(function(g){if(g.sadece_tr)return;G.forEach(function(t){if(t.sadece_tr&&t.konu===g.konu&&t.baslik===g.baslik){g.ikiz=t.id;t.ikiz=g.id}})});
 G.forEach(function(g){g._td=false;if(g.sadece_tr||!g.veri.TR)return;var a=g.veri.TR.filter(function(x){return x!=null});g._td=a.length>=2&&!a.every(function(x){return Math.abs(x-100)<1e-6})});
 function trGor(g){return !!g.sadece_tr||(!g.ikiz&&g._td)}
-var GSIRA={uretim:["Gelir ve katma değer","Üretim ve satış","Girişim","Kümes hayvancılığı"],konut:["Yapı izni","Konut ve taşıt","Yabancılara satış"],isgucu:["İşgücü piyasası","İşgücü: cinsiyete göre","İşgücü: eğitim durumuna göre","Ne eğitimde ne istihdamda (NEET)","İstihdam: sektör ve işteki durum","Kayıt dışı istihdam","İşgücüne dahil olmama nedeni","Ücretli çalışan","İşgücü maliyeti","Fiili çalışma süresi"],fiyat:["Tüketici fiyatları","TÜFE ana harcama grupları","Üretici fiyatları","Finansal yatırım araçlarının reel getirisi"],nufus:["Nüfus","Yaş yapısı","Hanehalkı","Yerleşim","Doğum","Evlenme","Boşanma","Ölüm","İntihar"],goc:["İç göç","Uluslararası göç","Doğum yeri","Yabancı nüfus","Beyin göçü"],yasam:["Sağlık","Ölüm nedeni","Trafik","Altyapı","Çocuklarda bilişim","Kültür"],egitim:["Eğitim süresi","Eğitim düzeyi","Eğitim harcamaları","Mezunların işgücü durumu"]};
+var GSIRA={uretim:["Gelir ve katma değer","Üretim ve satış","Girişim","Kümes hayvancılığı","Hayvancılık","Bitkisel üretim"],konut:["Yapı izni","Konut ve taşıt","Yabancılara satış"],isgucu:["İşgücü piyasası","İşgücü: cinsiyete göre","İşgücü: eğitim durumuna göre","Ne eğitimde ne istihdamda (NEET)","İstihdam: sektör ve işteki durum","Kayıt dışı istihdam","İşgücüne dahil olmama nedeni","Ücretli çalışan","İşgücü maliyeti","Fiili çalışma süresi"],fiyat:["Tüketici fiyatları","TÜFE ana harcama grupları","Üretici fiyatları","Finansal yatırım araçlarının reel getirisi"],nufus:["Nüfus","Yaş yapısı","Hanehalkı","Yerleşim","Doğum","Evlenme","Boşanma","Ölüm","İntihar"],goc:["İç göç","Uluslararası göç","Doğum yeri","Yabancı nüfus","Beyin göçü"],yasam:["Sağlık","Ölüm nedeni","Trafik","Altyapı","Çocuklarda bilişim","Kültür"],egitim:["Eğitim süresi","Eğitim düzeyi","Eğitim harcamaları","Mezunların işgücü durumu"]};
 KONULAR.forEach(function(b){var kk=b[0];ALTLAR[kk]=[];if(kk==="ekonomi"){TRALT.forEach(function(a){if(G.some(function(g){return g.konu===a[0]}))ALTLAR[kk].push([a[0],a[1]])});return}
   var gs=GSIRA[kk]||[],gor=[];G.forEach(function(g){if(g.bolum===kk&&gor.indexOf(g.grup)<0)gor.push(g.grup)});
   gor.sort(function(x,y){var a=gs.indexOf(x),b2=gs.indexOf(y);a=a<0?999:a;b2=b2<0?999:b2;return a-b2||gor.indexOf(x)-gor.indexOf(y)});
