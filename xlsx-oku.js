@@ -1,7 +1,8 @@
 /* Küçük .xlsx okuyucu: dış kütüphane yok. .xlsx = zip içinde XML; açma için tarayıcının DecompressionStream'i kullanılır.
    oku(arrayBuffer) -> Promise<{ satirlar: [[hücre,...],...], sayfaAdi, sayfaSayisi }>
    Hücreler: metin -> string, sayı -> number (ondalık ayracı karışmasın), boş -> "". İlk sayfa okunur.
-   Desteklenmeyenler: .xls (eski ikili biçim), parolalı dosya, zip64. Tarih hücreleri seri numarası olarak gelir. */
+   Tarih biçimli hücreler (Excel'in 28,6 -> 28.Haz yapması gibi) sayı değil "28.06.2025" metni olarak döner; böylece sayı sütununda yakalanır.
+   Desteklenmeyenler: .xls (eski ikili biçim), parolalı dosya, zip64. */
 (function (global) {
   var SINIR_GIRIS = 40e6; /* tek bir XML parçası açılmış hâlde en çok 40 MB (zip bombasına karşı) */
 
@@ -62,13 +63,39 @@
     return n - 1;
   }
 
+  /* biçim kodu tarih/saat mi? tırnak içi, köşeli parantez ve ters eğik çizgi kaçışları atılır */
+  function tarihKodu(kod) {
+    var k = String(kod).replace(/"[^"]*"/g, "").replace(/\[[^\]]*\]/g, "").replace(/\./g, "").replace(/_./g, "").replace(/\*./g, "");
+    return /[dmyhs]/i.test(k) && !/^general$/i.test(k.trim());
+  }
+  /* styles.xml -> {hücre stil sırası: true} tarih biçimli stiller */
+  function tarihStilleri(xml) {
+    var ozel = {}, re = /<numFmt\b([^>]*?)\/?>/g, m;
+    while ((m = re.exec(xml))) ozel[nitelik(m[1], "numFmtId")] = nitelik(m[1], "formatCode") || "";
+    var dizi = /<cellXfs\b[^>]*>([\s\S]*?)<\/cellXfs>/.exec(xml), out = {}, i = 0;
+    if (!dizi) return out;
+    var rx = /<xf\b([^>]*?)(?:\/>|>[\s\S]*?<\/xf>)/g, mx;
+    while ((mx = rx.exec(dizi[1]))) {
+      var id = nitelik(mx[1], "numFmtId") || "0", n = +id;
+      var yerlesik = (n >= 14 && n <= 22) || (n >= 27 && n <= 36) || (n >= 45 && n <= 47) || (n >= 50 && n <= 58);
+      if (yerlesik || (ozel[id] !== undefined && tarihKodu(ozel[id]))) out[i] = true;
+      i++;
+    }
+    return out;
+  }
+  function seriTarih(seri, t1904) {
+    var g = Math.floor(seri), t = new Date(Date.UTC(t1904 ? 1904 : 1899, t1904 ? 0 : 11, t1904 ? 1 : 30) + g * 86400000);
+    var p = function (n) { return (n < 10 ? "0" : "") + n; };
+    return p(t.getUTCDate()) + "." + p(t.getUTCMonth() + 1) + "." + t.getUTCFullYear();
+  }
+
   function ortakMetinler(xml) {
     var o = [], re = /<si\b[^>]*>([\s\S]*?)<\/si>|<si\b[^>]*\/>/g, m;
     while ((m = re.exec(xml))) o.push(m[1] ? metinParcalari(m[1]) : "");
     return o;
   }
 
-  function sayfaOku(xml, ortak) {
+  function sayfaOku(xml, ortak, tarihSt, t1904) {
     var satirlar = [], reS = /<row\b([^>]*?)(?:\/>|>([\s\S]*?)<\/row>)/g, ms, sonSat = 0;
     while ((ms = reS.exec(xml))) {
       var rn = nitelik(ms[1], "r"), si = rn ? +rn - 1 : sonSat; sonSat = si + 1;
@@ -80,7 +107,10 @@
         else if (t === "inlineStr") deger = metinParcalari(ic);
         else if (t === "str" || t === "e") deger = v ? xmlDecode(v[1]) : "";
         else if (t === "b") deger = v ? (v[1] === "1" ? "DOĞRU" : "YANLIŞ") : "";
-        else if (v && v[1] !== "") { var s = Number(v[1]); deger = isFinite(s) ? s : xmlDecode(v[1]); }
+        else if (v && v[1] !== "") {
+          var s = Number(v[1]), st = nitelik(mc[1], "s");
+          deger = !isFinite(s) ? xmlDecode(v[1]) : (st !== null && tarihSt[st] ? seriTarih(s, t1904) : s);
+        }
         while (satir.length < ci) satir.push("");
         satir[ci] = deger;
       }
@@ -95,7 +125,8 @@
     try { dizin = zipDizin(d); } catch (e) { return Promise.reject(e); }
     if (!dizin["xl/workbook.xml"]) return Promise.reject(new Error("Bu dosya bir Excel çalışma kitabı değil. Eski .xls ise .xlsx olarak kaydedin."));
     return Promise.all([metin(d, dizin["xl/workbook.xml"]), dizin["xl/_rels/workbook.xml.rels"] ? metin(d, dizin["xl/_rels/workbook.xml.rels"]) : Promise.resolve(""),
-      dizin["xl/sharedStrings.xml"] ? metin(d, dizin["xl/sharedStrings.xml"]) : Promise.resolve("")]).then(function (p) {
+      dizin["xl/sharedStrings.xml"] ? metin(d, dizin["xl/sharedStrings.xml"]) : Promise.resolve(""),
+      dizin["xl/styles.xml"] ? metin(d, dizin["xl/styles.xml"]) : Promise.resolve("")]).then(function (p) {
       var sayfalar = [], re = /<sheet\b([^>]*?)\/?>/g, m;
       while ((m = re.exec(p[0]))) sayfalar.push({ ad: nitelik(m[1], "name"), rid: nitelik(m[1], "r:id") });
       if (!sayfalar.length) throw new Error("Çalışma kitabında sayfa yok.");
@@ -104,7 +135,7 @@
       var yol = hedef ? (hedef.charAt(0) === "/" ? hedef.slice(1) : "xl/" + hedef) : "xl/worksheets/sheet1.xml";
       if (!dizin[yol]) throw new Error("Sayfa verisi bulunamadı (" + yol + ").");
       return metin(d, dizin[yol]).then(function (x) {
-        var satirlar = sayfaOku(x, ortakMetinler(p[2])).filter(function (r) { return r.some(function (h) { return String(h).trim() !== ""; }); });
+        var satirlar = sayfaOku(x, ortakMetinler(p[2]), tarihStilleri(p[3]), /<workbookPr\b[^>]*date1904="(1|true)"/.test(p[0])).filter(function (r) { return r.some(function (h) { return String(h).trim() !== ""; }); });
         return { satirlar: satirlar, sayfaAdi: sayfalar[0].ad, sayfaSayisi: sayfalar.length };
       });
     });

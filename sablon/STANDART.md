@@ -22,7 +22,7 @@ Kurallar
 - **Sayılar:** `1234,5`, `1.234,5` ve `1234.5` kabul edilir. Boş hücre = veri yok. `%` işareti veya birim yazmayın.
 - Tüm illeri (81) doldurmaya çalışın. Eksik il olursa uyarı verilir ve o ilde kart boş görünür.
 
-Boş şablon (81 il hazır): `sablon/kesit-bos-sablon.csv`
+Boş şablon (81 il hazır): `sablon/sablon-kesit.xlsx`. Zaman serisi (Türkiye): `sablon/sablon-zaman-serisi-turkiye.xlsx`. Şablonların ilk sayfası VERİ, ikincisi açıklama, üçüncüsü dolu örnektir.
 
 ## 2. Zaman serisi (Türkiye)
 
