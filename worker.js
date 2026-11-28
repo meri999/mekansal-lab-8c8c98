@@ -2,10 +2,9 @@
    Gizli değerler depoda yoktur; Cloudflare Secret olarak tutulur:
      PAROLA            enstitü ortak parolası
      OTURUM_ANAHTARI   çerez imzası için uzun rastgele metin
-   KV bağlaması: VERI (giriş denemesi sayacı, ileride yüklenen kartlar) */
+   KV bağlaması: VERI (yüklenen kartlar). Hatalı giriş denemesinde kilit YOKTUR (sahibinin kararıyla kaldırıldı). */
 
 const OTURUM_SN = 8 * 3600;
-const DENEME_SINIR = 5, DENEME_SN = 15 * 60;
 const enc = new TextEncoder();
 
 const json = (o, durum = 200, baslik = {}) =>
@@ -41,16 +40,8 @@ const CEREZ_OZ = "Path=/; HttpOnly; Secure; SameSite=Strict";
 
 async function giris(istek, env) {
   if (!env.PAROLA || !env.OTURUM_ANAHTARI) return json({ hata: "Giriş henüz kurulmadı." }, 503);
-  const ip = istek.headers.get("cf-connecting-ip") || "bilinmiyor";
-  const anah = "deneme:" + ip;
-  const say = env.VERI ? Number(await env.VERI.get(anah)) || 0 : 0;
-  if (say >= DENEME_SINIR) return json({ hata: "Çok fazla deneme. Biraz sonra yeniden deneyin." }, 429);
   let govde; try { govde = await istek.json(); } catch { return json({ hata: "Geçersiz istek." }, 400); }
-  if (!(await esit(String(govde.parola || ""), env.PAROLA))) {
-    if (env.VERI) await env.VERI.put(anah, String(say + 1), { expirationTtl: DENEME_SN });
-    return json({ hata: "Parola yanlış." }, 401);
-  }
-  if (env.VERI) await env.VERI.delete(anah);
+  if (!(await esit(String(govde.parola || ""), env.PAROLA))) return json({ hata: "Parola yanlış." }, 401);
   const bitis = Math.floor(Date.now() / 1000) + OTURUM_SN;
   const deger = bitis + "." + await imza(env.OTURUM_ANAHTARI, "oturum." + bitis);
   return json({ girisli: true }, 200, { "set-cookie": `oturum=${deger}; ${CEREZ_OZ}; Max-Age=${OTURUM_SN}` });
