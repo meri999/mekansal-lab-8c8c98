@@ -74,22 +74,22 @@
     var top = o.kolonlar.reduce(function (a, k) { return a + k.w; }, 0), ic = W - sol * 2, x = [], t = sol;
     o.kolonlar.forEach(function (k) { x.push(t); t += ic * k.w / top; });
     function kes(m, gen) { m = String(m); var kar = Math.floor(gen / 6.6); return m.length > kar ? m.slice(0, Math.max(1, kar - 1)) + "…" : m; }
-    var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + " " + H + '" width="' + W + '" height="' + H + '" font-family="Montserrat,Segoe UI,Arial,sans-serif"><rect width="' + W + '" height="' + H + '" fill="#fff"/>';
-    s += '<rect x="0" y="0" width="' + W + '" height="6" fill="#d8232a"/><text x="' + sol + '" y="40" font-size="22" font-weight="700" fill="#7b0828">' + esc(o.baslik) + '</text><text x="' + sol + '" y="64" font-size="13" fill="#555">' + esc(o.alt || "") + "</text>";
+    var s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + " " + H + '" width="' + W + '" height="' + H + '" font-family="Satoshi,Segoe UI,Arial,sans-serif"><rect width="' + W + '" height="' + H + '" fill="#fff"/>';
+    s += '<rect x="0" y="0" width="' + W + '" height="6" fill="#d1181e"/><text x="' + sol + '" y="40" font-size="22" font-weight="700" fill="#721530">' + esc(o.baslik) + '</text><text x="' + sol + '" y="64" font-size="13" fill="#555">' + esc(o.alt || "") + "</text>";
     s += '<line x1="' + sol + '" y1="' + (ust + 22) + '" x2="' + (W - sol) + '" y2="' + (ust + 22) + '" stroke="#bbb"/>';
     o.kolonlar.forEach(function (k, j) {
       var gen = ic * k.w / top - 10, ax = k.sag ? x[j] + gen : x[j];
-      s += '<text x="' + ax + '" y="' + (ust + 14) + '" font-size="11.5" font-weight="700" fill="#666" text-anchor="' + (k.sag ? "end" : "start") + '">' + esc(kes(k.ad, gen)) + "</text>";
+      s += '<text x="' + ax + '" y="' + (ust + 14) + '" font-size="11.5" font-weight="700" fill="#62626a" text-anchor="' + (k.sag ? "end" : "start") + '">' + esc(kes(k.ad, gen)) + "</text>";
     });
     o.satirlar.forEach(function (r, i) {
       var y = ust + 34 + i * sat + 18;
       if (i % 2) s += '<rect x="' + sol + '" y="' + (y - 18) + '" width="' + ic + '" height="' + sat + '" fill="#fafafa"/>';
       r.forEach(function (m, j) {
         var k = o.kolonlar[j], gen = ic * k.w / top - 10, ax = k.sag ? x[j] + gen : x[j], on = j === o.vurguKolon;
-        s += '<text x="' + ax + '" y="' + y + '" font-size="12.5" fill="' + (on ? "#7b0828" : "#222") + '"' + (on ? ' font-weight="700"' : "") + ' text-anchor="' + (k.sag ? "end" : "start") + '">' + esc(kes(m, gen)) + "</text>";
+        s += '<text x="' + ax + '" y="' + y + '" font-size="12.5" fill="' + (on ? "#721530" : "#222") + '"' + (on ? ' font-weight="700"' : "") + ' text-anchor="' + (k.sag ? "end" : "start") + '">' + esc(kes(m, gen)) + "</text>";
       });
     });
-    s += '<text x="' + sol + '" y="' + (H - 20) + '" font-size="11" fill="#777">' + esc(o.kaynak || "Kaynak: TÜİK; Enstitü Portal") + "</text></svg>";
+    s += '<text x="' + sol + '" y="' + (H - 20) + '" font-size="11" fill="#62626a">' + esc(o.kaynak || "Kaynak: TÜİK; Enstitü Portal") + "</text></svg>";
     return { svg: s, w: W, h: H };
   }
 

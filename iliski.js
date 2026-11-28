@@ -146,19 +146,20 @@
     var px = (mxx - mnx) * 0.04 || 1, py = (mxy - mny) * 0.06 || 1; mnx -= px; mxx += px; mny -= py; mxy += py;
     function sx(v) { return sol + (v - mnx) / (mxx - mnx) * (W - sol - sag); }
     function sy(v) { return Hh - alt - (v - mny) / (mxy - mny) * (Hh - alt - ust); }
-    var o = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + " " + Hh + '" role="img" aria-label="' + esc(gx.baslik + " ve " + gy.baslik + ", " + yil + ", " + k.n + " il serpilme grafiği") + '" font-family="Montserrat,Segoe UI,Arial,sans-serif">';
-    if (dis) o += '<rect width="' + W + '" height="' + Hh + '" fill="#fff"/><text x="' + sol + '" y="30" font-size="19" font-weight="700" fill="#7b0828">' + esc(gx.baslik + " ve " + gy.baslik) + '</text><text x="' + sol + '" y="52" font-size="13" fill="#555">' + k.n + " il, " + esc(yil) + " · Spearman ρ = " + isr(k.rho) + " (" + H.guc(k.rho) + (k.rho > 0 ? " pozitif" : " negatif") + ')</text>';
-    tikler(mnx, mxx, 6).forEach(function (t) { var x = sx(t); o += '<line x1="' + x.toFixed(1) + '" y1="' + ust + '" x2="' + x.toFixed(1) + '" y2="' + (Hh - alt) + '" stroke="#eee"/><text class="tikyazi" font-size="10.5" fill="#777" x="' + x.toFixed(1) + '" y="' + (Hh - alt + 15) + '" text-anchor="middle">' + tk(t) + "</text>"; });
-    tikler(mny, mxy, 5).forEach(function (t) { var y = sy(t); o += '<line x1="' + sol + '" y1="' + y.toFixed(1) + '" x2="' + (W - sag) + '" y2="' + y.toFixed(1) + '" stroke="#eee"/><text class="tikyazi" font-size="10.5" fill="#777" x="' + (sol - 6) + '" y="' + (y + 3.5).toFixed(1) + '" text-anchor="end">' + tk(t) + "</text>"; });
+    var o = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + " " + Hh + '" role="group" aria-label="' + esc(gx.baslik + " ve " + gy.baslik + ", " + yil + ", " + k.n + " il serpilme grafiği") + '" font-family="Satoshi,Segoe UI,Arial,sans-serif">';
+    if (dis) o += '<rect width="' + W + '" height="' + Hh + '" fill="#fff"/><text x="' + sol + '" y="30" font-size="19" font-weight="700" fill="#721530">' + esc(gx.baslik + " ve " + gy.baslik) + '</text><text x="' + sol + '" y="52" font-size="13" fill="#555">' + k.n + " il, " + esc(yil) + " · Spearman ρ = " + isr(k.rho) + " (" + H.guc(k.rho) + (k.rho > 0 ? " pozitif" : " negatif") + ')</text>';
+    tikler(mnx, mxx, 6).forEach(function (t) { var x = sx(t); o += '<line x1="' + x.toFixed(1) + '" y1="' + ust + '" x2="' + x.toFixed(1) + '" y2="' + (Hh - alt) + '" stroke="#eee"/><text class="tikyazi" font-size="10.5" fill="#62626a" x="' + x.toFixed(1) + '" y="' + (Hh - alt + 15) + '" text-anchor="middle">' + tk(t) + "</text>"; });
+    tikler(mny, mxy, 5).forEach(function (t) { var y = sy(t); o += '<line x1="' + sol + '" y1="' + y.toFixed(1) + '" x2="' + (W - sag) + '" y2="' + y.toFixed(1) + '" stroke="#eee"/><text class="tikyazi" font-size="10.5" fill="#62626a" x="' + (sol - 6) + '" y="' + (y + 3.5).toFixed(1) + '" text-anchor="end">' + tk(t) + "</text>"; });
     o += '<line x1="' + sol + '" y1="' + (Hh - alt) + '" x2="' + (W - sag) + '" y2="' + (Hh - alt) + '" stroke="#bbb"/><line x1="' + sol + '" y1="' + ust + '" x2="' + sol + '" y2="' + (Hh - alt) + '" stroke="#bbb"/>';
     if (S.d && k.dogru) {
       var a = k.dogru.a, b = k.dogru.b, x1 = Math.max(mnx, Math.min.apply(null, k.x)), x2 = Math.min(mxx, Math.max.apply(null, k.x));
-      o += '<line x1="' + sx(x1).toFixed(1) + '" y1="' + sy(a + b * x1).toFixed(1) + '" x2="' + sx(x2).toFixed(1) + '" y2="' + sy(a + b * x2).toFixed(1) + '" stroke="#7b0828" stroke-width="1.6" stroke-dasharray="6 4" opacity=".7"/>';
+      o += '<line x1="' + sx(x1).toFixed(1) + '" y1="' + sy(a + b * x1).toFixed(1) + '" x2="' + sx(x2).toFixed(1) + '" y2="' + sy(a + b * x2).toFixed(1) + '" stroke="#721530" stroke-width="1.6" stroke-dasharray="6 4" opacity=".7"/>';
     }
     var etk = H.aykirilar(k, 4); if (S.v && etk.indexOf(S.v) < 0) etk.push(S.v);
+    var ilkNokta = 0; k.x.forEach(function (v, i) { if (v < k.x[ilkNokta]) ilkNokta = i; });
     k.kodlar.forEach(function (kod, i) {
       var vur = kod === S.v;
-      o += '<circle class="nokta' + (vur ? " vur" : "") + '" data-i="' + i + '" cx="' + sx(k.x[i]).toFixed(1) + '" cy="' + sy(k.y[i]).toFixed(1) + '" r="' + (vur ? 7.5 : 5) + '" fill="' + (vur ? "#7b0828" : "#d8232a") + '" fill-opacity="' + (vur ? 1 : 0.55) + '" stroke="#fff" stroke-width="' + (vur ? 2 : 1) + '"/>';
+      o += '<circle class="nokta' + (vur ? " vur" : "") + '" tabindex="' + (i === ilkNokta ? 0 : -1) + '" role="img" aria-label="' + esc(ADI[kod] + ": " + say(k.x[i], gx) + "; " + say(k.y[i], gy)) + '" data-i="' + i + '" cx="' + sx(k.x[i]).toFixed(1) + '" cy="' + sy(k.y[i]).toFixed(1) + '" r="' + (vur ? 7.5 : 5) + '" fill="' + (vur ? "#721530" : "#d1181e") + '" fill-opacity="' + (vur ? 1 : 0.55) + '" stroke="#fff" stroke-width="' + (vur ? 2 : 1) + '"/>';
     });
     etk.forEach(function (kod) {
       var i = k.kodlar.indexOf(kod); if (i < 0) return; var x = sx(k.x[i]), y = sy(k.y[i]), sagda = x < W - 120;
@@ -166,7 +167,7 @@
     });
     o += '<text class="eksenyazi" font-size="12" fill="#444" x="' + ((sol + W - sag) / 2) + '" y="' + (Hh - alt + 38) + '" text-anchor="middle">' + esc(birimli(gx)) + "</text>";
     o += '<text class="eksenyazi" font-size="12" fill="#444" transform="translate(16,' + ((ust + Hh - alt) / 2) + ') rotate(-90)" text-anchor="middle">' + esc(birimli(gy)) + "</text>";
-    if (dis) o += '<text x="' + sol + '" y="' + (Hh - 14) + '" font-size="11" fill="#777">Kaynak: TÜİK; Enstitü Portal · İlişki nedensellik değildir.</text>';
+    if (dis) o += '<text x="' + sol + '" y="' + (Hh - 14) + '" font-size="11" fill="#62626a">Kaynak: TÜİK; Enstitü Portal · İlişki nedensellik değildir.</text>';
     return o + "</svg>";
   }
 
@@ -207,6 +208,19 @@
   $("sonuc").addEventListener("mouseover", function (e) {
     var c = e.target.closest && e.target.closest("circle.nokta"); if (!c || !SON || !SON.k) return; var i = +c.dataset.i, k = SON.k;
     ipucuGoster(e, "<b>" + esc(ADI[k.kodlar[i]]) + "</b><br>" + esc(SON.gx.baslik) + ": " + say(k.x[i], SON.gx) + "<br>" + esc(SON.gy.baslik) + ": " + say(k.y[i], SON.gy));
+  });
+  /* klavye: noktalar x sirasiyla ok tuslariyla gezilir; odak ipucunu gosterir */
+  $("sonuc").addEventListener("focusin", function (e) {
+    var c = e.target.closest && e.target.closest("circle.nokta"); if (!c || !SON || !SON.k) return; var i = +c.dataset.i, k = SON.k, r = c.getBoundingClientRect();
+    ipucuGoster({ clientX: r.right, clientY: r.bottom }, "<b>" + esc(ADI[k.kodlar[i]]) + "</b><br>" + esc(SON.gx.baslik) + ": " + say(k.x[i], SON.gx) + "<br>" + esc(SON.gy.baslik) + ": " + say(k.y[i], SON.gy));
+  });
+  $("sonuc").addEventListener("focusout", function (e) { if (e.target.closest && e.target.closest("circle.nokta")) ipucuGizle(); });
+  $("sonuc").addEventListener("keydown", function (e) {
+    var c = e.target.closest && e.target.closest("circle.nokta"); if (!c) return;
+    var d = Array.prototype.slice.call(c.parentNode.querySelectorAll("circle.nokta")).sort(function (a, b) { return a.cx.baseVal.value - b.cx.baseVal.value; }), i = d.indexOf(c), j;
+    if (e.key === "ArrowRight" || e.key === "ArrowUp") j = Math.min(d.length - 1, i + 1); else if (e.key === "ArrowLeft" || e.key === "ArrowDown") j = Math.max(0, i - 1);
+    else if (e.key === "Home") j = 0; else if (e.key === "End") j = d.length - 1; else return;
+    e.preventDefault(); c.tabIndex = -1; d[j].tabIndex = 0; d[j].focus();
   });
   $("sonuc").addEventListener("mousemove", function (e) { if (balon.style.display === "block") ipucuGoster(e, balon.innerHTML); });
   $("sonuc").addEventListener("mouseout", function (e) { if (e.target.closest && e.target.closest("circle.nokta")) ipucuGizle(); });
@@ -265,7 +279,7 @@
   }
 
   /* ---- mod 3: bir yerde zaman icinde ---- */
-  var ZAMAN_RENK = ["#d8232a", "#2b6f8a"];
+  var ZAMAN_RENK = ["#d1181e", "#2b6f8a"];
   function yilAraligi(a, b) {
     var y = {}; [a, b].forEach(function (g) { g.yillar.forEach(function (t) { if (/^\d{4}$/.test(t)) y[t] = 1; }); });
     return Object.keys(y).sort();
@@ -282,21 +296,21 @@
     var y0 = Math.min.apply(null, ty), y1 = Math.max.apply(null, ty);
     function sx(t) { return sol + (t - y0) / ((y1 - y0) || 1) * (W - sol - sag); }
     function sy(v) { return Hh - alt - v / 100 * (Hh - alt - ust); }
-    var o = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + " " + Hh + '" role="img" aria-label="' + esc(gx.baslik + " ve " + gy.baslik + " zaman serisi (her seri kendi aralığında 0-100)") + '" font-family="Montserrat,Segoe UI,Arial,sans-serif">';
+    var o = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + " " + Hh + '" role="img" aria-label="' + esc(gx.baslik + " ve " + gy.baslik + " zaman serisi (her seri kendi aralığında 0-100)") + '" font-family="Satoshi,Segoe UI,Arial,sans-serif">';
     if (dis) {
       var l1 = sol + 20 + birimli(gx).length * 6.6 + 24;
-      o += '<rect width="' + W + '" height="' + Hh + '" fill="#fff"/><text x="' + sol + '" y="28" font-size="18" font-weight="700" fill="#7b0828">' + esc(baslik.ust) + '</text><text x="' + sol + '" y="50" font-size="13" fill="#555">' + esc(baslik.alt) + '</text>'
+      o += '<rect width="' + W + '" height="' + Hh + '" fill="#fff"/><text x="' + sol + '" y="28" font-size="18" font-weight="700" fill="#721530">' + esc(baslik.ust) + '</text><text x="' + sol + '" y="50" font-size="13" fill="#555">' + esc(baslik.alt) + '</text>'
         + '<rect x="' + sol + '" y="61" width="14" height="4" fill="' + ZAMAN_RENK[0] + '"/><text x="' + (sol + 20) + '" y="67" font-size="12" fill="#333">' + esc(birimli(gx)) + '</text><rect x="' + l1 + '" y="61" width="14" height="4" fill="' + ZAMAN_RENK[1] + '"/><text x="' + (l1 + 20) + '" y="67" font-size="12" fill="#333">' + esc(birimli(gy)) + '</text>';
     }
-    [0, 25, 50, 75, 100].forEach(function (t) { o += '<line x1="' + sol + '" y1="' + sy(t) + '" x2="' + (W - sag) + '" y2="' + sy(t) + '" stroke="#eee"/><text class="tikyazi" font-size="10.5" fill="#777" x="' + (sol - 6) + '" y="' + (sy(t) + 3.5) + '" text-anchor="end">' + t + "</text>"; });
-    for (var t = y0; t <= y1; t++) if ((y1 - y0) <= 14 || t % 2 === (y1 % 2) || t === y0) o += '<text class="tikyazi" font-size="10.5" fill="#777" x="' + sx(t).toFixed(1) + '" y="' + (Hh - alt + 15) + '" text-anchor="middle">' + t + "</text>";
+    [0, 25, 50, 75, 100].forEach(function (t) { o += '<line x1="' + sol + '" y1="' + sy(t) + '" x2="' + (W - sag) + '" y2="' + sy(t) + '" stroke="#eee"/><text class="tikyazi" font-size="10.5" fill="#62626a" x="' + (sol - 6) + '" y="' + (sy(t) + 3.5) + '" text-anchor="end">' + t + "</text>"; });
+    for (var t = y0; t <= y1; t++) if ((y1 - y0) <= 14 || t % 2 === (y1 % 2) || t === y0) o += '<text class="tikyazi" font-size="10.5" fill="#62626a" x="' + sx(t).toFixed(1) + '" y="' + (Hh - alt + 15) + '" text-anchor="middle">' + t + "</text>";
     seri.forEach(function (q) {
       if (!q.p.length) return;
       var d = q.p.map(function (a, i) { var v = q.mx > q.mn ? (a[1] - q.mn) / (q.mx - q.mn) * 100 : 50; return (i ? "L" : "M") + sx(a[0]).toFixed(1) + " " + sy(v).toFixed(1); }).join(" ");
       o += '<path d="' + d + '" fill="none" stroke="' + q.c + '" stroke-width="2.4" stroke-linejoin="round"/>';
       q.p.forEach(function (a) { var v = q.mx > q.mn ? (a[1] - q.mn) / (q.mx - q.mn) * 100 : 50; o += '<circle cx="' + sx(a[0]).toFixed(1) + '" cy="' + sy(v).toFixed(1) + '" r="3" fill="' + q.c + '"/>'; });
     });
-    o += '<text class="eksenyazi" font-size="12" fill="#444" transform="translate(13,' + ((ust + Hh - alt) / 2) + ') rotate(-90)" text-anchor="middle">kendi aralığında (0–100)</text>' + (dis ? '<text x="' + sol + '" y="' + (Hh - 12) + '" font-size="11" fill="#777">Kaynak: TÜİK; Enstitü Portal · Seviyeler değil yıllık değişimler karşılaştırıldı.</text>' : "") + '</svg>';
+    o += '<text class="eksenyazi" font-size="12" fill="#444" transform="translate(13,' + ((ust + Hh - alt) / 2) + ') rotate(-90)" text-anchor="middle">kendi aralığında (0–100)</text>' + (dis ? '<text x="' + sol + '" y="' + (Hh - 12) + '" font-size="11" fill="#62626a">Kaynak: TÜİK; Enstitü Portal · Seviyeler değil yıllık değişimler karşılaştırıldı.</text>' : "") + '</svg>';
     return o;
   }
   var teyitSay = 0;
@@ -342,7 +356,7 @@
 
 
   /* ---- mod 4: gosterge agi ---- */
-  var KRENK = { nufus: "#7b0828", goc: "#d8232a", egitim: "#2b6f8a", isgucu: "#6a8f2a", kalkinma: "#c98a1b", yasam: "#8a5fa8", konut: "#a0522d", girisim: "#2f9e8f", uretim: "#556b2f", finans: "#b8860b", fiyat: "#cd5c5c", dis: "#4682b4", guven: "#777777" };
+  var KRENK = { nufus: "#721530", goc: "#d1181e", egitim: "#2b6f8a", isgucu: "#6a8f2a", kalkinma: "#c98a1b", yasam: "#8a5fa8", konut: "#a0522d", girisim: "#2f9e8f", uretim: "#556b2f", finans: "#b8860b", fiyat: "#cd5c5c", dis: "#4682b4", guven: "#777777" };
   var AGC = null, AGS = null, AGTEY = {}, agSay = 0, agSecili = 0;
   function agAd(g, n) { var m = g.baslik; return m.length > (n || 30) ? m.slice(0, (n || 30) - 1) + "…" : m; }
   function agBaglari() {
@@ -360,12 +374,12 @@
     dis_.sort(function (a, b) { var ga = byId[a], gb = byId[b]; return (KSIRA.indexOf(ga.konu) - KSIRA.indexOf(gb.konu)) || (ders[b] - ders[a]); });
     dis_.forEach(function (id, i) { var t = -Math.PI / 2 + 2 * Math.PI * i / dis_.length; poz[id] = { x: cx + R * Math.cos(t), y: cy + R * Math.sin(t), t: t }; });
     if (S.c && ids.indexOf(S.c) >= 0) poz[S.c] = { x: cx, y: cy, t: 0, merkez: true };
-    var o = '<svg xmlns="http://www.w3.org/2000/svg" id="agsvg" viewBox="0 0 ' + W + " " + Hh + '" role="img" aria-label="Gösterge ağı" font-family="Montserrat,Segoe UI,Arial,sans-serif">';
-    o += '<defs><marker id="okK" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#d8232a"/></marker><marker id="okM" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#2b6f8a"/></marker></defs>';
-    if (dis) o += '<rect width="' + W + '" height="' + Hh + '" fill="#fff"/><text x="28" y="34" font-size="20" font-weight="700" fill="#7b0828">' + esc((S.yer === "TR" ? "Türkiye" : ADI[S.yer]) + ": gösterge ağı") + '</text><text x="28" y="56" font-size="13" fill="#555">' + esc(S.b + "–" + S.s + " yıllık değişimleri · |ρ| ≥ " + f(S.e, 1) + (S.g ? " · 1 yıl gecikmeli bağlar dahil" : "") + (S.c ? " · merkez: " + byId[S.c].baslik : "")) + "</text>";
+    var o = '<svg xmlns="http://www.w3.org/2000/svg" id="agsvg" viewBox="0 0 ' + W + " " + Hh + '" role="img" aria-label="Gösterge ağı" font-family="Satoshi,Segoe UI,Arial,sans-serif">';
+    o += '<defs><marker id="okK" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#d1181e"/></marker><marker id="okM" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#2b6f8a"/></marker></defs>';
+    if (dis) o += '<rect width="' + W + '" height="' + Hh + '" fill="#fff"/><text x="28" y="34" font-size="20" font-weight="700" fill="#721530">' + esc((S.yer === "TR" ? "Türkiye" : ADI[S.yer]) + ": gösterge ağı") + '</text><text x="28" y="56" font-size="13" fill="#555">' + esc(S.b + "–" + S.s + " yıllık değişimleri · |ρ| ≥ " + f(S.e, 1) + (S.g ? " · 1 yıl gecikmeli bağlar dahil" : "") + (S.c ? " · merkez: " + byId[S.c].baslik : "")) + "</text>";
     sec.baglar.forEach(function (q, i) {
       var A = poz[q.a], B = poz[q.b]; if (!A || !B) return;
-      var kal = 1.2 + (Math.abs(q.rho) - S.e) / (1 - S.e + 1e-9) * 4.5, renk = q.rho > 0 ? "#d8232a" : "#2b6f8a", tey = AGTEY[i];
+      var kal = 1.2 + (Math.abs(q.rho) - S.e) / (1 - S.e + 1e-9) * 4.5, renk = q.rho > 0 ? "#d1181e" : "#2b6f8a", tey = AGTEY[i];
       var mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2, kx = cx + (mx - cx) * 0.45, ky = cy + (my - cy) * 0.45;
       var dx = B.x - kx, dy = B.y - ky, dl = Math.sqrt(dx * dx + dy * dy) || 1, ex = B.x - dx / dl * 9, ey = B.y - dy / dl * 9;
       var d = "M" + A.x.toFixed(1) + " " + A.y.toFixed(1) + " Q" + kx.toFixed(1) + " " + ky.toFixed(1) + " " + (q.gec ? ex.toFixed(1) + " " + ey.toFixed(1) : B.x.toFixed(1) + " " + B.y.toFixed(1));
@@ -375,15 +389,15 @@
       if (!dis) o += '<path class="bag-tik" data-i="' + i + '" d="' + d + '" fill="none" stroke="transparent" stroke-width="12" style="cursor:pointer"/>';
     });
     ids.forEach(function (id) {
-      var P = poz[id], g = byId[id], r = 5 + Math.min(7, (ders[id] || 0) * 0.9), sag = Math.cos(P.t) >= 0, renk = KRENK[g.konu] || "#777";
+      var P = poz[id], g = byId[id], r = 5 + Math.min(7, (ders[id] || 0) * 0.9), sag = Math.cos(P.t) >= 0, renk = KRENK[g.konu] || "#62626a";
       o += '<circle class="dugum" data-id="' + id + '" cx="' + P.x.toFixed(1) + '" cy="' + P.y.toFixed(1) + '" r="' + r.toFixed(1) + '" fill="' + renk + '" stroke="#fff" stroke-width="1.5" style="cursor:pointer"/>';
       var tx = P.merkez ? P.x : P.x + Math.cos(P.t) * (r + 6), ty = P.merkez ? P.y - r - 7 : P.y + Math.sin(P.t) * (r + 6) + 4;
       o += '<text class="dugum-ad" font-size="11" fill="#17171a" stroke="#fff" stroke-width="3" paint-order="stroke" x="' + tx.toFixed(1) + '" y="' + ty.toFixed(1) + '" text-anchor="' + (P.merkez ? "middle" : sag ? "start" : "end") + '"' + (P.merkez ? ' font-weight="700"' : "") + ">" + esc(agAd(g, 32)) + "</text>";
     });
     var lk = {}; ids.forEach(function (id) { lk[byId[id].konu] = 1; });
     var lj = Object.keys(lk), ly = Hh - (dis ? 44 : 14);
-    lj.forEach(function (k, j) { var x = 24 + j * 142; o += '<circle cx="' + (x + 4) + '" cy="' + (ly - 4) + '" r="4.5" fill="' + (KRENK[k] || "#777") + '"/><text x="' + (x + 12) + '" y="' + ly + '" font-size="10.5" fill="#555">' + esc(KONU[k] || k) + "</text>"; });
-    if (dis) o += '<text x="28" y="' + (Hh - 14) + '" font-size="11" fill="#777">Kaynak: TÜİK; Enstitü Portal · Kırmızı: birlikte, mavi: ters yönde hareket; kalınlık ilişkinin gücü.</text>';
+    lj.forEach(function (k, j) { var x = 24 + j * 142; o += '<circle cx="' + (x + 4) + '" cy="' + (ly - 4) + '" r="4.5" fill="' + (KRENK[k] || "#62626a") + '"/><text x="' + (x + 12) + '" y="' + ly + '" font-size="10.5" fill="#555">' + esc(KONU[k] || k) + "</text>"; });
+    if (dis) o += '<text x="28" y="' + (Hh - 14) + '" font-size="11" fill="#62626a">Kaynak: TÜİK; Enstitü Portal · Kırmızı: birlikte, mavi: ters yönde hareket; kalınlık ilişkinin gücü.</text>';
     return o + "</svg>";
   }
   function agTeyitHesapla(sec, bas) {

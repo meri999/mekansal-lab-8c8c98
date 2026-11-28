@@ -5,7 +5,7 @@
 .ornekler button{border:1px solid var(--cizgi);background:var(--kart);border-radius:16px;padding:4px 11px;font-size:12.5px;cursor:pointer;color:var(--yazi)}
 .ornekler button:hover{border-color:var(--vurgu);background:var(--vurgu-acik)}
 .kontrol select{min-width:210px;max-width:340px}
-.dugme{border:1px solid var(--vurgu);background:var(--vurgu);color:#fff;border-radius:18px;padding:7px 16px;font:600 13px var(--mont);cursor:pointer}
+.dugme{border:1px solid var(--vurgu);background:var(--vurgu);color:#fff;border-radius:30px;padding:7px 18px;font:600 13px var(--mont);cursor:pointer}
 .dugme.cizgi{background:var(--kart);color:var(--vurgu-koyu)}
 .dugme:disabled{opacity:.45;cursor:default}
 .ozet{margin-bottom:12px}
@@ -17,9 +17,10 @@
 .notlar li.onemli{border-left-color:var(--vurgu);color:var(--yazi)}
 .nokta{fill:var(--vurgu);fill-opacity:.5;stroke:#fff;stroke-width:1}
 .nokta:hover,.nokta:focus{fill-opacity:1;stroke:var(--bordo)}
+.nokta:focus-visible{outline:none;stroke:var(--yazi);stroke-width:3}
 .nokta.vur{fill:var(--bordo);fill-opacity:1;stroke:#fff;stroke-width:2}
 .eksenyazi{font-size:12px;fill:#444}
-.tikyazi{font-size:10.5px;fill:#777}
+.tikyazi{font-size:10.5px;fill:#62626a}
 .ilyazi{font-size:11px;fill:var(--yazi);paint-order:stroke;stroke:#fff;stroke-width:3px}
 details.tablo{margin-top:12px}
 details.tablo summary{cursor:pointer;font-size:13.5px;color:var(--vurgu-koyu)}
@@ -38,7 +39,7 @@ details.tablo summary{cursor:pointer;font-size:13.5px;color:var(--vurgu-koyu)}
 .cizgi-ad{display:inline-block;width:12px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
 .teyit{height:9px;background:#eee;border-radius:5px;overflow:hidden;margin-top:6px}
 .teyit i{display:block;height:100%;background:var(--vurgu)}
-.teyit.zayif i{background:repeating-linear-gradient(45deg,var(--vurgu) 0 4px,#f2b9bc 4px 8px)}
+.teyit.zayif i{background:#eeb3b6}
 .siralama th.sa{text-align:right}
 .izgara-iki{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);align-items:start}
 .izgara-iki .ozet{grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:0}

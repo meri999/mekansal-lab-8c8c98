@@ -14,8 +14,8 @@
   var KONU = { nufus: "Nüfus ve demografi", egitim: "Eğitim", goc: "Göç", kalkinma: "Kalkınma", yasam: "Yaşam koşulları",
     isgucu: "İşgücü", konut: "Konut", uretim: "Üretim", girisim: "Girişim", finans: "Finans", fiyat: "Fiyatlar", dis: "Dış ticaret", guven: "Güven" };
   var KSIRA = ["nufus", "goc", "egitim", "isgucu", "kalkinma", "yasam", "konut", "girisim", "uretim", "finans", "fiyat", "dis", "guven"];
-  var RENK = ["#7b0828", "#2b6f8a", "#d8232a", "#6a8f2a"];
-  var PAL5 = ["#f7e1e2", "#eeb3b6", "#e0777c", "#c63a41", "#7b0828"];
+  var RENK = ["#721530", "#2b6f8a", "#d1181e", "#6a8f2a"];
+  var PAL5 = ["#f7e1e2", "#eeb3b6", "#e0777c", "#c63a41", "#721530"];
 
   /* gostergeler: il duzeyli, yillik, ayni baslik tek kez; her biri icin il dagilimi ozeti */
   var seen = {}, NUF = null, OZ = [];
@@ -80,7 +80,7 @@
     var ust = r.filter(function (q) { return q.sira <= 10; }).length, alt = r.filter(function (q) { return q.sira > q.n - 10; }).length, en = r[0];
     var satir = r.map(function (q) {
       var uc = Math.abs(q.z) >= 1.5, o = q.o;
-      return "<tr><td>" + gAd(o) + '</td><td class="deger' + (uc ? " uc" : "") + '">' + say(q.deger, o.g) + '</td><td class="deger">' + (q.tr === null ? "—" : say(q.tr, o.g)) + '</td><td class="sa">' + q.sira + " / " + q.n + '</td><td class="sa ' + (q.z > 0 ? "yukari" : "asagi") + '">' + (q.z === null ? "—" : (q.z > 0 ? "▲ " : "▼ ") + sapma(q.z)) + "</td><td>" + serit(o, [kod]) + "</td></tr>";
+      return "<tr><td>" + gAd(o) + '</td><td class="deger' + (uc ? " uc" : "") + '">' + say(q.deger, o.g) + '</td><td class="deger"' + (q.tr === null ? ' title="Bu gösterge için Türkiye değeri yok"' : "") + '>' + (q.tr === null ? "—" : say(q.tr, o.g)) + '</td><td class="sa">' + q.sira + " / " + q.n + '</td><td class="sa ' + (q.z > 0 ? "yukari" : "asagi") + '">' + (q.z === null ? "—" : (q.z > 0 ? "▲ " : "▼ ") + sapma(q.z)) + "</td><td>" + serit(o, [kod]) + "</td></tr>";
     }).join("");
     s.innerHTML = '<h2 class="sonuc-baslik">' + esc(ADI[kod]) + ": " + r.length + " göstergede karne</h2>" +
       '<div class="karne-ust">' + kart("İlk 10 il arasında", ust + " gösterge", "en yüksek 10 il içinde") + kart("Son 10 il arasında", alt + " gösterge", "en düşük 10 il içinde") +

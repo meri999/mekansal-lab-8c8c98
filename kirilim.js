@@ -116,16 +116,16 @@
   }
 
   /* --- biçimler ----------------------------------------------------------- */
-  var RENKLER = ["#7b0828", "#d8232a", "#e8836f", "#e9b44c", "#7aa6b4", "#2b6f8a", "#4b4b6b", "#9a9a9a"];
+  var RENKLER = ["#721530", "#d1181e", "#e8836f", "#e9b44c", "#7aa6b4", "#2b6f8a", "#4b4b6b", "#9a9a9a"];
   function say(v) { return v.toLocaleString("tr-TR"); }
   function ond(v, n) { return v.toLocaleString("tr-TR", { minimumFractionDigits: n, maximumFractionDigits: n }); }
   function yuz(v) { return ond(v, 1) + "%"; }
-  function renkTek(o) { return "rgba(216,35,42," + (0.06 + Math.min(1, o) * 0.9).toFixed(3) + ")"; }
+  function renkTek(o) { return "rgba(114,21,48," + (0.06 + Math.min(1, o) * 0.9).toFixed(3) + ")"; }
   function renkFark(f, en) {
     var o = en ? Math.min(1, Math.abs(f) / en) : 0, a = (0.06 + o * 0.85).toFixed(3);
-    return f >= 0 ? "rgba(216,35,42," + a + ")" : "rgba(43,111,138," + a + ")";
+    return f >= 0 ? "rgba(114,21,48," + a + ")" : "rgba(43,111,138," + a + ")";
   }
-  function yazi(o) { return o > 0.55 ? "#fff" : "#1d1d1d"; }
+  function yazi(o) { return o > 0.62 ? "#fff" : "#17171a"; }
   function oranMi() { return tablo.olcu === "oran"; }
   function hm(v) { return oranMi() ? (v === null ? "–" : ond(v, 1)) : say(v || 0); }
   // Tamamen boş satır/sütundaki hücre "yayımlanmıyor" demektir: 0 değil "–"
@@ -293,11 +293,11 @@
     var g = "";
     for (var t = 0; t <= 4; t++) {
       var tv = ust * t / 4, yy = Y(tv);
-      g += '<line x1="' + ml + '" x2="' + (W - mr) + '" y1="' + yy + '" y2="' + yy + '" stroke="#e2e2e2"/><text x="' + (ml - 8) + '" y="' + (yy + 4) + '" font-size="12" text-anchor="end" fill="#666">' +
+      g += '<line x1="' + ml + '" x2="' + (W - mr) + '" y1="' + yy + '" y2="' + yy + '" stroke="#e6e4d8"/><text x="' + (ml - 8) + '" y="' + (yy + 4) + '" font-size="12" text-anchor="end" fill="#62626a">' +
         (durum.deger === "pay" && durum.sutun !== "_T" && !oranMi() ? ond(tv, 0) + "%" : (tv >= 1e6 ? ond(tv / 1e6, 1) + " mn" : say(Math.round(tv)))) + "</text>";
     }
     var adim = Math.ceil(n / 6), etk = "";
-    for (var i = 0; i < n; i += adim) etk += '<text x="' + X(i) + '" y="' + (Hh - 8) + '" font-size="12" text-anchor="middle" fill="#666">' + kacis(z.etiketler[i]) + "</text>";
+    for (var i = 0; i < n; i += adim) etk += '<text x="' + X(i) + '" y="' + (Hh - 8) + '" font-size="12" text-anchor="middle" fill="#62626a">' + kacis(z.etiketler[i]) + "</text>";
     var yollar = "", lej = "";
     ser.forEach(function (s, k) {
       var d = "", acik = false, renk = RENKLER[k % RENKLER.length];
@@ -330,7 +330,7 @@
     var liste = Object.keys(v).map(function (y) { return v[y]; }).filter(function (x) { return x !== null; }).sort(function (a, b) { return a - b; });
     if (!liste.length) return '<div class="bos">Bu seçim için veri yok.</div>';
     var esik = [0.2, 0.4, 0.6, 0.8].map(function (q) { return liste[Math.floor(q * liste.length)]; });
-    var renk = ["#fbeaea", "#f1b9bc", "#e5767b", "#d8232a", "#7b0828"];
+    var renk = ["#f6e6e8", "#f1b9bc", "#e5767b", "#d1181e", "#721530"];
     function sinif(x) { var i = 0; while (i < 4 && x >= esik[i]) i++; return i; }
     var k = Math.cos(39 * Math.PI / 180), bolgeMod = durum.roller.k1 === H.BOLGE;
     // Bölge kipinde il poligonları bağlı oldukları İBBS-2 bölgesinin değeriyle boyanır
@@ -448,8 +448,8 @@
     if (durum.cikti === "cubuk" || durum.cikti === "piramit") {
       lej = c.map(function (e, i) { return '<span class="r" style="--r:' + RENKLER[i % RENKLER.length] + '">' + kacis(e) + "</span>"; }).join("");
     } else if (durum.cikti === "matris") {
-      lej = trP ? '<span class="r" style="--r:rgba(216,35,42,.9)">Yer, Türkiye’den yüksek</span><span class="r" style="--r:rgba(43,111,138,.9)">Düşük</span>'
-        : '<span class="r" style="--r:rgba(216,35,42,.9)">Koyu: değer yüksek</span>';
+      lej = trP ? '<span class="r" style="--r:rgba(114,21,48,.9)">Yer, Türkiye’den yüksek</span><span class="r" style="--r:rgba(43,111,138,.9)">Düşük</span>'
+        : '<span class="r" style="--r:rgba(114,21,48,.9)">Koyu: değer yüksek</span>';
     }
     $("lejant").innerHTML = lej;
     notlar(paneller, kes.kesildi, tum.length);
