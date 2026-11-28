@@ -1,2 +1,3 @@
 veri/*.json
 veri/*.geojson
+.wrangler/

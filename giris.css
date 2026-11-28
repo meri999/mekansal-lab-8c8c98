@@ -150,3 +150,15 @@ a.oge:hover,a.oge:focus-visible{background:#f6efe8}
 /* aramaya "/" kısayolu ipucu (dokunmatik cihazda gizli) */
 .kisayol{flex:none;font:600 12px var(--govde);color:var(--mut);border:1px solid var(--line);border-radius:6px;padding:1px 7px;background:var(--bg)}
 @media(hover:none){.kisayol{display:none}}
+
+/* enstitü girişi */
+button.oge{display:block;width:100%;text-align:left;background:none;border:0;font:inherit;cursor:pointer;opacity:1}
+button.oge:hover,button.oge:focus-visible{background:#f6efe8}
+.oge[hidden]{display:none}
+#girisPenceresi{border:1px solid var(--line);border-radius:14px;padding:22px;width:min(360px,92vw);box-shadow:0 12px 40px #0004}
+#girisPenceresi::backdrop{background:#0006}
+#girisPenceresi h2{margin:0 0 4px;font-size:18px}
+#girisPenceresi p{margin:0 0 14px;font-size:13px;color:var(--mut)}
+#girisPenceresi input{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit}
+#girisPenceresi .hata{color:#7b0828;font-size:13px;min-height:18px;margin:8px 0 0}
+#girisPenceresi .satir{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}

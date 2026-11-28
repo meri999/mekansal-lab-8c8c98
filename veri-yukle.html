@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Veri yükle · Enstitü Portal</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="giris.css">
+<link rel="stylesheet" href="yukle.css">
+</head><body>
+<header id="ust"><a class="logo" href="./"><span class="kare" aria-hidden="true"><i></i><i class="b"></i></span>Enstitü Portal</a>
+<div class="sag"><a class="dugme cizgi" href="veri-portali.html">Veri portalına git</a><button type="button" class="dugme cizgi" id="cikis" hidden>Çıkış yap</button></div></header>
+
+<main id="yukle">
+<div id="kapi" hidden>
+  <h1>Giriş gerekli</h1>
+  <p>Veri yüklemek için enstitü girişi yapmalısınız.</p>
+  <p><a class="dugme" href="./">Ana sayfaya dön ve giriş yap</a></p>
+</div>
+
+<div id="icerik" hidden>
+<h1>Veri yükle</h1>
+<p class="lead">Elinizdeki tabloyu yükleyin; her sütundan bir gösterge kartı üretilir. Yüklenen kartları portalı açan herkes görür.</p>
+
+<details class="not" id="standart" open>
+  <summary>Dosya nasıl hazırlanmalı? (standart)</summary>
+  <div class="not-ic">
+    <p>Dosya <b>Excel (.xlsx)</b> veya <b>CSV</b> olabilir. Eski <code>.xls</code> dosyasını Excel'de <i>Farklı kaydet → Excel Çalışma Kitabı (.xlsx)</i> ile dönüştürün. <b>İlk satır başlık olmalı</b>; yalnız <b>ilk sayfa</b> okunur. İki veri türü vardır:</p>
+    <h3>1. Kesit verisi: il bazında tek gözlem</h3>
+    <table class="ornek"><thead><tr><th>il</th><th>Profesör [kişi]</th><th>Kadın akademisyen payı [%]</th></tr></thead>
+      <tbody><tr><td>Türkiye</td><td>42195</td><td>47,2</td></tr><tr><td>Adana</td><td>681</td><td>48,7</td></tr><tr><td>Adıyaman</td><td>149</td><td>34,1</td></tr></tbody></table>
+    <ul>
+      <li><b>İlk sütun <code>il</code></b>: il adı (Adana, Şanlıurfa…) veya kodu (TR100…). Büyük/küçük harf ve Türkçe karakter farkı sorun olmaz.</li>
+      <li><b>Her satır bir il</b>, tek gözlem. Gözlem yılını/dönemini dosyada değil, aşağıdaki formda yazarsınız.</li>
+      <li>Verinizi <b>il düzeyine kendiniz toplayın</b> (üniversite, ilçe, kurum düzeyindeki veri olduğu gibi yüklenmez).</li>
+      <li><b>Her sonraki sütun bir gösterge</b> (bir kart). Başlık <code>Gösterge adı [birim]</code> biçiminde: <code>[kişi]</code>, <code>[%]</code>, <code>[TL]</code>, <code>[‰]</code>… Aynı ad iki kez olamaz.</li>
+      <li><b><code>Türkiye</code> satırı isteğe bağlı.</b> Sayım göstergelerinde (kişi, adet) bölge ve Türkiye değeri illerin toplamından üretilebilir. <b>Oran ve pay göstergelerinde (%, ‰, kişi başı) toplama yanlış olur</b>; bu sütunlarda bölge boş kalır, Türkiye değerini siz <code>Türkiye</code> satırına yazın.</li>
+      <li>Sayılar <code>1234,5</code>, <code>1.234,5</code> veya <code>1234.5</code> olabilir. Boş hücre = veri yok. <code>%</code> işareti ya da birim yazmayın.<br><b>Dikkat:</b> Excel, <code>28,6</code> gibi bir değeri kendiliğinden <b>tarihe</b> (<code>28.Haz</code>) çevirebilir. Böyle bir hücre olursa yükleme durur ve hangi hücre olduğunu gösterir; o hücreyi “Sayı” biçimine çevirip değeri yeniden yazın.</li>
+      <li>81 ilin hepsini doldurmaya çalışın; eksik il uyarı verir.</li>
+    </ul>
+    <p><a href="sablon/kesit-bos-sablon.csv" download>Boş şablon (81 il hazır)</a> · <a href="sablon/kesit-ornek.csv" download>Örnek dosya</a></p>
+    <h3>2. Zaman serisi: Türkiye</h3>
+    <table class="ornek"><thead><tr><th>dönem</th><th>Gösterge adı [birim]</th><th>İkinci gösterge [%]</th></tr></thead>
+      <tbody><tr><td>2024-01</td><td>1234,5</td><td>12,3</td></tr><tr><td>2024-02</td><td>1300</td><td>12,9</td></tr><tr><td>2024-03</td><td>1410,7</td><td>13,4</td></tr></tbody></table>
+    <ul>
+      <li><b>İlk sütun <code>dönem</code></b>. Yıllık <code>2023</code>, aylık <code>2024-03</code> (veya <code>2024 Mart</code>, <code>03.2024</code>), üç aylık <code>2024-Q1</code>.</li>
+      <li>Dönemler <b>tek sıklıkta</b> olmalı; yıllık, aylık ve üç aylığı aynı dosyada karıştırmayın.</li>
+      <li><b>Her satır bir dönem</b>, aynı dönem iki kez olamaz, en az 2 dönem gerekir.</li>
+      <li>Sonraki sütunlar kesitteki gibi <code>Gösterge adı [birim]</code> başlıklı serilerdir; her sütun bir kart olur.</li>
+    </ul>
+    <p><a href="sablon/zaman-serisi-ornek.csv" download>Örnek dosya</a></p>
+    <p class="mut">Yükleme ekranı bu kuralları dosyanıza uygular. Hata varsa kartı yayınlamaz, nedenini gösterir.</p>
+  </div>
+</details>
+
+<section class="adim" id="a1"><h2><span>1</span>Veri türü</h2>
+  <label class="sec"><input type="radio" name="tur" value="kesit" checked><b>Kesit</b><small>il bazında tek gözlem</small></label>
+  <label class="sec"><input type="radio" name="tur" value="zaman"><b>Zaman serisi</b><small>Türkiye, dönemlere göre</small></label>
+</section>
+
+<section class="adim" id="a2"><h2><span>2</span>Dosya ve kart bilgileri</h2>
+  <div class="form">
+    <label>Dosya (Excel .xlsx veya CSV)<input type="file" id="dosya" accept=".xlsx,.csv,.txt,.tsv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
+    <label id="donemEt">Gözlem dönemi<input type="text" id="donem" placeholder="örn. 2025" inputmode="numeric"></label>
+    <label>Konu<select id="konu"></select></label>
+    <label>Grup (alt başlık)<input type="text" id="grup" placeholder="örn. Yükseköğretim"></label>
+    <label>Kaynak<input type="text" id="kaynak" placeholder="örn. YÖK"></label>
+    <label>Not (isteğe bağlı)<input type="text" id="not" placeholder="Kartın altında görünecek açıklama"></label>
+    <label id="bolgeEt">Sayım göstergelerinde bölge ve Türkiye değeri
+      <select id="bolge"><option value="topla">İllerin toplamından üret</option><option value="yok">Üretme (yalnız il)</option></select></label>
+  </div>
+  <p class="durum" id="dosyaDurum" role="status"></p>
+</section>
+
+<section class="adim" id="a3" hidden><h2><span>3</span>Önizleme</h2>
+  <div id="genelHata" class="kutu hata" hidden></div>
+  <div id="kartlar"></div>
+</section>
+
+<section class="adim" id="a4" hidden><h2><span>4</span>Yayınla</h2>
+  <p id="ozet"></p>
+  <button type="button" class="dugme" id="yayinla">Yayınla</button>
+  <p class="durum" id="yayinDurum" role="status"></p>
+</section>
+
+<section class="adim" id="a5"><h2><span>✓</span>Yüklenen kartlar</h2>
+  <div id="yuklenenler"><p class="mut">Yükleniyor…</p></div>
+</section>
+</div>
+</main>
+
+<script src="veri/veri.js"></script>
+<script src="yukle-hesap.js"></script>
+<script src="xlsx-oku.js"></script>
+<script src="yukle.js"></script>
+</body></html>

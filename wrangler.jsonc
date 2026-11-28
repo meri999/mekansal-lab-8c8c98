@@ -1,0 +1,13 @@
+{
+  "name": "portal-lab",
+  "main": "worker.js",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  "kv_namespaces": [
+    { "binding": "VERI", "id": "44ace0ae85514bd0803adb1c225cd150" }
+  ]
+}

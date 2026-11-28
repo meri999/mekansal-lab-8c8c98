@@ -7,7 +7,7 @@
 <header id="ust"><a class="logo" href="./"><span class="kare" aria-hidden="true"><i></i><i class="b"></i></span>Enstitü Portal</a>
 <div class="sag"><a class="dugme cizgi" href="veri-portali.html">Veri portalına git</a>
 <div class="menu"><button type="button" class="dugme" id="girisDugme" aria-haspopup="true" aria-expanded="false" aria-controls="girisMenu">Giriş yap ▾</button>
-<div id="girisMenu" class="acilir" hidden><div class="oge" aria-disabled="true"><b>Enstitü girişi</b><small>Enstitü çalışanları için · yakında</small></div><div class="oge" aria-disabled="true"><b>Üye girişi</b><small>Üyeler ve kayıtlı kullanıcılar · yakında</small></div></div></div></div></header>
+<div id="girisMenu" class="acilir" hidden><button type="button" class="oge" id="enstituGiris"><b>Enstitü girişi</b><small>Enstitü çalışanları için</small></button><a class="oge" id="yukleBag" href="veri-yukle.html" hidden><b>Veri yükle</b><small>Elle veri ekle, kart üret</small></a><button type="button" class="oge" id="enstituCikis" hidden><b>Çıkış yap</b><small>Enstitü oturumunu kapat</small></button><div class="oge" aria-disabled="true"><b>Üye girişi</b><small>Üyeler ve kayıtlı kullanıcılar · yakında</small></div></div></div></div></header>
 <main id="icerik">
 <div id="kahraman"><p class="hata">Yükleniyor…</p></div>
 <noscript><p class="hata">Haritanın ve aramanın çalışması için JavaScript gerekir. Araçlara aşağıdaki bağlantılardan ulaşabilirsiniz.</p></noscript>
@@ -42,5 +42,7 @@ document.addEventListener("keydown",function(e){if(e.key==="Escape")P.forEach(fu
 <script src="veri/harita_il.js?v=20261126192410"></script>
 <script src="veri/giris.js?v=20261126192410"></script>
 <script src="giris-hesap.js?v=20261125094839"></script>
+<script src="manuel.js"></script>
+<script src="oturum.js"></script>
 <script src="giris.js?v=20261125094839"></script>
 </body></html>

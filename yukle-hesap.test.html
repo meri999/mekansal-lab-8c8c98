@@ -1,0 +1,47 @@
+<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><title>test</title></head><body><pre id="o"></pre>
+<script src="veri/veri.js"></script><script src="yukle-hesap.js"></script>
+<script>
+var out=[],bad=0;
+function t(ad,f){try{var r=f();out.push((r===true?"OK   ":"FAIL ")+ad+(r===true?"":" -> "+r));if(r!==true)bad++}catch(e){out.push("FAIL "+ad+" -> "+e.message);bad++}}
+var Y=window.YukleHesap,yer=VERI.yerler,il=yer.filter(function(y){return y.duzey==="il"}),ix=Y.yerIndeksi(yer,{});
+var T={tur:"tr_seri",baslik:"T",konu:"x",birim:"y"},U={bicim:"uzun",yerSutun:-1,donemSutun:0,degerSutun:1};
+t("sayi tr",function(){return Y.sayiOku("1.234,5")===1234.5});
+t("sayi en",function(){return Y.sayiOku("1,234.5")===1234.5});
+t("sayi yuzde",function(){return Y.sayiOku("%12,3")===12.3});
+t("sayi bos",function(){return Y.sayiOku("-")===null&&Y.sayiOku("")===null});
+t("sayi binlik",function(){return Y.sayiOku("86.092.168")===86092168});
+t("donem Q",function(){return Y.donemOku("2024Q1").d==="2024-Q1"});
+t("donem ay adi",function(){return Y.donemOku("2024 Mart").d==="2024-03"});
+t("donem 03.2024",function(){return Y.donemOku("03.2024").d==="2024-03"});
+t("yer: buyuk harf",function(){return Y.yerEsle("ŞANLIURFA",ix)==="TRC21"});
+t("yer: kod",function(){return Y.yerEsle("tr100",ix)==="TR100"});
+t("yer: Turkiye",function(){return Y.yerEsle("Türkiye",ix)==="TR"});
+var csv="İl;2021;2022;2023\n"+il.map(function(y,i){return y.ad_tr+";"+((i+1)*10)+",5;"+((i+1)*11)+";"+((i+1)*12)}).join("\n")+"\n";
+var s=Y.csvAyristir(csv),ta=Y.tani(s,yer),r=Y.kartUret(Y.kayitlar(s,ta),{tur:"il_yil",baslik:"D",konu:"nufus",birim:"kişi",ondalik:0,bolge:"topla"},yer);
+t("tani: genis il_yil",function(){return ta.bicim==="genis"&&ta.tur==="il_yil"&&ta.yerSutun===0&&ta.donemSutunlari.length===3||JSON.stringify(ta)});
+t("il kart: 81 il + 12 bolge + TR",function(){return Object.keys(r.kart.veri).length===94||Object.keys(r.kart.veri).length});
+t("TR = il toplami",function(){return r.kart.veri.TR[0]===33250.5||r.kart.veri.TR[0]});
+t("Turkiye aylik: tani",function(){var q=Y.tani(Y.csvAyristir("Ay,Değer\n2024-01,1\n2024-02,2\n"),yer);return q.tur==="tr_seri"&&q.bicim==="uzun"||JSON.stringify(q)});
+t("Turkiye aylik: kart",function(){var k=Y.kartUret(Y.kayitlar(Y.csvAyristir('Ay,Değer\n2024-01,"1.234,5"\n2024-02,1300\n'),U),T,yer).kart;return k&&k.sik==="M"&&k.sadece_tr&&k.veri.TR[0]===1234.5||"kart yok"});
+t("Turkiye yillik genis tek satir",function(){var q=Y.tani(Y.csvAyristir("G;2020;2021;2022\nX;1;2;3"),yer);return q.tur==="tr_seri"&&q.bicim==="genis"||JSON.stringify(q)});
+t("karisik siklik reddedilir",function(){return !Y.kartUret(Y.kayitlar(Y.csvAyristir("d;v\n2024;1\n2024-03;2"),U),T,yer).kart});
+t("yinelenen donem reddedilir",function(){return !Y.kartUret(Y.kayitlar(Y.csvAyristir("d;v\n2024;1\n2024;2"),U),T,yer).kart});
+t("zorunlu alan",function(){var q=Y.kartUret([],{tur:"il_yil"},yer);return !q.kart&&q.hata.length>0});
+t("sema: mevcut gosterge anahtarlari kapsanir",function(){var m=Object.keys(VERI.gostergeler[0]).filter(function(k){return k!=="veri"&&k!=="yillar"}),n=Object.keys(Y.kartUret(Y.kayitlar(Y.csvAyristir("d;v\n2023;1\n2024;2"),U),T,yer).kart);return m.every(function(k){return n.indexOf(k)>=0})||m.filter(function(k){return n.indexOf(k)<0}).join()});
+var AK=Y.csvAyristir("il;Profesör [kişi];Kadın payı [%]\nTürkiye;100;47,2\n"+il.map(function(y,i){return y.ad_tr+";"+(i+1)+";"+(40+i%10)+",5"}).join("\n"));
+var SK=Y.standartKartlar(AK,"kesit",{donem:"2025",konu:"egitim",bolge:"topla"},yer);
+t("baslik [birim] ayrilir",function(){var b=Y.baslikAyir("Kadın payı [%]");return b.baslik==="Kadın payı"&&b.birim==="%"});
+t("kesit: her sutun bir kart",function(){return SK.kartlar.length===2&&SK.kartlar.every(function(k){return k.kart})||JSON.stringify(SK.genel)});
+t("kesit: tek donem",function(){var k=SK.kartlar[0].kart;return k.yillar.length===1&&k.yillar[0]==="2025"&&k.veri.TR.length===1});
+t("kesit: sayim bolgesi toplanir, TR satiri korunur",function(){var k=SK.kartlar[0].kart;return k.veri.TR[0]===100&&k.veri.TR1[0]>0||"TR/TR1"});
+t("kesit: oran sutununda bolge uretilmez",function(){var k=SK.kartlar[1].kart;return k.birim==="%"&&k.veri.TR1===undefined&&k.ondalik===1||"oran"});
+t("kesit: ilk sutun il degilse hata",function(){return Y.standartKartlar(Y.csvAyristir("Şehir;A [x]\nAdana;1"),"kesit",{donem:"2025"},yer).genel.length===1});
+t("kesit: donem yoksa hata",function(){return Y.standartKartlar(AK,"kesit",{donem:""},yer).genel.length===1});
+t("kesit: ayni gosterge adi iki kez hata",function(){return Y.standartKartlar(Y.csvAyristir("il;A [x];A [y]\nAdana;1;2"),"kesit",{donem:"2025"},yer).genel.length>0});
+var ZK=Y.standartKartlar(Y.csvAyristir("dönem;A [TL];B [%]\n2024-01;1;2\n2024-02;3;4"),"zaman",{konu:"fiyat"},yer);
+t("zaman: iki seri iki kart, aylik",function(){return ZK.kartlar.length===2&&ZK.kartlar[0].kart.sik==="M"&&ZK.kartlar[0].kart.sadece_tr&&ZK.kartlar[1].kart.veri.TR[1]===4||JSON.stringify(ZK)});
+t("zaman: ilk sutun donem degilse hata",function(){return Y.standartKartlar(Y.csvAyristir("il;A [x]\nAdana;1"),"zaman",{},yer).genel.length===1});
+t("okunamayan hucre (tarihe donmus sayi) yayini durdurur",function(){var q=Y.standartKartlar(Y.csvAyristir("il;A [%]\nAdana;48,7\nHakkari;28.Haz"),"kesit",{donem:"2025",konu:"x"},yer).kartlar[0];return !q.kart&&/28\.Haz/.test(q.hata.join())||JSON.stringify(q)});
+t("bilincli bos isaretler (-, x, ..) hata sayilmaz",function(){var q=Y.standartKartlar(Y.csvAyristir("il;A [kişi]\nAdana;5\nAnkara;-\nİzmir;x\nBursa;..\nVan;"),"kesit",{donem:"2025",konu:"x"},yer).kartlar[0];return !!q.kart||JSON.stringify(q.hata)});
+document.getElementById("o").textContent=out.join("\n")+"\n\n"+(bad?bad+" HATA":"HEPSI TAMAM");document.title=bad?"FAIL":"PASS";
+</script></body></html>
