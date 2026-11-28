@@ -14,9 +14,15 @@
   function tur() { var r = document.querySelector('input[name="tur"]:checked'); return r ? r.value : ""; }
   var TUR_AD = { zaman: "1- Zaman serisi · Türkiye geneli", panel: "2- Zaman serisi · il il", kesit: "3- Kesit veri · tek yıl, il il" };
   function turAdi(g) { return g.sadece_tr ? "Zaman serisi · Türkiye" : g.yillar.length > 1 ? "Zaman serisi · il il" : "Kesit"; }
+  /* İki ortamda çalışır. window.PORTAL_API boşsa sayfa Worker ile aynı adrestedir ve giriş HttpOnly çerezle yürür (lab).
+     Doluysa (enstitü sitesi) istekler o adrese gider ve giriş, tarayıcı oturumunda tutulan jetonla yürür; çerez kullanılmaz. */
+  var TABAN = window.PORTAL_API || "", JETON = "portalJeton";
+  function jeton() { try { return sessionStorage.getItem(JETON) || ""; } catch (e) { return ""; } }
   function api(yol, yontem, govde) {
-    return fetch(yol, { method: yontem || "GET", credentials: "same-origin", cache: "no-store", headers: govde ? { "content-type": "application/json" } : {}, body: govde ? JSON.stringify(govde) : undefined })
-      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, durum: r.status, j: j }; }); });
+    var h = govde ? { "content-type": "application/json" } : {}, j = TABAN ? jeton() : "";
+    if (j) h.authorization = "Bearer " + j;
+    return fetch(TABAN + yol, { method: yontem || "GET", credentials: TABAN ? "omit" : "same-origin", cache: "no-store", headers: h, body: govde ? JSON.stringify(govde) : undefined })
+      .then(function (r) { return r.json().then(function (j2) { return { ok: r.ok, durum: r.status, j: j2 }; }); });
   }
 
   /* Enstitü sitesinden (?k=e) gelen kişi için "geri dön" bağlantıları o siteye gider; lab ana sayfası gösterilmez. */
@@ -33,16 +39,19 @@
   api("/api/ben").then(function (r) {
     if (r.j && r.j.girisli) { $("icerik").hidden = false; $("cikis").hidden = false; listele(); }
     else { $("kapi").hidden = false; $("kapiParola").focus(); }
-  }, function () { $("kapi").hidden = false; $("kapiMesaj").textContent = "Sunucuya ulaşılamadı. Bu sayfa yalnızca yayındaki sitede çalışır."; $("kapiForm").hidden = true; });
+  }, function () { $("kapi").hidden = false; $("kapiMesaj").textContent = "Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edip sayfayı yenileyin."; $("kapiForm").hidden = true; });
   $("kapiForm").addEventListener("submit", function (e) {
     e.preventDefault();
     var g = $("kapiGonder"); g.disabled = true; $("kapiHata").textContent = "";
     api("/api/giris", "POST", { parola: $("kapiParola").value }).then(function (r) {
-      if (r.ok) location.reload();
+      if (r.ok) { if (TABAN && r.j && r.j.jeton) { try { sessionStorage.setItem(JETON, r.j.jeton); } catch (e) { /* oturum saklanamadı */ } } location.reload(); }
       else { g.disabled = false; $("kapiHata").textContent = (r.j && r.j.hata) || "Giriş yapılamadı."; $("kapiParola").select(); }
     }, function () { g.disabled = false; $("kapiHata").textContent = "Sunucuya ulaşılamadı."; });
   });
-  $("cikis").addEventListener("click", function () { api("/api/cikis", "POST", {}).then(function () { location.href = DON; }); });
+  $("cikis").addEventListener("click", function () {
+    var bitir = function () { try { sessionStorage.removeItem(JETON); } catch (e) { /* yok say */ } location.href = DON; };
+    api("/api/cikis", "POST", {}).then(bitir, bitir);
+  });
 
   /* ---- form ---- */
   /* Konu / alt başlık listeleri sitenin kendi verisinden gelir (veri.js + daha önce yüklenen kartlar); elle yazılmaz.

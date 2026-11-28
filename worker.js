@@ -28,13 +28,25 @@ function cerez(istek, ad) {
   return m ? m[1] : null;
 }
 
-export async function girisliMi(istek, env) {
-  const c = cerez(istek, "oturum");
+/* Oturum iki yoldan taşınır: aynı adresteki sayfalar (lab) HttpOnly çerezle, başka adresteki enstitü sitesi
+   "Authorization: Bearer <jeton>" ile. İkisi de aynı imzalı değerdir (bitiş.imza). */
+async function degerGecerli(c, env) {
   if (!c || !env.OTURUM_ANAHTARI) return false;
   const [bitis, im] = c.split(".");
   if (!/^\d+$/.test(bitis || "") || Number(bitis) < Date.now() / 1000) return false;
   return esit(im || "", await imza(env.OTURUM_ANAHTARI, "oturum." + bitis));
 }
+function jetonOku(istek) {
+  const m = /^Bearer ([0-9]+\.[0-9a-f]+)$/.exec(istek.headers.get("authorization") || "");
+  return m ? m[1] : null;
+}
+export async function girisliMi(istek, env) {
+  return (await degerGecerli(cerez(istek, "oturum"), env)) || (await degerGecerli(jetonOku(istek), env));
+}
+
+/* Başka adresten (enstitü sitesi) çağrıya izin verilen kökenler. env.KOKENLER virgüllü liste olabilir (yerel deneme için). */
+const kokenler = env => String(env.KOKENLER || "https://meri999.github.io").split(",").map(x => x.trim()).filter(Boolean);
+const izinliKoken = (istek, env) => { const o = istek.headers.get("origin"); return o && kokenler(env).includes(o) ? o : null; }
 
 const CEREZ_OZ = "Path=/; HttpOnly; Secure; SameSite=Strict";
 
@@ -44,7 +56,8 @@ async function giris(istek, env) {
   if (!(await esit(String(govde.parola || ""), env.PAROLA))) return json({ hata: "Parola yanlış." }, 401);
   const bitis = Math.floor(Date.now() / 1000) + OTURUM_SN;
   const deger = bitis + "." + await imza(env.OTURUM_ANAHTARI, "oturum." + bitis);
-  return json({ girisli: true }, 200, { "set-cookie": `oturum=${deger}; ${CEREZ_OZ}; Max-Age=${OTURUM_SN}` });
+  /* Jeton yalnız izinli bir başka siteden (enstitü sitesi) gelen girişte JSON'a konur; lab sayfaları çerezle çalışır ve jeton görmez. */
+  return json(izinliKoken(istek, env) ? { girisli: true, jeton: deger } : { girisli: true }, 200, { "set-cookie": `oturum=${deger}; ${CEREZ_OZ}; Max-Age=${OTURUM_SN}` });
 }
 
 /* ---- elle yüklenen kartlar (KV anahtarı "manuel") ----
@@ -116,20 +129,31 @@ async function manuelSil(istek, env, id) {
   return json({ silinen: id, toplam: kalan.length });
 }
 
-export default {
-  async fetch(istek, env) {
-    const u = new URL(istek.url);
+async function isle(istek, env, u) {
     if (u.pathname === "/api/giris" && istek.method === "POST") return giris(istek, env);
     if (u.pathname === "/api/cikis" && istek.method === "POST")
       return json({ girisli: false }, 200, { "set-cookie": `oturum=; ${CEREZ_OZ}; Max-Age=0` });
     if (u.pathname === "/api/ben") return json({ girisli: await girisliMi(istek, env) });
     if (u.pathname === "/api/manuel" && istek.method === "GET")
       /* önbellek yok: yayından hemen sonra görünmeli. Okuma herkese açıktır; enstitü sitesi (başka adres) de okuyabilsin diye CORS açık.
-         Yazma ve silme açık değildir: çerez gerektirir ve çerez SameSite=Strict olduğundan başka sitelerden kullanılamaz. */
+         Yazma ve silme açık değildir: çerez ya da imzalı jeton gerektirir; CORS izni yalnız izinli kökenlere (enstitü sitesi) verilir. */
       return json({ kartlar: await manuelOku(env) }, 200, { "access-control-allow-origin": "*" });
     if (u.pathname === "/api/yukle" && istek.method === "POST") return manuelYukle(istek, env);
     if (u.pathname === "/api/manuel" && istek.method === "DELETE") return manuelSil(istek, env, u.searchParams.get("id") || "");
-    if (u.pathname.startsWith("/api/")) return json({ hata: "Bulunamadı." }, 404);
-    return env.ASSETS.fetch(istek);
+    return json({ hata: "Bulunamadı." }, 404);
+}
+
+export default {
+  /* /api/* yanıtlarına, izinli bir kökenden gelen isteklerde CORS başlıkları eklenir; OPTIONS ön isteği burada karşılanır. */
+  async fetch(istek, env) {
+    const u = new URL(istek.url);
+    if (!u.pathname.startsWith("/api/")) return env.ASSETS.fetch(istek);
+    const koken = izinliKoken(istek, env);
+    const cors = koken ? { "access-control-allow-origin": koken, "vary": "Origin", "access-control-allow-headers": "authorization, content-type",
+      "access-control-allow-methods": "GET, POST, DELETE, OPTIONS", "access-control-max-age": "600" } : {};
+    if (istek.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+    const yanit = await isle(istek, env, u);
+    for (const [k, v] of Object.entries(cors)) if (!yanit.headers.has(k)) yanit.headers.set(k, v);
+    return yanit;
   }
 };
