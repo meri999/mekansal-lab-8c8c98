@@ -43,5 +43,28 @@ t("zaman: iki seri iki kart, aylik",function(){return ZK.kartlar.length===2&&ZK.
 t("zaman: ilk sutun donem degilse hata",function(){return Y.standartKartlar(Y.csvAyristir("il;A [x]\nAdana;1"),"zaman",{},yer).genel.length===1});
 t("okunamayan hucre (tarihe donmus sayi) yayini durdurur",function(){var q=Y.standartKartlar(Y.csvAyristir("il;A [%]\nAdana;48,7\nHakkari;28.Haz"),"kesit",{donem:"2025",konu:"x"},yer).kartlar[0];return !q.kart&&/28\.Haz/.test(q.hata.join())||JSON.stringify(q)});
 t("bilincli bos isaretler (-, x, ..) hata sayilmaz",function(){var q=Y.standartKartlar(Y.csvAyristir("il;A [kişi]\nAdana;5\nAnkara;-\nİzmir;x\nBursa;..\nVan;"),"kesit",{donem:"2025",konu:"x"},yer).kartlar[0];return !!q.kart||JSON.stringify(q.hata)});
+var PS={konu:"egitim",grup:"Yükseköğretim",baslik:"Akademisyen sayısı",birim:"kişi",bolge:"topla"};
+var PA=Y.csvAyristir("il;2021;2022;2023\n"+il.map(function(y,i){return y.ad_tr+";"+(i+1)+";"+((i+1)*2)+";"+((i+1)*3)}).join("\n"));
+var PK=Y.standartKartlar(PA,"panel",PS,yer);
+function pG(csv,sec){return Y.standartKartlar(Y.csvAyristir(csv),"panel",sec||PS,yer).genel.join(" | ")}
+t("panel: tek kart, 3 yil, ad ve birim formdan",function(){var k=PK.kartlar[0]&&PK.kartlar[0].kart;return PK.kartlar.length===1&&k&&k.baslik==="Akademisyen sayısı"&&k.birim==="kişi"&&k.yillar.join()==="2021,2022,2023"&&!k.sadece_tr&&k.sik===null||JSON.stringify(PK.genel)+JSON.stringify(PK.kartlar.map(function(x){return x.hata}))});
+t("panel: 81 il + 12 bolge + TR",function(){return Object.keys(PK.kartlar[0].kart.veri).length===94||Object.keys(PK.kartlar[0].kart.veri).length});
+t("panel: TR her yil illerin toplami",function(){var n=il.length,v=PK.kartlar[0].kart.veri.TR,top=n*(n+1)/2;return v[0]===top&&v[1]===top*2&&v[2]===top*3||v.join()});
+t("panel: oran biriminde bolge uretilmez",function(){var q=Y.standartKartlar(PA,"panel",{konu:"egitim",grup:"x",baslik:"Pay",birim:"%",bolge:"topla"},yer).kartlar[0].kart;return !!q&&q.veri.TR1===undefined&&q.veri.TR===undefined||"bolge uretildi"});
+t("panel: yil olmayan sutun basligi (Toplam) anlasilir hata",function(){var g=pG("il;2021;2022;Toplam\nAdana;1;2;3");return /Yıl olmayan sütunlar: D \(“Toplam”\)/.test(g)||g});
+t("panel: aylik baslik reddedilir, nedeni soylenir",function(){var g=pG("il;2024-01;2024-02\nAdana;1;2");return /yalnız yıllık/.test(g)||g});
+t("panel: kartin adi ve birimi zorunlu",function(){var g=pG("il;2021;2022\nAdana;1;2",{konu:"egitim"});return /Kartın adını yazın/.test(g)&&/Birimi seçin/.test(g)||g});
+t("panel: ilk hucre il degilse ne yapilacagi yazar",function(){var g=pG("Tablo 1;2021;2022\nAdana;1;2");return /ilk hücrede “il” yazmalı; sizde “Tablo 1”/.test(g)||g});
+t("panel: ayni yil iki sutunda",function(){var g=pG("il;2021;2021\nAdana;1;2");return /“2021” yılı iki sütunda/.test(g)||g});
+t("panel: tek yil sutunu yetmez",function(){var g=pG("il;2021\nAdana;1");return /En az 2 yıl/.test(g)||g});
+t("turOner: donem -> zaman",function(){var o=Y.turOner(Y.csvAyristir("dönem;A [x]\n2024-01;1"));return o&&o.tur==="zaman"});
+t("turOner: il + yil basliklari -> panel",function(){var o=Y.turOner(Y.csvAyristir("il;2021;2022\nAdana;1;2"));return o&&o.tur==="panel"&&/2021/.test(o.neden)});
+t("turOner: il + gosterge adlari -> kesit",function(){var o=Y.turOner(Y.csvAyristir("il;Profesör [kişi]\nAdana;1"));return o&&o.tur==="kesit"});
+t("turOner: taninmayan -> null",function(){return Y.turOner(Y.csvAyristir("Tablo 1;a\nx;1"))===null});
+t("mesaj: ayni il iki satirda, il adi gosterilir",function(){var q=Y.standartKartlar(Y.csvAyristir("il;A [kişi]\nAdana;1\nAdana;2"),"kesit",{donem:"2025",konu:"x"},yer).kartlar[0];return !q.kart&&/Aynı il birden fazla satırda geçiyor \(“Adana”\)/.test(q.hata.join())||JSON.stringify(q.hata)});
+t("mesaj: ayni donem iki satirda (zaman)",function(){var q=Y.standartKartlar(Y.csvAyristir("dönem;A [x]\n2024;1\n2024;2"),"zaman",{konu:"x"},yer).kartlar[0];return !q.kart&&/Aynı dönem birden fazla satırda var \(“2024”\)/.test(q.hata.join())||JSON.stringify(q.hata)});
+t("mesaj: tarihe donmus donemler TEK mesaj",function(){var q=Y.standartKartlar(Y.csvAyristir("dönem;A [x]\n45292;1\n45293;2\n45294;3"),"zaman",{konu:"x"},yer).kartlar[0];return !q.kart&&q.hata.length===1&&/3 farklı değer dönem olarak okunamadı/.test(q.hata[0])||JSON.stringify(q.hata)});
+t("mesaj: kesitte birim eksikse sutun adi ve ornek yazar",function(){var q=Y.standartKartlar(Y.csvAyristir("il;Profesör\nAdana;1"),"kesit",{donem:"2025",konu:"x"},yer).kartlar[0];return !q.kart&&/“Profesör” sütununda birim yok.*Profesör \[kişi\]/.test(q.hata.join())||JSON.stringify(q.hata)});
+t("mesaj: bos sutun basligi harfle gosterilir",function(){var g=Y.standartKartlar(Y.csvAyristir("il;A [x];\nAdana;1;2"),"kesit",{donem:"2025",konu:"x"},yer).genel.join();return /C sütununun başlığı boş/.test(g)||g});
 document.getElementById("o").textContent=out.join("\n")+"\n\n"+(bad?bad+" HATA":"HEPSI TAMAM");document.title=bad?"FAIL":"PASS";
 </script></body></html>

@@ -113,29 +113,37 @@
   function siklik(donemler) {
     var s = {}; donemler.forEach(function (d) { s[d.sik] = 1; });
     var k = Object.keys(s);
-    return k.length === 1 ? k[0] : "karisik";
+    return k.length === 1 ? k[0] : (k.length ? "karisik" : "yok");
   }
 
   /* kayitlar: [{yer, donem, deger}] -> seri */
   function serilestir(kayitlar, tur, idx) {
-    var uyari = [], hata = [], seri = {}, donemler = {}, atlanan = {}, cift = 0, bozuk = [], bozukSay = 0;
+    var uyari = [], hata = [], seri = {}, donemler = {}, atlanan = {}, bozuk = [], bozukSay = 0, donemBozuk = {}, donemBozukSay = 0, sayac = {}, tekrar = [];
     kayitlar.forEach(function (k) {
       var dn = donemOku(k.donem), v = sayiOku(k.deger), kod = tur === "tr_seri" ? "TR" : yerEsle(k.yer, idx);
-      if (!dn) { hata.push("Dönem anlaşılamadı: “" + k.donem + "”"); return; }
+      if (!dn) { donemBozukSay++; donemBozuk[String(k.donem)] = 1; return; }
       if (!kod) { atlanan[k.yer] = 1; return; }
       if (okunamaz(k.deger)) { bozukSay++; if (bozuk.length < 5) bozuk.push((tur === "tr_seri" ? dn.d : String(k.yer).trim()) + ": “" + String(k.deger).trim() + "”"); }
       donemler[dn.d] = dn;
       seri[kod] = seri[kod] || {};
-      if (seri[kod][dn.d] !== undefined) cift++;
+      var ak = kod + "|" + dn.d; sayac[ak] = (sayac[ak] || 0) + 1;
+      if (sayac[ak] === 2) tekrar.push(tur === "tr_seri" ? dn.d : String(k.yer).trim());
       seri[kod][dn.d] = v;
     });
     if (bozukSay) hata.push(bozukSay + " hücre sayı olarak okunamadı (" + bozuk.join(", ") + (bozukSay > bozuk.length ? " …" : "") + "). Excel, ondalıklı sayıyı (örn. 28,6) tarih (28.Haz) yapmış olabilir: bu hücreleri “Sayı” biçimine çevirip değeri yeniden yazın. Gerçekten veri yoksa hücreyi boş bırakın.");
-    if (cift) hata.push(cift + " satırda aynı yer ve dönem birden fazla kez var.");
+    if (donemBozukSay) {
+      var dk = Object.keys(donemBozuk);
+      hata.push(dk.length + " farklı değer dönem olarak okunamadı (örn. " + dk.slice(0, 3).map(function (x) { return "“" + x + "”"; }).join(", ") + "). Dönemi yıl için 2024, ay için 2024-03, üç ay için 2024-Q1 biçiminde ve metin olarak yazın.");
+    }
+    if (tekrar.length) {
+      var ornek = tekrar.slice(0, 3).map(function (x) { return "“" + x + "”"; }).join(", ") + (tekrar.length > 3 ? " …" : "");
+      hata.push(tur === "tr_seri" ? "Aynı dönem birden fazla satırda var (" + ornek + "). Her dönem tek satırda olmalı." : "Aynı il birden fazla satırda geçiyor (" + ornek + "). Her il tek satırda olmalı.");
+    }
     var an = Object.keys(atlanan);
-    if (an.length) uyari.push("Eşleşmeyen yer adı (kartta yok): " + an.slice(0, 8).join(", ") + (an.length > 8 ? " … (+" + (an.length - 8) + ")" : ""));
+    if (an.length) uyari.push("Şu satırlar il olarak tanınmadı ve haritada görünmeyecek: " + an.slice(0, 8).join(", ") + (an.length > 8 ? " … (+" + (an.length - 8) + ")" : "") + ". Yazımı şablondaki gibi düzeltin.");
     var dl = Object.keys(donemler).sort();
     var sk = siklik(dl.map(function (d) { return donemler[d]; }));
-    if (sk === "karisik") hata.push("Dönemler karışık (yıllık, aylık, üç aylık bir arada). Tek sıklıkta olmalı.");
+    if (sk === "karisik") hata.push("Dosyada hem yıllık hem aylık ya da üç aylık dönem var. Yalnız birini bırakın, diğerini ayrı dosyada yükleyin.");
     return { seri: seri, donemler: dl, sik: sk, uyari: uyari, hata: hata };
   }
 
@@ -165,14 +173,17 @@
                kaynak, not, bolge:"topla"|"ortalama"|"yok", id} */
   function kartUret(kayitlar, secenek, yerler, takma) {
     var idx = yerIndeksi(yerler, takma), hata = [], uyari = [];
-    ["baslik", "konu", "birim"].forEach(function (a) { if (!String(secenek[a] || "").trim()) hata.push("Zorunlu alan boş: " + a); });
+    var ad = String(secenek.baslik || "").trim();
+    if (!ad) hata.push("Kartın adı yok.");
+    if (!String(secenek.konu || "").trim()) hata.push("Konu seçilmedi.");
+    if (!String(secenek.birim || "").trim()) hata.push(secenek.birimYeri === "form" ? "Birimi seçin." : "“" + (ad || "?") + "” sütununda birim yok. Sütun adını “" + (ad || "Gösterge adı") + " [kişi]” gibi, birimi köşeli parantez içinde yazın.");
     if (secenek.tur !== "il_yil" && secenek.tur !== "tr_seri") hata.push("Veri türü seçilmedi.");
     var s = serilestir(kayitlar, secenek.tur, idx);
     hata = hata.concat(s.hata); uyari = uyari.concat(s.uyari);
     if (hata.length) return { kart: null, hata: hata, uyari: uyari };
 
     var n = s.donemler.length, veri = {}, bos = 0;
-    if (n < (secenek.kesit ? 1 : 2)) hata.push("En az 2 dönem gerekir.");
+    if (n < (secenek.kesit ? 1 : 2)) hata.push("En az 2 dönem gerekir: zaman serisinde birden çok yıl ya da ay olmalı.");
     Object.keys(s.seri).forEach(function (k) {
       veri[k] = s.donemler.map(function (d) { var v = s.seri[k][d]; return sayi(v) ? v : null; });
     });
@@ -180,14 +191,14 @@
     if (secenek.tur === "il_yil") {
       var b = bolgeTopla(veri, n, secenek.bolge || "yok"); veri = b.veri; uyari = uyari.concat(b.uyari);
       var il = Object.keys(veri).filter(function (k) { return duzeyOf(k) === "il"; });
-      if (il.length && il.length < MIN_IL_UYARI) uyari.push("Yalnız " + il.length + " il var (81 bekleniyordu).");
-      if (!Object.keys(veri).length) hata.push("Hiçbir yer eşleşmedi.");
+      if (il.length && il.length < MIN_IL_UYARI) uyari.push((MIN_IL_UYARI - il.length) + " il eksik (yalnız " + il.length + " il var); bu iller haritada boş görünecek. Bilerek böyleyse devam edebilirsiniz.");
+      if (!Object.keys(veri).length) hata.push("Hiçbir il adı tanınmadı. İlk sütunda il adları olduğundan ve doğru dosya türünü seçtiğinizden emin olun.");
     }
     Object.keys(veri).forEach(function (k) {
       if (veri[k].every(function (x) { return x === null; })) { delete veri[k]; bos++; }
     });
-    if (bos) uyari.push(bos + " yerin tüm değerleri boştu; çıkarıldı.");
-    if (!Object.keys(veri).length) hata.push("Hiç sayısal değer yok.");
+    if (bos) uyari.push(bos + " yerin bütün değerleri boş; bu yerler kartta görünmeyecek.");
+    if (!Object.keys(veri).length) hata.push("Hiç rakam bulunamadı: değer hücreleri boş görünüyor.");
     if (hata.length) return { kart: null, hata: hata, uyari: uyari };
 
     var ond = secenek.ondalik === undefined || secenek.ondalik === "" ? 1 : +secenek.ondalik;
@@ -230,24 +241,70 @@
     degerler.forEach(function (x) { var v = sayiOku(x); if (sayi(v)) { var t = String(v), i = t.indexOf("."); if (i >= 0) mx = Math.max(mx, t.length - i - 1); } });
     return Math.min(mx, 2);
   }
-  /* standart: "kesit" | "zaman"; secenek: {donem (kesitte zorunlu), konu, grup, kaynak, not, bolge, degisim, iyi} */
+  function sutunHarfi(j) { var h = "", n = j + 1; while (n > 0) { var m = (n - 1) % 26; h = String.fromCharCode(65 + m) + h; n = Math.floor((n - 1) / 26); } return h; }
+
+  /* İL İL ZAMAN SERİSİ ("panel"): ilk sütun "il", diğer bütün sütun başlıkları YIL; dosya başına TEK kart.
+     Kartın adı ve birimi dosyada olmadığı için formdan gelir (secenek.baslik, secenek.birim). Yalnız yıllık dönem. */
+  function panelKart(satirlar, secenek, yerler, takma) {
+    var bas = satirlar[0], gov = satirlar.slice(1), genel = [], yil = [], kotu = [], goruldu = {}, ikiKez = [], aylik = false, j;
+    for (j = 1; j < bas.length; j++) {
+      var d = donemOku(bas[j]);
+      if (!d) { kotu.push(sutunHarfi(j) + " (“" + String(bas[j]).trim() + "”)"); continue; }
+      if (d.sik !== "Y") aylik = true;
+      if (goruldu[d.d]) ikiKez.push(d.d);
+      goruldu[d.d] = 1; yil.push(j);
+    }
+    if (kotu.length) genel.push("İl il zaman serisinde “il” dışındaki bütün sütun başlıkları yıl olmalı (2021, 2022…). Yıl olmayan sütunlar: " + kotu.slice(0, 4).join(", ") + (kotu.length > 4 ? " …" : "") + ". Toplam ya da açıklama gibi sütunları silin; birden çok gösterge için ayrı dosya hazırlayın.");
+    else if (aylik) genel.push("Sütun başlıkları aylık ya da üç aylık görünüyor (örn. “" + String(bas[1]).trim() + "”). İl il zaman serisi şimdilik yalnız yıllık veriyi destekliyor; başlıkları yıl olarak (2021, 2022…) yazın.");
+    else if (ikiKez.length) genel.push("“" + ikiKez[0] + "” yılı iki sütunda var; her yıl bir kez yazılmalı.");
+    else if (yil.length < 2) genel.push("En az 2 yıl sütunu gerekir: zaman serisinde birden çok yıl olmalı.");
+    if (!String(secenek.baslik || "").trim()) genel.push("Kartın adını yazın.");
+    if (!String(secenek.birim || "").trim()) genel.push("Birimi seçin.");
+    if (genel.length) return { genel: genel, kartlar: [] };
+    var kay = kayitlar(satirlar, { bicim: "genis", yerSutun: 0, donemSutunlari: yil });
+    var oran = /%|oran|pay/i.test(secenek.birim);
+    var r = kartUret(kay, {
+      tur: "il_yil", baslik: secenek.baslik, birim: secenek.birim, birimYeri: "form", konu: secenek.konu, grup: secenek.grup, kaynak: secenek.kaynak, not: secenek.not,
+      degisim: secenek.degisim || (oran ? "puan" : "yuzde"), iyi: secenek.iyi || "notr",
+      bolge: oran ? "yok" : (secenek.bolge || "yok"),
+      ondalik: ondalikBul(gov.reduce(function (a, r2) { return a.concat(yil.map(function (c) { return r2[c]; })); }, [])), id: secenek.idOnek ? secenek.idOnek + "1" : undefined
+    }, yerler, takma);
+    r.sutun = secenek.baslik;
+    return { genel: [], kartlar: [r] };
+  }
+
+  /* Dosyaya bakıp hangi türe benzediğini söyler (öneri; son söz kullanıcıda): "zaman" | "panel" | "kesit" | null */
+  function turOner(satirlar) {
+    var bas = satirlar[0] || [], ilk = katla(bas[0]), diger = bas.slice(1);
+    if (["donem", "zaman", "yil", "tarih"].indexOf(ilk) >= 0) return { tur: "zaman", neden: "İlk sütunun başlığı “dönem”: satırlarda dönemler var." };
+    if (ilk === "il") {
+      if (diger.length && diger.every(function (h) { return !!donemOku(h); }))
+        return { tur: "panel", neden: "Sütun başlıklarınız yıl (“" + String(diger[0]).trim() + "”, …): iller satırlarda, yıllar sütunlarda." };
+      return { tur: "kesit", neden: "İller satırlarda, sütun başlıkları gösterge adı." };
+    }
+    return null;
+  }
+
+  /* standart: "kesit" | "zaman" | "panel"; secenek: {donem (kesitte zorunlu), konu, grup, kaynak, not, bolge, degisim, iyi} */
   function standartKartlar(satirlar, standart, secenek, yerler, takma) {
     var bas = satirlar[0] || [], gov = satirlar.slice(1), genel = [], sonuc = [], j;
     var ilk = katla(bas[0]);
-    if (standart === "kesit" && ilk !== "il") genel.push("İlk sütunun başlığı “il” olmalı (şu an: “" + (bas[0] || "") + "”).");
-    if (standart === "zaman" && ["donem", "zaman", "yil", "tarih"].indexOf(ilk) < 0) genel.push("İlk sütunun başlığı “dönem” olmalı (şu an: “" + (bas[0] || "") + "”).");
-    if (bas.length < 2) genel.push("En az bir gösterge sütunu gerekir.");
+    function ilkHucre(beklenen) { return "Tablonun ilk satırı sütun adları olmalı ve ilk hücrede “" + beklenen + "” yazmalı; sizde “" + (bas[0] || "") + "” yazıyor. Üstteki fazla satırları (tablo adı, açıklama) silin."; }
+    if ((standart === "kesit" || standart === "panel") && ilk !== "il") genel.push(ilkHucre("il"));
+    if (standart === "zaman" && ["donem", "zaman", "yil", "tarih"].indexOf(ilk) < 0) genel.push(ilkHucre("dönem"));
+    if (bas.length < 2) genel.push(standart === "panel" ? "En az bir yıl sütunu gerekir." : "En az bir gösterge sütunu gerekir.");
     if (!gov.length) genel.push("Veri satırı yok.");
     if (standart === "kesit") {
       var dn = donemOku(secenek.donem);
       if (!dn) genel.push("Gözlem dönemi girilmedi veya anlaşılamadı (örn. 2025).");
     }
     if (genel.length) return { genel: genel, kartlar: [] };
+    if (standart === "panel") return panelKart(satirlar, secenek, yerler, takma);
     var ad = {};
     for (j = 1; j < bas.length; j++) {
-      if (!String(bas[j]).trim()) { genel.push(j + 1 + ". sütunun başlığı boş."); continue; }
+      if (!String(bas[j]).trim()) { genel.push(sutunHarfi(j) + " sütununun başlığı boş. Her sütunun bir adı olmalı (Gösterge adı [birim])."); continue; }
       var k = katla(baslikAyir(bas[j]).baslik);
-      if (ad[k]) genel.push("Aynı gösterge adı iki kez var: “" + baslikAyir(bas[j]).baslik + "”.");
+      if (ad[k]) genel.push("“" + baslikAyir(bas[j]).baslik + "” adı iki sütunda var; her göstergenin adı farklı olmalı.");
       ad[k] = 1;
     }
     if (genel.length) return { genel: genel, kartlar: [] };
@@ -271,5 +328,5 @@
   }
 
   global.YukleHesap = { standartKartlar: standartKartlar, baslikAyir: baslikAyir, csvAyristir: csvAyristir, sayiOku: sayiOku, katla: katla, yerIndeksi: yerIndeksi, yerEsle: yerEsle, duzeyOf: duzeyOf,
-    donemOku: donemOku, tani: tani, kayitlar: kayitlar, kartUret: kartUret, bolgeTopla: bolgeTopla };
+    donemOku: donemOku, turOner: turOner, tani: tani, kayitlar: kayitlar, kartUret: kartUret, bolgeTopla: bolgeTopla };
 })(window);
