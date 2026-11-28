@@ -76,3 +76,5 @@ ul.kurallar li{margin:5px 0}
 details.ortak{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
 details.ortak summary{cursor:pointer;font-weight:700;color:var(--b)}
 #oneri{margin-top:12px;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+
+.ipucu{margin:10px 0 0;font-size:13.5px;color:var(--mut)}

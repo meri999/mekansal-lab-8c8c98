@@ -39,19 +39,19 @@
       (yeni ? '<option value="__yeni">+ Listede yok: yeni alt başlık ekle…</option>' : "");
   }
   function listeKur(korun) {
-    var k = $("konu").value, e = k === "ekonomi", onceAlt = korun ? $("alt").value : "";
-    $("alt").innerHTML = !k ? secenekler([], "Önce konuyu seçin", false)
+    var k = $("konu").value, e = k === "ekonomi", onceAlt = korun ? $("altSec").value : "";
+    $("altSec").innerHTML = !k ? secenekler([], "Önce konuyu seçin", false)
       : e ? secenekler(TRALT, "Seçiniz…", false)
       : secenekler(gruplar(k).map(function (g) { return [g, g]; }), "Seçiniz…", true);
-    if (onceAlt && $("alt").querySelector('option[value="' + onceAlt.replace(/"/g, '\\"') + '"]')) $("alt").value = onceAlt;
-    $("yeniEt").hidden = $("alt").value !== "__yeni";
+    if (onceAlt && $("altSec").querySelector('option[value="' + onceAlt.replace(/"/g, '\\"') + '"]')) $("altSec").value = onceAlt;
+    $("yeniEt").hidden = $("altSec").value !== "__yeni";
   }
   /* seçilen kapsam: kart konusu + grup; eksik kalan alanların adları.
      Ekonomi dışında alt başlığın kendisi gruptur. Ekonomi'de alt başlık (Üretim, Fiyatlar…) kartın konusudur; grup olarak adı kullanılır. */
   function kapsam() {
     var k = $("konu").value, eksik = [], konuKey = k, grup = "";
     if (!k) { eksik.push("Konu"); return { eksik: eksik }; }
-    var a = $("alt").value;
+    var a = $("altSec").value;
     if (!a) { eksik.push("Alt başlık"); return { eksik: eksik }; }
     if (k === "ekonomi") { konuKey = a; grup = KONU_AD[a] || a; }
     else grup = a === "__yeni" ? $("yeni").value.trim() : a;
@@ -60,8 +60,8 @@
   }
   $("konu").innerHTML = secenekler(KONULAR, "Seçiniz…", false);
   gruplariKur(); listeKur(false);
-  $("konu").addEventListener("change", function () { $("alt").value = ""; listeKur(false); });
-  $("alt").addEventListener("change", function () { listeKur(true); });
+  $("konu").addEventListener("change", function () { $("altSec").value = ""; listeKur(false); });
+  $("altSec").addEventListener("change", function () { listeKur(true); });
   /* seçilen türe göre rehber ve form alanları görünür */
   function turGoster() {
     var t = tur();
@@ -74,7 +74,7 @@
     uret();
   }
   Array.prototype.forEach.call(document.querySelectorAll('input[name="tur"]'), function (r) { r.addEventListener("change", turGoster); });
-  ["donem", "kartAd", "birimYaz", "konu", "alt", "yeni", "kaynak", "not", "bolge"].forEach(function (i) { $(i).addEventListener("input", uret); $(i).addEventListener("change", uret); });
+  ["donem", "kartAd", "birimYaz", "konu", "altSec", "yeni", "kaynak", "not", "bolge"].forEach(function (i) { $(i).addEventListener("input", uret); $(i).addEventListener("change", uret); });
   $("birim").addEventListener("change", turGoster);
 
   function metinOku(buf) {

@@ -55,55 +55,27 @@
       <li><b>Sarı hücreye</b> göstergenin adını ve birimini yazın: <code>TÜFE yıllık değişim [%]</code>. <b>A sütununa</b> dönemleri, <b>B sütununa</b> rakamları yazın.</li>
       <li><b>Kaydedin</b> ve aşağıdan yükleyin.</li>
     </ol>
-    <div class="dy"><div class="dogru"><b>Doğru</b>
-      <table class="mini"><thead><tr><th>dönem</th><th>TÜFE yıllık değişim [%]</th></tr></thead><tbody><tr><td>2024-01</td><td>64,9</td></tr><tr><td>2024-02</td><td>67,1</td></tr></tbody></table></div>
-      <div class="yanlis"><b>Yanlış</b>
-      <table class="mini"><thead><tr><th colspan="2">Tablo 3: Aylık TÜFE</th></tr><tr><th>Ay</th><th>TÜFE</th></tr></thead><tbody><tr><td>Ocak 24</td><td>%64,9</td></tr></tbody></table>
-      <small>Üstte tablo adı var, “dönem” yazmıyor, birim köşeli parantezde değil, rakamın yanında % var.</small></div></div>
-    <ul class="kurallar">
-      <li>Dönem yazımı: yıllık <code>2023</code>, aylık <code>2024-03</code>, üç aylık <code>2024-Q1</code>. Hepsi aynı sıklıkta olmalı.</li>
-      <li>Her dönem tek satırda olmalı, en az 2 dönem gerekir.</li>
-      <li>İkinci bir seriniz varsa C sütununa yazın; her sütun ayrı kart olur.</li>
-    </ul>
   </div>
 
   <div class="rehber" data-rehber="panel" hidden>
-    <p class="ozet-cumle"><b>İl il, birden çok yıl.</b> Her satır bir ildir; sütun başlıkları yıldır. Bu dosya <b>tek bir kart</b> üretir; kartın adını ve birimini aşağıdaki forma yazarsınız.</p>
+    <p class="ozet-cumle"><b>İl il, birden çok yıl.</b> Her satır bir ildir; sütun başlıkları yıldır (yalnız yıllık veri). Bu dosya <b>tek bir kart</b> üretir; kartın adını ve birimini aşağıdaki forma yazarsınız.</p>
     <ol class="adimlar">
       <li><b>Şablonu indirin</b> ve Excel'de açın: <a href="sablon/sablon-zaman-serisi-il-il.xlsx" download>İl il zaman serisi şablonu (.xlsx)</a></li>
       <li><b>Sarı hücrelere</b> yılları yazın (2018, 2019…). <b>Mavi hücrelere</b> her ilin o yıldaki rakamını yazın. İl adlarına dokunmayın.</li>
       <li><b>Kaydedin</b>, aşağıdan yükleyin; “Kartın adı” ve “Birim” kutularını doldurun.</li>
     </ol>
-    <div class="dy"><div class="dogru"><b>Doğru</b>
-      <table class="mini"><thead><tr><th>il</th><th>2021</th><th>2022</th><th>2023</th></tr></thead><tbody><tr><td>Adana</td><td>650</td><td>668</td><td>681</td></tr><tr><td>Adıyaman</td><td>131</td><td>140</td><td>149</td></tr></tbody></table></div>
-      <div class="yanlis"><b>Yanlış</b>
-      <table class="mini"><thead><tr><th>il</th><th>2021</th><th>2022</th><th>Toplam</th></tr></thead><tbody><tr><td>Adana</td><td>650</td><td>668</td><td>1318</td></tr></tbody></table>
-      <small>“il” dışındaki bütün başlıklar yıl olmalı; “Toplam” gibi sütunları silin.</small></div></div>
-    <ul class="kurallar">
-      <li>Bu tür yalnız <b>yıllık</b> veriyi destekler. Aylık il verisi şimdilik yüklenemez.</li>
-      <li>Dosyada tek gösterge olur. İkinci göstergeniz varsa ayrı dosya hazırlayın.</li>
-      <li>Her il tek satırda olmalı; en az 2 yıl gerekir.</li>
-    </ul>
   </div>
 
   <div class="rehber" data-rehber="kesit" hidden>
-    <p class="ozet-cumle"><b>Tek yıl, il il.</b> Her satır bir ildir; her sütun ayrı bir göstergedir ve portalda ayrı bir kart olur. Verinin yılını dosyaya değil, aşağıdaki forma yazarsınız.</p>
+    <p class="ozet-cumle"><b>Tek yıl, il il.</b> Her satır bir ildir; her sütun ayrı bir göstergedir ve portalda ayrı bir kart olur. Verinin yılını dosyaya değil, aşağıdaki forma yazarsınız. Verinizi il düzeyine toplayıp getirin.</p>
     <ol class="adimlar">
       <li><b>Şablonu indirin</b> ve Excel'de açın: <a href="sablon/sablon-kesit.xlsx" download>Kesit veri şablonu (.xlsx, 81 il hazır)</a></li>
       <li><b>Sarı hücreye</b> göstergenin adını ve birimini yazın: <code>Profesör [kişi]</code>. <b>Mavi hücrelere</b> il il rakamları yazın. İl adlarına dokunmayın.</li>
       <li><b>Kaydedin</b>, aşağıdan yükleyin; “Gözlem dönemi” kutusuna yılı yazın.</li>
     </ol>
-    <div class="dy"><div class="dogru"><b>Doğru</b>
-      <table class="mini"><thead><tr><th>il</th><th>Profesör [kişi]</th><th>Kadın payı [%]</th></tr></thead><tbody><tr><td>Türkiye</td><td>42195</td><td>47,2</td></tr><tr><td>Adana</td><td>681</td><td>48,7</td></tr></tbody></table></div>
-      <div class="yanlis"><b>Yanlış</b>
-      <table class="mini"><thead><tr><th>İl</th><th>Profesör</th><th>Kadın payı</th></tr></thead><tbody><tr><td>ADANA İLİ</td><td>681 kişi</td><td>28.Haz</td></tr></tbody></table>
-      <small>Birim köşeli parantezde değil; hücreye “kişi” yazılmış; <code>28.Haz</code> Excel'in tarihe çevirdiği 28,6'dır.</small></div></div>
-    <ul class="kurallar">
-      <li><b>Türkiye satırı isteğe bağlı.</b> Sayım göstergelerinde (kişi, adet) bölge ve Türkiye değeri illerin toplamından üretilebilir. Oran (%) göstergelerinde üretilemez; Türkiye değerini siz yazın.</li>
-      <li>Verinizi <b>il düzeyine kendiniz toplayın</b>. Üniversite, ilçe ya da kurum düzeyindeki tablo olduğu gibi yüklenmez.</li>
-      <li>81 ilin hepsini doldurmaya çalışın; eksik il uyarı verir.</li>
-    </ul>
   </div>
+
+  <p class="ipucu">Doğru ve yanlış örnek tablolar, sık yapılan hatalar ve sözlük şablonun içindedir.</p>
 
   <details class="ortak">
     <summary>Her tür için ortak kurallar</summary>
@@ -112,6 +84,7 @@
       <li><b>İlk satır başlık olmalı</b>; üste tablo adı ya da açıklama koymayın. Yalnız <b>ilk sayfa</b> okunur.</li>
       <li>Sütun başlığı <code>Gösterge adı [birim]</code> biçimindedir: <code>[kişi]</code>, <code>[%]</code>, <code>[TL]</code>, <code>[‰]</code>… Aynı ad iki kez olamaz.</li>
       <li>Hücreye yalnız rakam yazın; <code>%</code> işareti ya da birim yazmayın. Veri yoksa hücreyi <b>boş</b> bırakın.</li>
+      <li>İl tablolarında (2 ve 3) <b>Türkiye satırı isteğe bağlıdır</b>. Sayım göstergelerinde (kişi, adet) bölge ve Türkiye değeri illerin toplamından üretilebilir; oran (%) göstergelerinde üretilemez, Türkiye değerini siz yazın. Verinizi <b>il düzeyine kendiniz toplayın</b>: üniversite, ilçe ya da kurum düzeyindeki tablo olduğu gibi yüklenmez.</li>
       <li><b>Ondalıkta virgül kullanın</b> (<code>28,6</code>). Excel, <code>28.6</code> gibi bir değeri kendiliğinden tarihe (<code>28.Haz</code>) çevirebilir. Böyle bir hücre olursa yükleme durur ve hangi hücre olduğunu gösterir; hücreyi “Sayı” biçimine çevirip değeri yeniden yazın.</li>
     </ul>
   </details>
@@ -125,7 +98,7 @@
     <label id="birimEt">Birim<select id="birim"><option value="">Seçiniz…</option><option>kişi</option><option>adet</option><option>%</option><option>‰</option><option>TL</option><option>kişi/km²</option><option>yıl</option><option value="__diger">Diğer…</option></select></label>
     <label id="birimYazEt" hidden>Birimin adı<input type="text" id="birimYaz" maxlength="40" placeholder="örn. m²"></label>
     <label>Konu<select id="konu"></select></label>
-    <label id="altEt">Alt başlık<select id="alt"></select></label>
+    <label id="altEt">Alt başlık<select id="altSec"></select></label>
     <label id="yeniEt" hidden>Yeni alt başlığın adı<input type="text" id="yeni" maxlength="80" placeholder="Yalnız listede yoksa yazın"></label>
     <label>Kaynak<input type="text" id="kaynak" placeholder="örn. YÖK"></label>
     <label>Not (isteğe bağlı)<input type="text" id="not" placeholder="Kartın altında görünecek açıklama"></label>
