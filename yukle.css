@@ -41,3 +41,38 @@ label.sec small{color:var(--mut)}
 .liste{width:100%;border-collapse:collapse;font-size:14px}
 .liste th,.liste td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
 .liste button{background:none;border:0;color:#7b0828;cursor:pointer;font:inherit;text-decoration:underline}
+
+/* tür seçim kartları */
+.soru{margin:0 0 12px;font-size:15px}
+.turler{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:820px){.turler{grid-template-columns:1fr}}
+label.tur{position:relative;display:flex;flex-direction:column;gap:8px;border:1.5px solid var(--line);border-radius:14px;padding:16px 16px 14px;cursor:pointer;background:#fff}
+label.tur:hover{border-color:#c9b9bd}
+label.tur:has(input:checked){border-color:var(--b);background:#fbf3f4;box-shadow:0 0 0 2px #72153022}
+label.tur:has(input:focus-visible){outline:2px solid var(--b);outline-offset:2px}
+label.tur input{position:absolute;opacity:0;pointer-events:none}
+.tur-ad{font-family:var(--baslik);font-weight:600;font-size:16.5px;color:var(--b);line-height:1.25}
+.tur-ol{font-size:14px}
+.tur-ornek{font-size:12.5px;color:var(--mut)}
+table.mini{border-collapse:collapse;font-size:12.5px;background:#fff}
+table.mini th,table.mini td{border:1px solid var(--line);padding:3px 9px;text-align:left}
+table.mini th{background:#f6efe8}
+
+/* seçime bağlı rehber */
+.rehber[hidden]{display:none}
+.ozet-cumle{margin:0 0 12px;font-size:15px}
+ol.adimlar{margin:0 0 14px;padding-left:22px}
+ol.adimlar li{margin:7px 0;font-size:14.5px}
+.dy{display:flex;flex-wrap:wrap;gap:14px;margin:6px 0 14px}
+.dy>div{border:1.5px solid var(--line);border-radius:12px;padding:10px 14px;background:#fff;max-width:100%;overflow-x:auto}
+.dy .dogru{border-color:#9ab98c}
+.dy .yanlis{border-color:#e0a3ab}
+.dy b{display:block;margin-bottom:6px;font-size:13px}
+.dy .dogru b{color:#3f6a2f}
+.dy .yanlis b{color:#7b0828}
+.dy small{display:block;margin-top:6px;color:var(--mut);font-size:12.5px;max-width:360px}
+ul.kurallar{margin:8px 0;padding-left:20px;font-size:14px}
+ul.kurallar li{margin:5px 0}
+details.ortak{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+details.ortak summary{cursor:pointer;font-weight:700;color:var(--b)}
+#oneri{margin-top:12px;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
