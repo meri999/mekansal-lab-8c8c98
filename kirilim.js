@@ -2,10 +2,12 @@
 (function () {
   var D = window.KIRILIM_DIZIN, H = window.KirilimHesap;
   var $ = function (id) { return document.getElementById(id); };
-  var durum = { sutun: "_T", konu: 0, tablo: null, roller: null, yer: "TR", donem: 0, cikti: "matris", deger: "sayi", kars: false, sabit: {}, oncekiK1: null };
+  var durum = { sutun: "_T", konu: 0, tablo: null, roller: null, yer: "TR", donem: 0, cikti: "matris", deger: "sayi", kars: false, sabit: {}, oncekiK1: null, grup: null, sec: [] };
   var tablo = null;
+  var CIKTILAR = ["matris", "cubuk", "piramit", "tablo", "zaman", "harita"];
   // Adres: ?tablo=<kod> o tabloyu açar; &gomulu=1 başka sayfanın içine gömülür (üst bar ve tablo seçimi gizli)
   var Q = new URLSearchParams(location.search), GOMULU = Q.get("gomulu") === "1";
+  if (CIKTILAR.indexOf(Q.get("cikti")) >= 0) durum.cikti = Q.get("cikti");
   if (GOMULU) document.documentElement.classList.add("gomulu");
   function yukseklikBildir() {
     if (GOMULU && window.parent !== window) setTimeout(function () { window.parent.postMessage({ kirilimYukseklik: document.documentElement.scrollHeight }, "*"); }, 0);
@@ -18,6 +20,19 @@
   function kacis(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;"); }
   function secenekler(liste) {
     return liste.map(function (x) { return '<option value="' + kacis(x[0]) + '">' + kacis(x[1]) + "</option>"; }).join("");
+  }
+  // Aynı konudaki tablolar kurala göre gruplanır (kirilim-hesap.js: gruplar); seçicide grup tek satırdır
+  var GIRIS = D.konular.map(function (k) { return H.gruplar(k.tablolar); });
+  function grupBul(kod) {
+    for (var i = 0; i < GIRIS.length; i++) for (var j = 0; j < GIRIS[i].length; j++) if (GIRIS[i][j].grup && GIRIS[i][j].kod === kod) return GIRIS[i][j];
+    return null;
+  }
+  function grupUyesi(kod) {
+    for (var i = 0; i < GIRIS.length; i++) for (var j = 0; j < GIRIS[i].length; j++) {
+      var g = GIRIS[i][j];
+      if (g.grup && g.uyeler.some(function (u) { return u.kod === kod; })) return g;
+    }
+    return null;
   }
   function dizinTablo(kod) {
     for (var i = 0; i < D.konular.length; i++)
@@ -33,12 +48,12 @@
     }).join("");
   }
 
-  function konuSec(i, kod) {
+  function konuSec(i, kod, kols) {
     durum.konu = i;
     konuSekmeleri();
-    var liste = D.konular[i].tablolar;
-    $("tablo").innerHTML = secenekler(liste.map(function (x) { return [x.kod, x.baslik]; }));
-    tabloSec(kod || liste[0].kod);
+    var giris = GIRIS[i];
+    $("tablo").innerHTML = secenekler(giris.map(function (x) { return [x.kod, x.baslik]; }));
+    tabloSec(kod || giris[0].kod, kols);
   }
 
   function tabloYukle(kod) {
@@ -55,20 +70,29 @@
   }
 
   var son = 0;
-  function tabloSec(kod) {
-    var sira = ++son;
-    $("tablo").value = kod;
-    $("sonuc").innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
-    tabloYukle(kod).then(function (t) {
+  // kod: tablo ya da grup kodu; kols: grupta seçili kırılımlar (yoksa üyenin kendi kırılımları / grubun varsayılanı)
+  function tabloSec(kod, kols) {
+    var sira = ++son, g = grupBul(kod) || grupUyesi(kod), uye = kod;
+    durum.grup = g;
+    if (g) {
+      var u0 = g.uyeler.filter(function (u) { return u.kod === kod; })[0];
+      durum.sec = kols || (u0 ? u0.kirilimlar.filter(function (k) { return k.ad !== "Değer"; }).map(function (k) { return k.kol; }) : g.varsayilan.slice());
+      var u1 = H.uyeSec(g, durum.sec) || g.uyeler[0];
+      uye = u1.kod;
+    }
+    $("tablo").value = g ? g.kod : kod;
+    if (!(window.KIRILIM_TABLO && window.KIRILIM_TABLO[uye])) $("sonuc").innerHTML = '<div class="yukleniyor">Yükleniyor…</div>';
+    tabloYukle(uye).then(function (t) {
       if (sira !== son) return;
       tablo = t;
-      durum.tablo = kod;
+      durum.tablo = uye;
       // Dizinde olmayan tablo (#t=<kod> ile açılan) seçicide de görünsün
-      if (!$("tablo").querySelector('option[value="' + kacis(kod) + '"]')) {
-        $("tablo").insertAdjacentHTML("beforeend", secenekler([[kod, (t.baslik || kod) + " (dizinde yok)"]]));
-        $("tablo").value = kod;
+      if (!g && !$("tablo").querySelector('option[value="' + kacis(uye) + '"]')) {
+        $("tablo").insertAdjacentHTML("beforeend", secenekler([[uye, (t.baslik || uye) + " (dizinde yok)"]]));
+        $("tablo").value = uye;
       }
       roller();
+      if (g) durum.roller = H.grupRoller(durum.sec);
       menuKur();
       yerSecenekleri();
       ciz();
@@ -95,11 +119,52 @@
     $("k1").innerHTML = secenekler((yr === H.IL ? [[H.IL, "İl"]] : yr === H.BOLGE ? [[H.BOLGE, "Bölge (İBBS-2)"]] : []).concat(liste));
     $("k2").innerHTML = secenekler(liste);
     $("k3").innerHTML = secenekler(liste.concat([["-", "Yok (toplamı al)"]]));
-    $("k2w").hidden = n < 2;
-    $("k3w").hidden = n < 3;
+    $("k1w").hidden = !!durum.grup;
+    $("k2w").hidden = n < 2 || !!durum.grup;
+    $("k3w").hidden = n < 3 || !!durum.grup;
     esitle();
-    $("baslik").textContent = tablo.baslik;
-    $("aciklama").textContent = tablo.aciklama + ".";
+    grupKur();
+    if (durum.grup) {
+      var adlar = durum.sec.map(function (k) { return k === H.IL ? "İl" : k === H.BOLGE ? "Bölge" : (durum.grup.boyutlar.filter(function (b) { return b.kol === k; })[0] || {}).ad; });
+      $("baslik").textContent = durum.grup.baslik + (adlar.length ? ": " + adlar.join(" ve ").toLocaleLowerCase("tr") + " kırılımı" : "");
+      $("aciklama").textContent = adlar.length ? "Seçtiğiniz kırılımlara göre; seçilmeyenler toplam olarak alınır." : "Kırılım seçilmedi, toplam gösteriliyor. Yukarıdan isteğe bağlı kırılım ekleyebilirsiniz.";
+    } else {
+      $("baslik").textContent = tablo.baslik;
+      $("aciklama").textContent = tablo.aciklama + ".";
+    }
+  }
+
+  /* Gruplu girişte isteğe bağlı kırılım düğmeleri. Seçim sırası: önce satır, sonra sütun, sonra panel.
+     Seçime uyan üye tablo yoksa düğme kapalıdır; kapalı düğmenin nedeni başlıkta yazar. */
+  function grupKur() {
+    var g = durum.grup, kap = $("grupw");
+    kap.hidden = !g;
+    if (!g) return;
+    var geoVar = { il: false, bolge: false };
+    g.uyeler.forEach(function (u) { if (u.cografya === "il" || u.cografya === "bolge") geoVar[u.cografya] = true; });
+    var dugmeler = [];
+    if (geoVar.il) dugmeler.push({ kol: H.IL, ad: "İl" });
+    if (geoVar.bolge) dugmeler.push({ kol: H.BOLGE, ad: "Bölge (İBBS-2)" });
+    dugmeler = dugmeler.concat(g.boyutlar);
+    $("grup").innerHTML = dugmeler.map(function (b) {
+      var acik = durum.sec.indexOf(b.kol) >= 0, yeni = yeniSecim(b.kol), uygun = acik || !!H.uyeSec(g, yeni);
+      var sira = acik ? durum.sec.filter(function (k) { return k !== H.IL && k !== H.BOLGE; }).indexOf(b.kol) : -1;
+      return '<button type="button" data-kol="' + kacis(b.kol) + '" aria-pressed="' + acik + '"' + (uygun ? "" : ' aria-disabled="true" class="kapali" title="Bu kırılımla birlikte seçilemez: bu birleşimi veren tablo yok"') + ">" + kacis(b.ad) + "</button>";
+    }).join("");
+    var u = H.uyeSec(g, durum.sec), not = "";
+    if (u && u.cografya === "tr" && g.uyeler.some(function (x) { return x.cografya !== "tr"; })) not = "Bu birleşimde yalnız Türkiye geneli var; il için kırılımlardan birini kaldırın.";
+    var kapaliVar = dugmeler.some(function (b) { return durum.sec.indexOf(b.kol) < 0 && !H.uyeSec(g, yeniSecim(b.kol)); });
+    $("grupnot").textContent = [not, kapaliVar ? "Kesik çizgili düğmeler, seçili kırılımlarla birlikte seçilemez (bu birleşimi veren tablo yok)." : ""].filter(Boolean).join(" ");
+    $("grupdegis").hidden = durum.sec.filter(function (k) { return k !== H.IL && k !== H.BOLGE; }).length < 2 && durum.sec.length < 2;
+  }
+  // kol'a basılınca olacak seçim: açıksa kaldırılır, kapalıysa eklenir (il ile bölge birlikte seçilmez)
+  function yeniSecim(kol) {
+    var s = durum.sec.slice(), i = s.indexOf(kol);
+    if (i >= 0) { s.splice(i, 1); return s; }
+    if (kol === H.IL) s = s.filter(function (k) { return k !== H.BOLGE; });
+    if (kol === H.BOLGE) s = s.filter(function (k) { return k !== H.IL; });
+    s.push(kol);
+    return s;
   }
 
   function esitle() {
@@ -111,6 +176,7 @@
   function rolDegisti(rol, kol) {
     if (rol === "k1" && kol === H.BOLGE && durum.roller.k1 !== H.BOLGE) durum.oncekiK1 = durum.roller.k1;
     durum.roller = H.rolDuzelt(tablo, durum.roller, rol, kol);
+    if (durum.grup) { durum.sec = [durum.roller.k1, durum.roller.k2, durum.roller.k3].filter(function (x) { return x && x !== "-"; }); grupKur(); }
     esitle();
     ciz();
   }
@@ -134,6 +200,7 @@
   function kir(kol) {
     if (kol === H.IL) return { kol: H.IL, ad: "İl", kodlar: [], etiketler: [], ortusen: false };
     if (kol === H.BOLGE) return { kol: H.BOLGE, ad: "Bölge", kodlar: [], etiketler: [], ortusen: false };
+    if (!kol || kol === "-") return { kol: "-", ad: "Toplam", kodlar: ["_T"], etiketler: ["Toplam"], ortusen: false };
     for (var i = 0; i < tablo.kirilimlar.length; i++) if (tablo.kirilimlar[i].kol === kol) return tablo.kirilimlar[i];
     return null;
   }
@@ -148,9 +215,11 @@
   function matrisHtml(p, tr, en, enFark) {
     var pay = durum.deger === "pay" && !oranMi(), a1 = kir(durum.roller.k1).ad, a2 = kir(durum.roller.k2).ad;
     var pp = H.pay(p), fk = tr ? H.fark(p, tr, tablo.olcu) : null, bc = H.bosCizgi(p);
-    var h = '<div class="kaydir"><table class="mat"><thead><tr><th class="sol">' + kacis(a1) + " ↓ / " + kacis(a2) + " →</th>";
+    // Satır ya da sütun seçilmediyse (gruplu giriş) o eksen zaten "Toplam"dır: yinelenen toplam sütun/satırı çizilmez
+    var tekSut = !durum.roller.k2 || durum.roller.k2 === "-", tekSat = !durum.roller.k1 || durum.roller.k1 === "-";
+    var h = '<div class="kaydir"><table class="mat"><thead><tr><th class="sol">' + kacis(tekSat ? "" : a1) + (tekSat || tekSut ? "" : " ↓ / " + kacis(a2) + " →") + "</th>";
     p.sutunEtiket.forEach(function (e) { h += "<th>" + kacis(e) + "</th>"; });
-    h += '<th class="top">Toplam</th></tr></thead><tbody>';
+    h += (tekSut ? "" : '<th class="top">Toplam</th>') + "</tr></thead><tbody>";
     p.satirEtiket.forEach(function (e, ri) {
       h += '<tr><th class="sol">' + kacis(e) + "</th>";
       p.m[ri].forEach(function (v, ci) {
@@ -172,11 +241,12 @@
         }
         h += '<td style="' + stil + '"' + oz + ' title="' + kacis(e + " / " + p.sutunEtiket[ci] + ": " + hucre(v, bc, ri, ci)) + '">' + goster + "</td>";
       });
-      h += '<td class="top">' + toplamMetni(p.satirT[ri]) + "</td></tr>";
+      h += (tekSut ? "" : '<td class="top">' + toplamMetni(p.satirT[ri]) + "</td>") + "</tr>";
     });
+    if (tekSat) return h + "</tbody></table></div>";
     h += '<tr><th class="sol top">Toplam</th>';
     p.sutunT.forEach(function (v) { h += '<td class="top">' + toplamMetni(v) + "</td>"; });
-    return h + '<td class="top">' + toplamMetni(p.toplam) + "</td></tr></tbody></table></div>";
+    return h + (tekSut ? "" : '<td class="top">' + toplamMetni(p.toplam) + "</td>") + "</tr></tbody></table></div>";
   }
 
   function cubukHtml(p) {
@@ -207,17 +277,19 @@
 
   function tabloHtml(p) {
     var pay = durum.deger === "pay" && !oranMi(), pp = H.pay(p), a1 = kir(durum.roller.k1).ad, bc = H.bosCizgi(p);
-    var h = '<div class="kaydir"><table class="duz"><thead><tr><th class="t">' + kacis(a1) + "</th>";
+    var tekSut = !durum.roller.k2 || durum.roller.k2 === "-", tekSat = !durum.roller.k1 || durum.roller.k1 === "-";
+    var h = '<div class="kaydir"><table class="duz"><thead><tr><th class="t">' + kacis(tekSat ? "" : a1) + "</th>";
     p.sutunEtiket.forEach(function (e) { h += "<th>" + kacis(e) + "</th>"; });
-    h += "<th>Toplam</th></tr></thead><tbody>";
+    h += (tekSut ? "" : "<th>Toplam</th>") + "</tr></thead><tbody>";
     p.satirEtiket.forEach(function (e, ri) {
       h += '<tr><td class="t">' + kacis(e) + "</td>";
       p.m[ri].forEach(function (v, ci) { h += "<td>" + (pay ? (pp[ri][ci] === null ? "–" : yuz(pp[ri][ci])) : hucre(v, bc, ri, ci)) + "</td>"; });
-      h += "<td><b>" + toplamMetni(p.satirT[ri]) + "</b></td></tr>";
+      h += (tekSut ? "" : "<td><b>" + toplamMetni(p.satirT[ri]) + "</b></td>") + "</tr>";
     });
+    if (tekSat) return h + "</tbody></table></div>";
     h += '<tr class="g"><td class="t">Toplam</td>';
     p.sutunT.forEach(function (v) { h += "<td>" + toplamMetni(v) + "</td>"; });
-    return h + "<td>" + toplamMetni(p.toplam) + "</td></tr></tbody></table></div>";
+    return h + (tekSut ? "" : "<td>" + toplamMetni(p.toplam) + "</td>") + "</tr></tbody></table></div>";
   }
 
   /* --- seçici durumları --------------------------------------------------- */
@@ -230,7 +302,7 @@
   function kontrolleriKur() {
     var oran = oranMi(), k2 = kir(durum.roller.k2), bolgeMod = durum.roller.k1 === H.BOLGE, ilMod = durum.roller.k1 === H.IL || bolgeMod;
     var bolgeTablo = H.yerRolu(tablo) === H.BOLGE;
-    $("bolgew").hidden = !bolgeTablo;
+    $("bolgew").hidden = !bolgeTablo || !!durum.grup;
     $("bolge").setAttribute("aria-pressed", String(bolgeMod));
     var k2n = k2 ? k2.kodlar.filter(function (k) { return k !== "_T"; }).length : 0;
     var secenek = [["matris", "Isı matrisi", false], ["cubuk", "Yığılmış çubuk", oran || (k2 && k2.ortusen)],
@@ -463,6 +535,20 @@
     if (b) konuSec(+b.dataset.k);
   });
   $("tablo").addEventListener("change", function () { tabloSec(this.value); });
+  $("grup").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-kol]"); if (!b || !durum.grup) return;
+    var yeni = yeniSecim(b.dataset.kol);
+    if (!H.uyeSec(durum.grup, yeni)) return;
+    tabloSec(durum.grup.kod, yeni);
+  });
+  $("grupdegis").addEventListener("click", function () {
+    // satır ile sütunun yerini değiştirir: coğrafya yoksa ilk iki kırılım, varsa ilk kırılım ile ikincisi
+    var geo = durum.sec.filter(function (k) { return k === H.IL || k === H.BOLGE; }), gk = durum.sec.filter(function (k) { return k !== H.IL && k !== H.BOLGE; });
+    if (gk.length > 1 && !geo.length) { var t = gk[0]; gk[0] = gk[1]; gk[1] = t; }
+    else if (gk.length > 1) { var t2 = gk[0]; gk[0] = gk[1]; gk[1] = t2; }
+    else return;
+    tabloSec(durum.grup.kod, geo.concat(gk));
+  });
   $("k1").addEventListener("change", function () { rolDegisti("k1", this.value); });
   $("bolge").addEventListener("click", function () {
     if (!tablo || H.yerRolu(tablo) !== H.BOLGE) return;
@@ -509,6 +595,7 @@
   var ht = (location.hash.match(/^#t=([A-Za-z0-9_]+)$/) || [])[1] || null;
   var ilk = ht || Q.get("tablo"), ilkKonu = 0;
   D.konular.forEach(function (k, i) { k.tablolar.forEach(function (x) { if (x.kod === ilk) ilkKonu = i; }); });
-  konuSec(ilkKonu, ilk && (dizinTablo(ilk) || ilk === ht) ? ilk : null);
+  D.konular.forEach(function (k, i) { GIRIS[i].forEach(function (x) { if (x.grup && x.kod === ilk) ilkKonu = i; }); });
+  konuSec(ilkKonu, ilk && (dizinTablo(ilk) || grupBul(ilk) || ilk === ht) ? ilk : null, Q.get("k") ? Q.get("k").split(",") : undefined);
   window.addEventListener("resize", yukseklikBildir);
 })();

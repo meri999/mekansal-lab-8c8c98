@@ -15,7 +15,7 @@ function bitir() {
 function tikla(sel) { var e = W.document.querySelector(sel); e.click(); }
 function tabloGit(kod, f) {
   var konu = -1; D.konular.forEach(function (k, i) { k.tablolar.forEach(function (x) { if (x.kod === kod) konu = i; }); });
-  W.__kirilim.konuSec(konu); sec("tablo", kod); sonra(f);
+  W.__kirilim.konuSec(konu); W.__kirilim.tabloSec(kod); sonra(f);
 }
 function cikti6() {
   tabloGit("evlenme_egt_yas_gr", function () {
@@ -148,7 +148,46 @@ function bolgeGorunum() {
         t("bölge tablosundan il tablosuna dönünce Bölge düğmesi gizli, İl seçeneği var", function () {
           return ($("bolgew").hidden === true && [].some.call($("k1").options, function (o) { return o.value === "__IL"; })) || "yanlış";
         });
-        bitir();
+        grup8();
+      });
+    });
+  });
+}
+/* gruplu giriş: Nüfus tek satır, kırılımlar isteğe bağlı düğmeler */
+function chip(kol) { return W.document.querySelector('#grup button[data-kol="' + kol + '"]'); }
+function grup8() {
+  W.__kirilim.konuSec(0); W.__kirilim.tabloSec("g_adnks_t16");
+  sonra(function () {
+    var d = W.__kirilim.durum;
+    t("grup: seçicide Nüfus tek satır (üç nüfus tablosu yerine)", function () { return eq([].filter.call($("tablo").options, function (o) { return /^Nüfus$/.test(o.text); }).length, 1); });
+    t("grup: kırılım düğmeleri (İl, Cinsiyet, Yaş, Yerleşim) görünür; satır/sütun seçicileri gizli", function () {
+      return eq([$("grupw").hidden, W.document.querySelectorAll("#grup button").length, $("k1w").hidden, $("k2w").hidden, $("k3w").hidden].join(), "false,4,true,true,true");
+    });
+    t("grup: varsayılan cinsiyet+yaş -> t16, satır cinsiyet sütun yaş", function () { return eq([d.tablo, d.roller.k1, d.roller.k2, d.roller.k3].join(), "adnks_t16,SEX,YAS_GRUBU,-"); });
+    t("grup: cinsiyet+yaş seçiliyken İl düğmesi açık (t16 il düzeyinde)", function () { return eq(chip("__IL").getAttribute("aria-disabled"), null); });
+    chip("SEX").click(); chip("YAS_GRUBU").click();
+    sonra(function () {
+      t("grup: hiç kırılım seçilmeyince toplam (tek hücre), çökme yok", function () { return eq([d.sec.length, d.roller.k1, d.roller.k2].join(), "0,-,-") && (W.document.querySelectorAll("#sonuc td").length >= 1 || "hücre yok"); });
+      chip("YERLESIM_YERI_TUR").click();
+      sonra(function () {
+        t("grup: yalnız yerleşim -> il düzeyindeki t14", function () { return eq([d.tablo, d.roller.k1, d.roller.k2].join(), "adnks_t14,YERLESIM_YERI_TUR,-"); });
+        t("grup: tek kırılımda yinelenen Toplam sütunu yok", function () { return eq(W.document.querySelectorAll("#sonuc table.mat th.top").length, 1) || W.document.querySelectorAll("#sonuc table.mat th.top").length; });
+        chip("YAS_GRUBU").click();
+        sonra(function () {
+          t("grup: yerleşim+yaş -> t15 (Türkiye geneli notu görünür)", function () { return eq([d.tablo, /yalnız Türkiye/.test($("grupnot").textContent)].join(), "adnks_t15,true"); });
+          t("grup: yerleşim+yaş seçiliyken İl düğmesi kapalı (yalnız Türkiye-only tablo var)", function () { return eq(chip("__IL").getAttribute("aria-disabled"), "true"); });
+          chip("YERLESIM_YERI_TUR").click(); chip("__IL").click();
+          sonra(function () {
+            t("grup: il seçilince satırlar iller", function () { return eq([d.tablo, d.roller.k1, d.sec.join()].join(), "adnks_t16,__IL,YAS_GRUBU,__IL".split(",").slice(0, 2).join() + ",YAS_GRUBU,__IL") || [d.tablo, d.roller.k1, d.sec.join()].join(); });
+            t("grup: ?tablo=<üye kodu> açılışı grubu ve üyenin kırılımlarını seçer", function () { W.__kirilim.tabloSec("evlenme_egt_yas_gr"); return true; });
+            sonra(function () {
+              t("grup: üye koduyla açılınca Evlenen kişiler grubu, üç kırılım seçili", function () { return eq([d.grup && d.grup.baslik, d.sec.join()].join(), "Evlenen kişiler,SEX,YAS_GRUP,EDUCATION_LEV"); });
+              t("grup: bir birleşimi veren tablo yoksa düğme kapalı (eğitim varken medeni durum)", function () { return eq(chip("ESIN_ONCEKI_MEDENI_DURUMU").getAttribute("aria-disabled"), "true"); });
+              t("konsolda hata yok (grup)", function () { return eq(W.__kirilim.hatalar, 0); });
+              bitir();
+            });
+          });
+        });
       });
     });
   });
@@ -181,11 +220,13 @@ window.onload = function () {
     D = W.KIRILIM_DIZIN;
     t("dizin yuklendi", function () { return !!D || "yok"; });
     t("konu sekmesi sayisi = dizindeki konu sayisi", function () { return eq($("konu").querySelectorAll("button").length, D.konular.length); });
-    t("tablo secici dolu", function () { return eq($("tablo").options.length, D.konular[0].tablolar.length); });
-    t("ilk tablo yuklendi", function () { return !!W.KIRILIM_TABLO[$("tablo").value] || "yuklenmedi"; });
+    t("tablo secici dolu", function () { return eq($("tablo").options.length, W.KirilimHesap.gruplar(D.konular[0].tablolar).length); });
+    t("ilk tablo yuklendi", function () { return !!W.KIRILIM_TABLO[W.__kirilim.durum.tablo] || "yuklenmedi"; });
     // iki kırılımlı tablo: k3 gizli
-    var iki = null; D.konular.forEach(function (k) { k.tablolar.forEach(function (x) { if (x.kirilimSayisi === 2 && !iki) iki = [k, x]; }); });
-    var uc = null; D.konular.forEach(function (k) { k.tablolar.forEach(function (x) { if (x.kirilimSayisi === 3 && !uc) uc = [k, x]; }); });
+    // gruplanmış tablolar seçicide grup koduyla durur; bu bölüm yalnız tek başına duran tabloları dener
+    var tek = {}; D.konular.forEach(function (k) { W.KirilimHesap.gruplar(k.tablolar).forEach(function (g) { if (!g.grup) tek[g.kod] = 1; }); });
+    var iki = null; D.konular.forEach(function (k) { k.tablolar.forEach(function (x) { if (x.kirilimSayisi === 2 && tek[x.kod] && !iki) iki = [k, x]; }); });
+    var uc = null; D.konular.forEach(function (k) { k.tablolar.forEach(function (x) { if (x.kirilimSayisi === 3 && tek[x.kod] && !uc) uc = [k, x]; }); });
     W.__kirilim.konuSec(D.konular.indexOf(iki[0]));
     sec("tablo", iki[1].kod);
     sonra(function () {
@@ -201,7 +242,7 @@ window.onload = function () {
         t("uc kirilimli tabloda k3 gorunur", function () { return eq($("k3w").hidden, false); });
         t("uc secici farkli", function () { return ($("k1").value !== $("k2").value && $("k2").value !== $("k3").value && $("k1").value !== $("k3").value) || [$("k1").value, $("k2").value, $("k3").value].join(); });
         W.__kirilim.konuSec(0);
-        sec("tablo", iki[0] === D.konular[0] ? iki[1].kod : D.konular[0].tablolar[0].kod);
+        sec("tablo", iki[0] === D.konular[0] ? iki[1].kod : W.KirilimHesap.gruplar(D.konular[0].tablolar)[0].kod);
         sonra(function () {
           t("tablo degisince secimler gecerli", function () {
             var d = W.__kirilim.durum, kol = W.KIRILIM_TABLO[d.tablo].kirilimlar.map(function (k) { return k.kol; });

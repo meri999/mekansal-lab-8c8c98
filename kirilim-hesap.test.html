@@ -182,6 +182,35 @@ t("bolgeIlDegerleri: her il bölgesinin değerini alır, bilinmeyen null", funct
   return eq(H.bolgeIlDegerleri({ TR10: 5, TR21: null, TRC3: 7 }, ["TR100", "TR211", "TR212", "TRC31", "TRC34", "TRA11"]),
     { TR100: 5, TR211: null, TR212: null, TRC31: 7, TRC34: 7, TRA11: null });
 });
+/* --- gruplama kuralı --- */
+function dt(kod, baslik, cog, kollar, olcu) { return { kod: kod, baslik: baslik, olcu: olcu || "sayi", cografya: cog, kirilimlar: kollar.map(function (k) { return { kol: k, ad: k === "V" ? "Değer" : k }; }) }; }
+var NUF = [dt("t16", "Nüfus: a ve b", "il", ["SEX", "YAS"]), dt("t14", "Nüfus: c ve a", "il", ["YER", "SEX"]), dt("t15", "Nüfus: c, a, b", "tr", ["YER", "SEX", "YAS"])];
+t("gruplar: ön ad ve ölçü aynı, kırılım kümeleri farklı -> tek grup", function () {
+  var g = H.gruplar(NUF); return eq([g.length, g[0].grup, g[0].baslik, g[0].kod, g[0].boyutlar.map(function (b) { return b.kol; }), g[0].varsayilan], [1, true, "Nüfus", "g_t16", ["SEX", "YAS", "YER"], ["SEX", "YAS"]]);
+});
+t("gruplar: aynı kırılım kümesi (eylül/kümülatif) gruplanmaz", function () {
+  var g = H.gruplar([dt("e", "Dış ticaret: x", "tr", ["A", "B"]), dt("k", "Dış ticaret: y", "tr", ["B", "A"])]); return eq(g.map(function (x) { return x.grup; }), [false, false]);
+});
+t("gruplar: ':' yoksa ya da ölçü farklıysa gruplanmaz; 'Değer' sahte kırılım sayılmaz", function () {
+  var g = H.gruplar([dt("a", "Düz başlık", "tr", ["A"]), dt("b", "Düz başlık 2", "tr", ["B"]), dt("c", "X: bir", "tr", ["A"], "sayi"), dt("d", "X: iki", "tr", ["A", "B"], "oran"),
+    dt("e", "Y: bir", "tr", ["A", "V"]), dt("f", "Y: iki", "tr", ["A", "B"])]);
+  return eq(g.map(function (x) { return x.kod; }), ["a", "b", "c", "d", "g_e"]);
+});
+t("gruplar: grup, ilk üyesinin yerinde durur; sıra korunur", function () {
+  var g = H.gruplar([dt("z", "Başka", "tr", ["A"])].concat(NUF)); return eq(g.map(function (x) { return x.kod; }), ["z", "g_t16"]);
+});
+var G = H.gruplar(NUF)[0];
+t("uyeSec: seçim yok -> il düzeyindeki en az kırılımlı üye", function () { return eq(H.uyeSec(G, []).kod, "t16"); });
+t("uyeSec: cinsiyet+yaş -> t16; yerleşim+cinsiyet -> t14; yerleşim+yaş -> t15 (yalnız Türkiye)", function () {
+  return eq([H.uyeSec(G, ["SEX", "YAS"]).kod, H.uyeSec(G, ["YER", "SEX"]).kod, H.uyeSec(G, ["YER", "YAS"]).kod, H.uyeSec(G, ["YER", "SEX", "YAS"]).kod], ["t16", "t14", "t15", "t15"]);
+});
+t("uyeSec: tek kırılım il düzeyini korur; karşılayan yoksa null; il seçimi Türkiye-only üyeyi eler", function () {
+  return eq([H.uyeSec(G, ["YER"]).kod, H.uyeSec(G, ["YAS"]).kod, H.uyeSec(G, ["ZZZ"]), H.uyeSec(G, [H.IL, "YER", "YAS"])], ["t14", "t16", null, null]);
+});
+t("grupRoller: coğrafya satır olur, seçim sırası korunur, eksik roller toplam", function () {
+  return eq([H.grupRoller([]), H.grupRoller(["YAS"]), H.grupRoller(["YAS", "SEX"]), H.grupRoller(["SEX", H.IL]), H.grupRoller(["A", "B", "C"])],
+    [{ k1: "-", k2: "-", k3: "-" }, { k1: "YAS", k2: "-", k3: "-" }, { k1: "YAS", k2: "SEX", k3: "-" }, { k1: "__IL", k2: "SEX", k3: "-" }, { k1: "A", k2: "B", k3: "C" }]);
+});
 document.getElementById("o").textContent = out.join("\n") + "\n" + (bad ? bad + " BASARISIZ" : "HEPSI GECTI");
 document.title = bad ? "KALDI" : "GEÇTİ";
 </script></body></html>

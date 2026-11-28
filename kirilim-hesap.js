@@ -254,6 +254,58 @@
   function kucukUyari(panel, olcu) {
     return olcu === "sayi" && panel.toplam !== null && panel.toplam !== undefined && panel.toplam < 1000;
   }
+  /* --- Tablo gruplama kuralı (seçici kalabalığını azaltır) ---------------------------------
+     Aynı konuda, başlığında ":" öncesi aynı ad (örn. "Nüfus") ve aynı ölçüyü taşıyan tablolar tek bir
+     seçici satırında toplanır; tablolar yalnız hangi kırılımları taşıdıklarıyla ayrışıyorsa
+     (kırılım kümeleri birbirinden farklı ve boş değilse). Kırılımlar isteğe bağlı seçilir; seçime uyan
+     en uygun üye tablo açılır. Aynı kırılım kümesini taşıyanlar (örn. eylül/kümülatif, çeyrek/yıllık)
+     birbirinin alternatifi olduğu için gruplanmaz. Kırılım kimliği `kol` kodudur; "Değer" sahte kırılımdır. */
+  var GEO_SIRA = { il: 0, bolge: 1, tr: 2 };
+  function gercekKir(t) { return t.kirilimlar.filter(function (k) { return k.ad !== "Değer"; }); }
+  function kirKumesi(t) { return gercekKir(t).map(function (k) { return k.kol; }).sort().join("|"); }
+  function gruplar(tablolar) {
+    var anahtar = {}, sira = [];
+    tablolar.forEach(function (t) {
+      var i = (t.baslik || "").indexOf(":"), on = i > 0 ? t.baslik.slice(0, i).trim() : null;
+      var a = on ? on + "|" + t.olcu : "tek|" + t.kod;
+      if (!anahtar[a]) { anahtar[a] = { on: on, liste: [] }; sira.push(a); }
+      anahtar[a].liste.push(t);
+    });
+    var cikti = [];
+    sira.forEach(function (a) {
+      var g = anahtar[a], L = g.liste, kumeler = L.map(kirKumesi);
+      var gecerli = g.on && L.length > 1 && kumeler.every(function (k) { return k; }) &&
+        kumeler.every(function (k, i) { return kumeler.indexOf(k) === i; });
+      if (!gecerli) { L.forEach(function (t) { cikti.push({ grup: false, kod: t.kod, baslik: t.baslik, tablo: t }); }); return; }
+      var boyutlar = [], gor = {};
+      L.forEach(function (t) { gercekKir(t).forEach(function (k) { if (!gor[k.kol]) { gor[k.kol] = 1; boyutlar.push({ kol: k.kol, ad: k.ad }); } }); });
+      var ilk = gercekKir(L[0]).slice(0, 2).map(function (k) { return k.kol; });
+      cikti.push({ grup: true, kod: "g_" + L[0].kod, baslik: g.on, olcu: L[0].olcu, uyeler: L, boyutlar: boyutlar, varsayilan: ilk });
+    });
+    return cikti;
+  }
+  /* kollar: seçilen kırılım kodları (+ isteğe bağlı IL / BOLGE). Seçimi karşılayan üye; yoksa null.
+     Sıra: coğrafya (il, bölge, Türkiye) → en az fazladan kırılım → listedeki sıra. */
+  function uyeSec(grup, kollar) {
+    var geo = kollar.indexOf(IL) >= 0 ? "il" : kollar.indexOf(BOLGE) >= 0 ? "bolge" : null;
+    var gk = kollar.filter(function (k) { return k !== IL && k !== BOLGE; });
+    var aday = grup.uyeler.filter(function (t) {
+      var ks = gercekKir(t).map(function (k) { return k.kol; });
+      return gk.every(function (k) { return ks.indexOf(k) >= 0; }) && (!geo || t.cografya === geo);
+    });
+    aday.sort(function (a, b) {
+      var d = (GEO_SIRA[a.cografya] || 0) - (GEO_SIRA[b.cografya] || 0);
+      return d || gercekKir(a).length - gercekKir(b).length || grup.uyeler.indexOf(a) - grup.uyeler.indexOf(b);
+    });
+    return aday[0] || null;
+  }
+  /* Seçime göre satır / sütun / panel rolleri: coğrafya seçiliyse satırlar yerler, sonra seçim sırası; kalanlar "-" (toplam) */
+  function grupRoller(kollar) {
+    var geo = kollar.filter(function (k) { return k === IL || k === BOLGE; })[0] || null;
+    var gk = kollar.filter(function (k) { return k !== IL && k !== BOLGE; });
+    var s = geo ? [geo].concat(gk) : gk;
+    return { k1: s[0] || "-", k2: s[1] || "-", k3: s[2] || "-" };
+  }
   function donemEtiketi(kod) { return String(kod).replace(/^(\d{4})-Q([1-4])$/, "$1 Ç$2"); }
   function ilkAlti(paneller) { return { paneller: paneller.slice(0, 6), kesildi: paneller.length > 6 }; }
 
@@ -261,6 +313,6 @@
     varsayilanRoller: varsayilanRoller, rolDuzelt: rolDuzelt, kesit: kesit, pay: pay, fark: fark,
     bosCizgi: bosCizgi, ilKesit: ilKesit, zamanSerisi: zamanSerisi, IL: IL, BOLGE: BOLGE,
     bolgeKoduMu: bolgeKoduMu, ilBolgesi: ilBolgesi, yerDuzeyi: yerDuzeyi, yerRolu: yerRolu, bolgeIlDegerleri: bolgeIlDegerleri,
-    rollerGecerli: rollerGecerli, duzeyGecis: duzeyGecis, kucukUyari: kucukUyari, donemEtiketi: donemEtiketi, ilkAlti: ilkAlti
+    rollerGecerli: rollerGecerli, gruplar: gruplar, uyeSec: uyeSec, grupRoller: grupRoller, duzeyGecis: duzeyGecis, kucukUyari: kucukUyari, donemEtiketi: donemEtiketi, ilkAlti: ilkAlti
   };
 })(window);
