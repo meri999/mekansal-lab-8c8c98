@@ -78,3 +78,8 @@ details.ortak summary{cursor:pointer;font-weight:700;color:var(--b)}
 #oneri{margin-top:12px;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
 
 .ipucu{margin:10px 0 0;font-size:13.5px;color:var(--mut)}
+
+/* giriş kapısı */
+.kapi-form{display:flex;gap:10px;max-width:440px;margin:12px 0 4px}
+.kapi-form input{flex:1;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:inherit}
+.gizli{position:absolute;left:-9999px}

@@ -10,9 +10,15 @@
 
 <main id="yukle">
 <div id="kapi" hidden>
-  <h1>Giriş gerekli</h1>
-  <p>Veri yüklemek için enstitü girişi yapmalısınız.</p>
-  <p><a class="dugme" href="./">Ana sayfaya dön ve giriş yap</a></p>
+  <h1>Enstitü girişi</h1>
+  <p id="kapiMesaj">Veri yüklemek için enstitü parolasını girin.</p>
+  <form id="kapiForm" class="kapi-form">
+    <label for="kapiParola" class="gizli">Parola</label>
+    <input type="password" id="kapiParola" autocomplete="current-password" required>
+    <button type="submit" class="dugme" id="kapiGonder">Giriş yap</button>
+  </form>
+  <p class="durum hata" id="kapiHata" role="alert"></p>
+  <p><a id="kapiDon" href="./">Ana sayfaya dön</a></p>
 </div>
 
 <div id="icerik" hidden>

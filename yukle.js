@@ -19,12 +19,30 @@
       .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, durum: r.status, j: j }; }); });
   }
 
+  /* Enstitü sitesinden (?k=e) gelen kişi için "geri dön" bağlantıları o siteye gider; lab ana sayfası gösterilmez. */
+  var ENSTITU = "https://meri999.github.io/mekansal/";
+  var DON = /[?&]k=e\b/.test(location.search) ? ENSTITU : "./";
+  if (DON === ENSTITU) {
+    var logo = document.querySelector("#ust .logo"), pg = document.querySelector("#ust .sag a.dugme");
+    if (logo) logo.href = ENSTITU;
+    if (pg) { pg.href = ENSTITU; pg.textContent = "Enstitü portalına dön"; }
+    $("kapiDon").href = ENSTITU; $("kapiDon").textContent = "Enstitü portalına dön";
+  }
+
   /* ---- giriş denetimi ---- */
   api("/api/ben").then(function (r) {
     if (r.j && r.j.girisli) { $("icerik").hidden = false; $("cikis").hidden = false; listele(); }
-    else $("kapi").hidden = false;
-  }, function () { $("kapi").hidden = false; $("kapi").querySelector("p").textContent = "Sunucuya ulaşılamadı. Bu sayfa yalnızca yayındaki sitede çalışır."; });
-  $("cikis").addEventListener("click", function () { api("/api/cikis", "POST", {}).then(function () { location.href = "./"; }); });
+    else { $("kapi").hidden = false; $("kapiParola").focus(); }
+  }, function () { $("kapi").hidden = false; $("kapiMesaj").textContent = "Sunucuya ulaşılamadı. Bu sayfa yalnızca yayındaki sitede çalışır."; $("kapiForm").hidden = true; });
+  $("kapiForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var g = $("kapiGonder"); g.disabled = true; $("kapiHata").textContent = "";
+    api("/api/giris", "POST", { parola: $("kapiParola").value }).then(function (r) {
+      if (r.ok) location.reload();
+      else { g.disabled = false; $("kapiHata").textContent = (r.j && r.j.hata) || "Giriş yapılamadı."; $("kapiParola").select(); }
+    }, function () { g.disabled = false; $("kapiHata").textContent = "Sunucuya ulaşılamadı."; });
+  });
+  $("cikis").addEventListener("click", function () { api("/api/cikis", "POST", {}).then(function () { location.href = DON; }); });
 
   /* ---- form ---- */
   /* Konu / alt başlık listeleri sitenin kendi verisinden gelir (veri.js + daha önce yüklenen kartlar); elle yazılmaz.

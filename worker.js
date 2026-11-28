@@ -133,7 +133,9 @@ export default {
       return json({ girisli: false }, 200, { "set-cookie": `oturum=; ${CEREZ_OZ}; Max-Age=0` });
     if (u.pathname === "/api/ben") return json({ girisli: await girisliMi(istek, env) });
     if (u.pathname === "/api/manuel" && istek.method === "GET")
-      return json({ kartlar: await manuelOku(env) }); /* önbellek yok: yayından hemen sonra görünmeli */
+      /* önbellek yok: yayından hemen sonra görünmeli. Okuma herkese açıktır; enstitü sitesi (başka adres) de okuyabilsin diye CORS açık.
+         Yazma ve silme açık değildir: çerez gerektirir ve çerez SameSite=Strict olduğundan başka sitelerden kullanılamaz. */
+      return json({ kartlar: await manuelOku(env) }, 200, { "access-control-allow-origin": "*" });
     if (u.pathname === "/api/yukle" && istek.method === "POST") return manuelYukle(istek, env);
     if (u.pathname === "/api/manuel" && istek.method === "DELETE") return manuelSil(istek, env, u.searchParams.get("id") || "");
     if (u.pathname.startsWith("/api/")) return json({ hata: "Bulunamadı." }, 404);
