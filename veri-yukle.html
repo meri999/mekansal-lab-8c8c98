@@ -60,7 +60,9 @@
     <label>Dosya (Excel .xlsx veya CSV)<input type="file" id="dosya" accept=".xlsx,.csv,.txt,.tsv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
     <label id="donemEt">Gözlem dönemi<input type="text" id="donem" placeholder="örn. 2025" inputmode="numeric"></label>
     <label>Konu<select id="konu"></select></label>
-    <label>Grup (alt başlık)<input type="text" id="grup" placeholder="örn. Yükseköğretim"></label>
+    <label id="altEt">Alt başlık<select id="alt"></select></label>
+    <label id="grupEt" hidden>Grup<select id="grup"></select></label>
+    <label id="yeniEt" hidden>Yeni alt başlığın adı<input type="text" id="yeni" maxlength="80" placeholder="Yalnız listede yoksa yazın"></label>
     <label>Kaynak<input type="text" id="kaynak" placeholder="örn. YÖK"></label>
     <label>Not (isteğe bağlı)<input type="text" id="not" placeholder="Kartın altında görünecek açıklama"></label>
     <label id="bolgeEt">Sayım göstergelerinde bölge ve Türkiye değeri
